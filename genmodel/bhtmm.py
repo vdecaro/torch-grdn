@@ -5,77 +5,82 @@ import torch.nn.functional as F
 
 class BottomUpHTMM(nn.Module):
 
-    def __init__(self, C, L, M):
+    def __init__(self, n_gen, C, L, M):
         super(BottomUpHTMM, self).__init__()
+        self.n_gen = n_gen
         self.C = C
         self.L = L
         self.M = M
 
-        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, L))))
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M))))
-        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, L))))
-        self.SP = nn.Parameter(nn.init.normal_(torch.empty((C, L))))
+        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, L, n_gen))))
+        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen))))
+        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, L, n_gen))))
+        self.SP = nn.Parameter(nn.init.normal_(torch.empty((L, n_gen))))
     
 
-    def forward(self, tree):
-        sm_A, sm_B, sm_Pi, sm_SP = _softmax_reparameterization(self.A, self.B, self.Pi, self.SP)
+    def forward(self, tree_batch):
+        sm_A, sm_B, sm_Pi, sm_SP = _softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi, self.SP)
 
-        beta, t_beta = _reversed_upward(tree, sm_A, sm_B, sm_Pi, sm_SP, self.C)
-        eps, t_eps = _reversed_downward(tree, sm_A, sm_Pi, beta, t_beta)
+        log_likelihood = []
+        for tree in tree_batch:
+            beta, t_beta = _reversed_upward(tree, self.n_gen, sm_A, sm_B, sm_Pi, sm_SP, self.C)
+            eps, t_eps = _reversed_downward(tree, self.n_gen, sm_A, sm_Pi, sm_SP, beta, t_beta, self.C, self.L)
 
-        log_likelihood = _log_likelihood(tree, sm_A, sm_B, sm_Pi, eps, t_eps)
+            log_likelihood.append([-_log_likelihood(tree, sm_A, sm_B, sm_Pi, sm_SP, eps, t_eps)])   # Negative log likelihood
 
-        return log_likelihood
-
-
-def _softmax_reparameterization(A, B, Pi, SP):
-    sm_A = torch.cat([F.softmax(A[:, :, i], dim=0).unsqueeze(2) for i in range(A.size(2))], dim=2)
-    sm_B = F.softmax(B, dim=1)
-    sm_Pi = F.softmax(Pi, dim=0)
-    sm_SP = F.softmax(SP, dim=0)
-
-    return sm_A, sm_B, sm_Pi, sm_SP
+        return torch.stack(log_likelihood)
 
 
-def _reversed_upward(tree, A, B, Pi, SP, C):
-    beta = torch.zeros((tree['dim'], C))
-    t_beta = torch.zeros((tree['dim'], C))  # It is the joint probability w.r.t. all the children
+def _softmax_reparameterization(n_gen, A, B, Pi, SP):
+    sm_A, sm_B, sm_Pi, sm_SP = [], [], [], []
+    for i in range(n_gen):
+        sm_A.append(torch.cat([F.softmax(A[:, :, j, i], dim=0).unsqueeze(2) for j in range(A.size(2))], dim=2))
+        sm_B.append(F.softmax(B[:, :, i], dim=1))
+        sm_Pi.append(F.softmax(Pi[:, :, i], dim=0))
+        sm_SP.append(F.softmax(SP[:, i], dim=0))
 
-    pos_leaves = tree['pos'].index_select(0, tree['leaves'])
-    Pi_leaves = Pi.index_select(1, pos_leaves)
-    B_leaves = B.index_select(dim=1, index=tree['leaves'])
+    return torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1), torch.stack(sm_SP, dim=-1)
+
+
+def _reversed_upward(tree, n_gen, A, B, Pi, SP, C):
+    dim = tree['labels'].size(0)
+    beta = torch.zeros((dim, C, n_gen))
+    t_beta = torch.zeros((dim, C, n_gen))  # It is the joint probability w.r.t. all the children
+
+    pos_leaves = tree['pos'][tree['leaves']]
+    Pi_leaves = Pi[:, pos_leaves]
+    B_leaves = B[:, tree['leaves']]
     beta_leaves = Pi_leaves * B_leaves
-    beta_leaves = beta_leaves / beta_leaves.sum(dim=1, keepdim=True)
-    beta = beta.scatter_(0, tree['leaves'], beta_leaves.T)
+    beta_leaves = (beta_leaves / beta_leaves.sum(dim=0, keepdim=True)).permute(1, 0, 2)
+    
+    beta[tree['leaves'], :] = beta_leaves
 
     for l in reversed(tree['levels']):
         # Computing beta_uv children = (A_ch @ beta_ch) / prior_pa
-        pos_ch = tree['pos'].index_select(0, l[:, 1])
-        SP_ch = SP.index_select(0, pos_ch).view(-1, 1, 1)
-        A_ch = A.index_select(2, pos_ch).permute(2, 0, 1)
-        beta_ch = beta.index_select(0, l[:, 1])
-
-        t_beta_l_ch = (SP_ch * A_ch) @ beta_ch
+        pos_ch = tree['pos'][l[:, 1]]
+        SP_ch = SP[pos_ch].unsqueeze(1).unsqueeze(2)
+        A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
+        beta_ch = beta[l[:, 1]].unsqueeze(1)
+        
+        t_beta_l_ch = (SP_ch * A_ch * beta_ch).sum(2)
         u_idx = l[:, 0].unique(sorted=False)
-        t_beta_l = []
         for u in u_idx:
-            ch_idx = (l[:, 0] == u).nonzero()
-            t_beta_u = t_beta_l_ch.index_select(0, ch_idx).sum(0)
-            t_beta_l.append(t_beta_u)
-        t_beta_l = torch.cat(t_beta_l, dim=0)
-        t_beta = t_beta.scatter_(0, u_idx, t_beta_l)
+            t_beta_u = t_beta_l_ch[l[:, 0] == u]
+            t_beta_u = t_beta_u.sum(0)
+            t_beta[u] = t_beta_u
 
-        B_l = B.index_select(1, tree['labels'].index_select(0, u_idx)).T
-        beta_l = t_beta_l * B_l
-        beta_l = beta_l / beta_l.sum(dim=1, keepdim=True)
-        beta = beta.scatter_(0, u_idx, beta_l)
- 
+        B_l = B[:, tree['labels'][u_idx]].permute(1, 0, 2)
+        beta_l = t_beta[u_idx] * B_l
+        beta_l = beta_l / (beta_l.sum(dim=1, keepdim=True))
+        beta[u_idx] = beta_l
+
     return beta, t_beta
 
 
-def _reversed_downward(tree, A, Pi, SP, beta, t_beta, C, L):
-    eps = torch.zeros((tree['dim'], C))
-    t_eps = torch.zeros((tree['dim'], C, C, L))
+def _reversed_downward(tree, n_gen, A, Pi, SP, beta, t_beta, C, L):
+    dim = tree['labels'].size(0)
+    eps = torch.zeros((dim, C, n_gen))
+    t_eps = torch.zeros((dim, C, C, L, n_gen))
 
     root = tree['levels'][0][0, 0]
     eps[root] = beta[root]
@@ -83,21 +88,20 @@ def _reversed_downward(tree, A, Pi, SP, beta, t_beta, C, L):
         # Computing eps_{u, pa(u)}(i, j) = (eps_{pa(u)}(j)* A_ij * beta_u(i)) / (prior_u(i) * t_beta_{pa(u), u}(j))
         u_idx = l[:, 0].unique(sorted=False)
         for u in u_idx:
-            eps_pa = eps[u].view(-1, 1, 1)
-            ch_idx = (l[:, 0] == u).nonzero()
-            n_children = ch_idx.size(0)
-            A_ch = SP[:n_children].view(-1, 1, 1) * A[:, :, :n_children]
+            eps_pa = eps[u].unsqueeze(1).unsqueeze(2)      # [C, 1, 1]
+            ch_idx = (l[:, 0] == u).nonzero().squeeze()
+            n_children = len(ch_idx)
+            A_ch = SP[:n_children].unsqueeze(0).unsqueeze(0) * A[:, :, :n_children]   # [C, C, n_children]
         
-            beta_ch = beta.index_select(0, ch_idx).view(1, -1, n_children)
-            numerator = beta_ch * A_ch * eps_pa
-
-            t_beta_pa = t_beta[u].view(-1, 1, 1)
+            beta_ch = beta[ch_idx].permute(1, 0, 2).unsqueeze(0)     # [1, C, n_children]
+            numerator = eps_pa * A_ch * beta_ch
+            t_beta_pa = t_beta[u].unsqueeze(1).unsqueeze(2)
 
             t_eps_u = numerator / t_beta_pa
             t_eps[u] = F.pad(t_eps_u, (0, L-n_children, 0, 0, 0, 0))
 
-            eps_ch = t_eps_u.sum(0).T
-            eps = eps.scatter_(dim=0, index=ch_idx, src=eps_ch)
+            eps_ch = t_eps_u.sum(0).permute(1, 0, 2)
+            eps[ch_idx] = eps_ch
 
     return eps, t_eps
 
@@ -108,14 +112,14 @@ def _log_likelihood(tree, A, B, Pi, SP, eps, t_eps):
     A_lhood = t_eps * A.log().unsqueeze(0)
 
     # Likelihood B
-    B_nodes = B.index_select(1, tree['labels']).T
+    B_nodes = B[:, tree['labels']].permute(1, 0, 2)
     B_lhood = eps * B_nodes.log()
 
     # Likelihood Pi
-    leaves_pos = tree['pos'].index_select(0, tree['leaves'])
-    Pi_lhood = eps.index_select(0, tree['leaves']) * Pi.index_select(1, leaves_pos).log().T
+    leaves_pos = tree['pos'][tree['leaves']]
+    Pi_lhood = eps[tree['leaves']] * Pi[:, leaves_pos].log().permute(1, 0, 2)
 
     # Likelihood SP
-    SP_lhood = t_eps * SP.log().view(1, 1, 1, -1)
+    SP_lhood = t_eps * SP.log().unsqueeze(0).unsqueeze(1).unsqueeze(2)
 
-    return A_lhood.sum() + B_lhood.sum() + Pi_lhood.sum() + SP_lhood.sum()
+    return A_lhood.sum([0, 1, 2]) + B_lhood.sum([0, 1]) + Pi_lhood.sum([0, 1]) + SP_lhood.sum(0)

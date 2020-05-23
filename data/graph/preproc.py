@@ -1,4 +1,5 @@
 import torch
+    
 
 def bfs(g, root):
     '''
@@ -11,7 +12,7 @@ def bfs(g, root):
     
     visited = [root]
     leaves = [i for i in range(len(g.x))]
-    positions = [-1 for _ in range(len(g.x))]
+    positions = [0 for _ in range(len(g.x))]
     queue = [(root, 0)]
     edges = []
     while queue:
@@ -24,7 +25,7 @@ def bfs(g, root):
         leaf = True
         pos = 0
         for idx in range(g.edge_index.size(1)):
-            if g.edge_index[0, idx] == curr and g.edge_index[1, idx] not in queue and g.edge_index[1, idx] not in visited:
+            if g.edge_index[0, idx] == curr and g.edge_index[1, idx] not in visited:
                 leaf = False
                 edges[level].append(torch.unsqueeze(g.edge_index[:, idx], -1))
                 positions[g.edge_index[1, idx]] = pos
@@ -38,4 +39,10 @@ def bfs(g, root):
     if not edges[-1]:
         edges = edges[:-1]
 
-    return [torch.cat(level, -1) for level in edges], torch.tensor(leaves), torch.tensor(positions)
+    tree = {'labels': g.x,
+            'levels': [torch.cat(level, -1) for level in edges],
+            'leaves': torch.tensor(leaves),
+            'pos': torch.tensor(positions)
+    }
+    
+    return tree
