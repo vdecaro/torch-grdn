@@ -27,25 +27,25 @@ class HTN(nn.Module):
     
     def forward(self, tree_batch):
         if self.mode == 'both':
-            neg_td_likelihood = self.td(tree_batch)
-            neg_bu_likelihood = self.bu(tree_batch)
+            neg_td_likelihood = self.td(tree_batch).detach()
+            neg_bu_likelihood = self.bu(tree_batch).detach()
             norm_td = self.td_batch_norm(neg_td_likelihood)
             norm_bu = self.bu_batch_norm(neg_bu_likelihood)
             to_contrastive = torch.cat([norm_td, norm_bu], dim=1)
             neg_log_likelihood = torch.cat([neg_td_likelihood, neg_bu_likelihood], dim=1)
 
         elif self.mode == 'bu':
-            to_contrastive = self.bu(tree_batch)
+            to_contrastive = self.bu(tree_batch).detach()
             neg_log_likelihood = to_contrastive
 
         elif self.mode == 'td':
-            to_contrastive = self.td(tree_batch)
+            to_contrastive = self.td(tree_batch).detach()
             neg_log_likelihood = to_contrastive
         
         c_neurons = (to_contrastive @ self.contrastive).tanh()
         output = self.output(c_neurons)
 
-        return output, neg_log_likelihood.mean(dim=0).detach()
+        return output, neg_log_likelihood.mean(dim=0)
 
     def get_gen_parameters(self):
         params = []

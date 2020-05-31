@@ -10,10 +10,10 @@ from torch_geometric.nn import Set2Set
 from math import factorial as fact
 import random
 
-class GraphHTN(nn.Module):
+class Graph2TreesHTN(nn.Module):
 
     def __init__(self, outputs, n_bu, n_td, C, L, M, set2set_steps=8):
-        super(GraphHTN, self).__init__()
+        super(Graph2TreesHTN, self).__init__()
         self.bu = BottomUpHTMM(n_bu, C, L, M)
         self.td = TopDownHTMM(n_td, C, L, M)
         
@@ -28,7 +28,7 @@ class GraphHTN(nn.Module):
 
         self.contrastive = contrastive_matrix(n_bu + n_td)
         self.set2one = Set2Set(self.contrastive.size(1), set2set_steps, num_layers=1)
-        self.output = nn.Linear(self.contrastive.size(1), outputs)
+        self.output = nn.Linear(2*self.contrastive.size(1), outputs)
     
     def forward(self, graph_batch):
         neg_log_likelihood = []
@@ -40,8 +40,8 @@ class GraphHTN(nn.Module):
             batch_idx += [idx for _ in range(g_dim)]
 
             if self.mode == 'both':
-                g_neg_td_likelihood = self.td(g_trees)
-                g_neg_bu_likelihood = self.bu(g_trees)
+                g_neg_td_likelihood = self.td(g_trees).detach()
+                g_neg_bu_likelihood = self.bu(g_trees).detach()
                 norm_td = self.td_batch_norm(g_neg_td_likelihood)
                 norm_bu = self.bu_batch_norm(g_neg_bu_likelihood)
                 to_contrastive.append(torch.cat([norm_td, norm_bu], dim=1))
@@ -61,7 +61,7 @@ class GraphHTN(nn.Module):
         g_pooling = self.set2one(c_neurons, batch_idx)
         output = self.output(g_pooling)
         
-        return output, torch.stack(neg_log_likelihood).mean(0).detach()
+        return output, torch.stack(neg_log_likelihood).mean(0)
 
     def get_gen_parameters(self):
         params = []
