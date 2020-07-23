@@ -57,15 +57,15 @@ def _reversed_upward(tree, n_gen, A, B, Pi, SP, C):
 
     for l in reversed(tree['levels']):
         # Computing beta_uv children = (A_ch @ beta_ch) / prior_pa
-        pos_ch = tree['pos'][l[:, 1]]
+        pos_ch = tree['pos'][l[1]]
         SP_ch = SP[pos_ch].unsqueeze(1).unsqueeze(2)
         A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
-        beta_ch = beta[l[:, 1]].unsqueeze(1)
+        beta_ch = beta[l[1]].unsqueeze(1)
         
         t_beta_l_ch = (SP_ch * A_ch * beta_ch).sum(2)
-        u_idx = l[:, 0].unique(sorted=False)
+        u_idx = l[0].unique(sorted=False)
         for u in u_idx:
-            t_beta_u = t_beta_l_ch[l[:, 0] == u]
+            t_beta_u = t_beta_l_ch[l[0] == u]
             t_beta_u = t_beta_u.sum(0)
             t_beta[u] = t_beta_u
 
@@ -86,10 +86,10 @@ def _reversed_downward(tree, n_gen, A, Pi, SP, beta, t_beta, C, L):
     eps[root] = beta[root]
     for l in tree['levels']:
         # Computing eps_{u, pa(u)}(i, j) = (eps_{pa(u)}(j)* A_ij * beta_u(i)) / (prior_u(i) * t_beta_{pa(u), u}(j))
-        u_idx = l[:, 0].unique(sorted=False)
+        u_idx = l[0].unique(sorted=False)
         for u in u_idx:
             eps_pa = eps[u].unsqueeze(1).unsqueeze(2)      # [C, 1, 1]
-            ch_idx = (l[:, 0] == u).nonzero().squeeze()
+            ch_idx = (l[0] == u).nonzero().squeeze()
             n_children = len(ch_idx)
             A_ch = SP[:n_children].unsqueeze(0).unsqueeze(0) * A[:, :, :n_children]   # [C, C, n_children]
         

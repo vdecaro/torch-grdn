@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class TopDownHTMM(nn.Module):
+class PositionalTopDownHTMM(nn.Module):
 
     def __init__(self, n_gen, C, L, M):
-        super(TopDownHTMM, self).__init__()
+        super(PositionalTopDownHTMM, self).__init__()
         self.n_gen = n_gen
         self.C = C
         self.L = L
@@ -48,11 +48,11 @@ def _preliminary_downward(tree, n_gen, A, Pi, C):
     prior[root] = Pi
 
     for l in tree['levels']:
-        pos_ch = tree['pos'][l[:, 1]]
+        pos_ch = tree['pos'][l[1]]
         A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
-        prior_pa = prior[l[:, 0]].unsqueeze(1)
+        prior_pa = prior[l[0]].unsqueeze(1)
         prior_l = (A_ch * prior_pa).sum(2)
-        prior[l[:, 1]] = prior_l
+        prior[l[1]] = prior_l
     
     return prior
         
@@ -68,16 +68,16 @@ def _upward(tree, n_gen, A, B, prior, C):
 
     for l in reversed(tree['levels']):
         # Computing beta_uv children = (A_ch @ beta_ch) / prior_pa
-        pos_ch = tree['pos'][l[:, 1]]
-        beta_ch = beta[l[:, 1]].unsqueeze(2)
+        pos_ch = tree['pos'][l[1]]
+        beta_ch = beta[l[1]].unsqueeze(2)
         A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
-        prior_l = prior[l[:, 1]].unsqueeze(2)
+        prior_l = prior[l[1]].unsqueeze(2)
         beta_uv = (A_ch * beta_ch / prior_l).sum(1)
-        t_beta[l[:, 1]] = beta_uv
+        t_beta[l[1]] = beta_uv
         
         # Computing beta on level = (\prod_ch beta_uv_ch) * prior_u * 
-        for u in l[:, 0].unique(sorted=False):
-            ch_idx = (l[:, 0] == u).nonzero().squeeze()
+        for u in l[0].unique(sorted=False):
+            ch_idx = (l[0] == u).nonzero().squeeze()
             beta_u = beta[u] * beta_uv[ch_idx].prod(0)
             beta_u = beta_u / beta_u.sum()
             beta[u] = beta_u
@@ -94,32 +94,32 @@ def _downward(tree, n_gen, A, Pi, prior, beta, t_beta, C):
     eps[root] = beta[root]
     for l in tree['levels']:
         # Computing eps_{u, pa(u)}(i, j) = (beta_u(i) / (prior_u(i)) * \sum_{j} (eps_{pa(u)}(j)*A_ij t_beta_{pa(u), u}(j)))
-        eps_pa = eps[l[:, 0]].unsqueeze(1)
-        pos_ch = tree['pos'][l[:, 1]]
+        eps_pa = eps[l[0]].unsqueeze(1)
+        pos_ch = tree['pos'][l[1]]
         A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
-        t_beta_ch = t_beta[l[:, 1]].unsqueeze(1)
+        t_beta_ch = t_beta[l[1]].unsqueeze(1)
         pa_factor = (eps_pa * A_ch) / t_beta_ch 
 
-        beta_ch = beta[l[:, 1]].unsqueeze(2)
-        prior_ch = prior[l[:, 1]].unsqueeze(2)
+        beta_ch = beta[l[1]].unsqueeze(2)
+        prior_ch = prior[l[1]].unsqueeze(2)
         ch_factor = beta_ch / prior_ch
 
         t_eps_ch = ch_factor * pa_factor
-        t_eps[l[:, 1]] = t_eps_ch
+        t_eps[l[1]] = t_eps_ch
 
         # Computing eps_u(i)
         num_eps_ch = t_eps_ch.sum(2)
         den_eps_ch = num_eps_ch.sum(1, keepdim=True)
 
         eps_ch = num_eps_ch / den_eps_ch
-        eps[l[:, 1]] = eps_ch
+        eps[l[1]] = eps_ch
 
     return eps, t_eps
 
 
 def _log_likelihood(tree, A, B, Pi, eps, t_eps):
     root = tree['levels'][0][0, 0]
-    no_root = torch.cat([l[:, 1] for l in tree['levels']])
+    no_root = torch.cat([l[1] for l in tree['levels']])
     
     # Likelihood Pi
     Pi_lhood = eps[root] * Pi.log()

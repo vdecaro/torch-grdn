@@ -1,17 +1,17 @@
 import torch
 import torch.nn as nn
 
-from genmodel.bhtmm import BottomUpHTMM
-from genmodel.thtmm import TopDownHTMM
+from htn.bhtmm import BottomUpHTMM
+from htn.pos_thtmm import PositionalTopDownHTMM
 
-from htn.contrastive import contrastive_matrix
+from contrastive import contrastive_matrix
 
 class HTN(nn.Module):
 
     def __init__(self, n_bu, n_td, C, L, M, outputs):
         super(HTN, self).__init__()
         self.bu = BottomUpHTMM(n_bu, C, L, M)
-        self.td = TopDownHTMM(n_td, C, L, M)
+        self.td = PositionalTopDownHTMM(n_td, C, L, M)
         
         if self.bu and self.td:
             self.mode = 'both'
