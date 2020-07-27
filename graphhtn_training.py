@@ -1,13 +1,14 @@
-import torch
+import sys
 
+import torch
 from torch_geometric.datasets import TUDataset
 from data.graph.preproc import Graph2TreesLoader, bfs_transform
 from torch_geometric.data import DataLoader, Data
-from graph_htn.graph_htn import GraphHTN
-from cgmn.cgmn import CGMN
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 import numpy as np
+
+from graph_htn.graph_htn import GraphHTN
 
 def nci1_pre_transform(max_depth):
     
@@ -22,18 +23,20 @@ def nci1_transform(data):
     data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
     return data
 
+DEVICE=sys.argv[1]
 MAX_DEPTH = 5
+
 dataset = TUDataset(f'./NCI1_{MAX_DEPTH}', 'NCI1', pre_transform=nci1_pre_transform(MAX_DEPTH), transform=nci1_transform)
 
 kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset]))
 tr_i, vl_i = next(split)
 tr_data, vl_data = dataset[tr_i.tolist()], dataset[vl_i.tolist()]
-loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=64, shuffle=True)
-val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False)
+loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=64, shuffle=True, device=DEVICE)
+val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, device=DEVICE)
 
 C = 4
-ghtn = GraphHTN(1, 15, 0, C, 37, 8)
+ghtn = GraphHTN(1, 15, 0, C, 37, 8).to(DEVICE)
 bce = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.AdamW(ghtn.get_parameters(), weight_decay=1e-2)
 

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torch_scatter.scatter import scatter
-from torch_scatter.segment_coo import segment_coo
+
 
 class UniformBottomUpHTMM(nn.Module):
 
@@ -55,7 +55,7 @@ def _reversed_upward(x, tree, n_gen, A, B, Pi, C):
         # Computing unnormalized beta_uv children = A_ch @ beta_ch
         beta_ch = beta[l[1]]
         t_beta_ch = (A.unsqueeze(0) * beta_ch.unsqueeze(1)).sum(2)
-        t_beta = segment_coo(src=t_beta_ch, index=l[0], dim=0, out=t_beta, reduce="mean")
+        t_beta = scatter(src=t_beta_ch, index=l[0], dim=0, out=t_beta, reduce="mean")
 
         u_idx = l[0].unique(sorted=False)
         B_l = B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2)
@@ -77,7 +77,7 @@ def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C):
         eps_pa = eps[l[0]].unsqueeze(2)
         beta_ch = beta[l[1]].unsqueeze(1)
         eps_joint = (eps_pa * A.unsqueeze(0) * beta_ch) / t_beta_pa
-        t_eps = segment_coo(src=eps_joint, index=l[0], dim=0, out=t_eps, reduce="mean")
+        t_eps = scatter(src=eps_joint, index=l[0], dim=0, out=t_eps, reduce="mean")
         eps[l[1]] = eps_joint.sum(1)
 
     return eps, t_eps
@@ -100,4 +100,4 @@ def _log_likelihood(x, tree, A, B, Pi, eps, t_eps):
     # Likelihood Pi
     likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
 
-    return segment_coo(likelihood, tree['trees_ind'], dim=0)
+    return scatter(likelihood, tree['trees_ind'], dim=0)
