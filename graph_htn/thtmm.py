@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch_scatter.scatter import scatter
-import time
+
 class TopDownHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, M):
+    def __init__(self, n_gen, C, M, cuda=[]):
         super(TopDownHTMM, self).__init__()
         self.n_gen = n_gen
         self.C = C
@@ -20,17 +19,11 @@ class TopDownHTMM(nn.Module):
     def forward(self, x, trees):
         sm_A, sm_B, sm_Pi = _softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
 
-        t1 = time.time()
         prior = _preliminary_downward(trees, self.n_gen, sm_A, sm_Pi, self.C)
-        t2 = time.time()
         beta, t_beta = _upward(x, trees, self.n_gen, sm_A, sm_B, prior, self.C)
-        t3 = time.time()
         eps, t_eps = _downward(trees, self.n_gen, sm_A, sm_Pi, prior, beta, t_beta, self.C)
-        t4 = time.time()
         log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps) 
-        t5 = time.time()
 
-        print(f"Prel = {t2-t1} --- up = {t3-t2} ---- dw = {t4-t3} ----- lhood = {t5-t4}")
         return - log_likelihood
 
 
@@ -60,7 +53,7 @@ def _preliminary_downward(tree, n_gen, A, Pi, C):
 def _upward(x, tree, n_gen, A, B, prior, C):
     beta = torch.zeros((tree['dim'], C, n_gen))
     t_beta = torch.zeros((tree['dim'], C, n_gen))
-
+    
     beta_leaves = prior[tree['leaves']] * B[:, x[tree['inv_map'][tree['leaves']]]].permute(1, 0, 2)
     beta_leaves = beta_leaves / beta_leaves.sum(dim=1, keepdim=True)
     beta[tree['leaves']] = beta_leaves
@@ -75,13 +68,9 @@ def _upward(x, tree, n_gen, A, B, prior, C):
         # Computing beta on level = (\prod_ch beta_uv_ch) * prior_u * 
         beta_u = []
         u_idx = l[0].unique(sorted=False)
-        t1 = time.time()
-        for u in u_idx:
-            ch_idx = (l[0] == u).nonzero().squeeze(1)
-            beta_u.append(beta_uv[ch_idx].prod(0))
-        t2 = time.time()
-        print(f"Internal time = {t2-t1}")
-        beta_u = prior[u_idx] * B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2) * torch.stack(beta_u)
+        beta = scatter_mul(src=beta_uv, index=l[0], dim=0, out=beta)
+        
+        beta_u = prior[u_idx] * B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2) * beta[u_idx]
         beta[u_idx] = beta_u / beta_u.sum(1, keepdim=True)
     
     return beta, t_beta
@@ -122,6 +111,7 @@ def _log_likelihood(x, tree, A, B, Pi, eps, t_eps):
 
     lhood_size = eps.size(0), eps.size(-1)
     likelihood = torch.zeros(lhood_size)
+
     # Likelihood Pi
     likelihood[tree['roots']] += (eps[tree['roots']] * Pi.log()).sum(1)
     
