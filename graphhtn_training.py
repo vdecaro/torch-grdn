@@ -23,7 +23,7 @@ def nci1_transform(data):
     data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
     return data
 
-DEVICE=sys.argv[1]
+DEVICE=torch.cuda.device(int(sys.argv[1]))
 MAX_DEPTH = 5
 
 dataset = TUDataset(f'./NCI1_{MAX_DEPTH}', 'NCI1', pre_transform=nci1_pre_transform(MAX_DEPTH), transform=nci1_transform)
