@@ -27,7 +27,7 @@ class UniformBottomUpHTMM(nn.Module):
         beta, t_beta = _reversed_upward(x, trees, self.n_gen, sm_A, sm_B, sm_Pi, self.C, self.device)
         eps, t_eps = _reversed_downward(x, trees, self.n_gen, sm_A, sm_Pi, beta, t_beta, self.C, self.device)
 
-        log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps)  # Negative log likelihood
+        log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps, self.device)  # Negative log likelihood
             
         return -log_likelihood
 
@@ -86,12 +86,12 @@ def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C, device):
     return eps, t_eps
 
 
-def _log_likelihood(x, tree, A, B, Pi, eps, t_eps):
+def _log_likelihood(x, tree, A, B, Pi, eps, t_eps, device):
     internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
     all_nodes = torch.cat([internal, tree['leaves']])
     l_hood_size = eps.size(0), eps.size(-1)
 
-    likelihood = torch.zeros(l_hood_size)
+    likelihood = torch.zeros(l_hood_size, device=device)
     # Likelihood A
     likelihood[internal] += (t_eps[internal] * A.log().unsqueeze(0)).sum([1, 2])
 
