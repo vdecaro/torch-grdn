@@ -28,7 +28,6 @@ class GraphHTN(nn.Module):
         self.to(device=self.device)
     
     def forward(self, x, trees, batch):
-        t1 = time.time()
         if self.bu is not None and self.td is not None:
             g_neg_td_likelihood = self.td(x, trees)
             g_neg_bu_likelihood = self.bu(x, trees)
@@ -50,9 +49,7 @@ class GraphHTN(nn.Module):
         c_neurons = (to_contrastive @ self.contrastive).tanh().detach_()
         g_pooling = self.set2set(c_neurons, batch)
         output = self.output(g_pooling)
-        t2 = time.time()
-        print(f"Computation time = {t2-t1}")
-
+        
         return output, neg_log_likelihood.mean(0).sum()
 
     def get_parameters(self):

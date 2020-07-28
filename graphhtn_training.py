@@ -28,7 +28,8 @@ def nci1_transform(data):
 DEVICE=sys.argv[1]
 M = int(sys.argv[2])
 C = int(sys.argv[3])
-BATCH_SIZE = (int(sys.argv[4]))
+BATCH_SIZE = int(sys.argv[4])
+EPOCHS = int(sys.argv[5])
 MAX_DEPTH = 5
 dataset = TUDataset(f'./NCI1_{MAX_DEPTH}', 'NCI1', pre_transform=nci1_pre_transform(MAX_DEPTH), transform=nci1_transform)
 
@@ -43,31 +44,22 @@ ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
 bce = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(ghtn.get_parameters())
 
-for i in range(200):
+for i in range(EPOCHS):
     loss_avg = 0
     acc_avg = 0
     n = 0
-    
     for b in loader:
         out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
-        t1 = time.time()
         loss = bce(out, b.y)
         opt.zero_grad()
         loss.backward()
         neg_likelihood.backward()
         opt.step()
-        t2 = time.time()
-        print(f"Backward time = {t2-t1}")
-        t3 = time.time()
         accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
         loss_avg = loss.cpu().item() if n == 0 else loss_avg + ((loss.cpu().item() - loss_avg)/(n+1))
         acc_avg = accuracy if n == 0 else acc_avg + ((accuracy - acc_avg)/(n+1))
         n += 1
-        t4 = time.time()
-        print(f"Stats time = {t4-t3}")
-        #print(f"Loss = {loss.cpu().item()} ----- Accuracy = {accuracy}")
-    print(f"Training avg {i}: Loss = {loss_avg} --  Accuracy = {acc_avg}")
-
+    print(f"Training {i}: Loss = {loss_avg} -- Accuracy = {acc_avg}")
     for b in val_loader:
         with torch.no_grad():
             out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
