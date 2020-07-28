@@ -23,7 +23,7 @@ class TreeCollater(object):
     def collate(self, batch):
         x = [batch[0].x]
         y = [batch[0].y]
-        trees = batch[0].trees[0]
+        trees = batch[0].trees
 
         roots = [trees['roots']]
         levels = [[] for _ in range(self.max_depth-1)]
@@ -39,7 +39,7 @@ class TreeCollater(object):
         graph_offset = batch[0].x.size(0)
 
         for n_graph, g in enumerate(batch[1:]):
-            trees = g.trees[0]
+            trees = g.trees
             x.append(g.x)
             y.append(g.y)
             roots.append(trees['roots'] + trees_offset)
