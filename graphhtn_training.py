@@ -50,12 +50,14 @@ for i in range(200):
     
     for b in loader:
         out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
+        t1 = time.time()
         loss = bce(out, b.y)
         opt.zero_grad()
         loss.backward()
         neg_likelihood.backward()
         opt.step()
-
+        t2 = time.time()
+        print(f"Backward time = {t2-t1}")
         accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
         loss_avg = loss.cpu().item() if n == 0 else loss_avg + ((loss.cpu().item() - loss_avg)/(n+1))
         acc_avg = accuracy if n == 0 else acc_avg + ((accuracy - acc_avg)/(n+1))
