@@ -21,6 +21,8 @@ class TreeCollater(object):
         self.max_depth = max_depth
 
     def collate(self, batch):
+        t1 = time.time()
+        print("Start")
         x = [batch[0].x]
         y = [batch[0].y]
         trees = batch[0].trees
@@ -64,7 +66,8 @@ class TreeCollater(object):
                 'dim': dim
                 }
         batch_ind = torch.LongTensor(batch_ind)
-        
+        t2 = time.time()
+        print(f"Stop! {t2-t1}")
         return Data(x=x.to(device=self.device), 
                     batch=batch_ind.to(device=self.device), 
                     trees=coll_t, 
