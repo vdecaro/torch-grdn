@@ -56,16 +56,19 @@ class TreeCollater(object):
 
         x = torch.cat(x)
         y = torch.cat(y)
-        coll_t = {'roots': torch.cat(roots).to(self.device),
-                'levels': [torch.cat(l, 1).to(self.device) for l in levels if l],
-                'leaves': torch.cat(leaves).to(self.device),
-                'inv_map': torch.cat(inv_map).to(self.device),
-                'trees_ind': torch.cat(trees_ind).to(self.device),
+        coll_t = {'roots': torch.cat(roots).to(device=self.device),
+                'levels': [torch.cat(l, 1).to(device=self.device) for l in levels if l],
+                'leaves': torch.cat(leaves).to(device=self.device),
+                'inv_map': torch.cat(inv_map).to(device=self.device),
+                'trees_ind': torch.cat(trees_ind).to(device=self.device),
                 'dim': dim
                 }
         batch_ind = torch.LongTensor(batch_ind)
         
-        return Data(x=x.to(self.device), batch=batch_ind.to(self.device), trees=coll_t, y=y.to(self.device))
+        return Data(x=x.to(device=self.device), 
+                    batch=batch_ind.to(device=self.device), 
+                    trees=coll_t, 
+                    y=y.to(device=self.device))
 
 
     def __call__(self, batch):
