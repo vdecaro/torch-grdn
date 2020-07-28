@@ -52,19 +52,19 @@ for i in range(200):
         neg_likelihood.backward()
         opt.step()
 
-        accuracy = accuracy_score(b.y.detach().numpy(), out.detach().sigmoid().numpy().round())
-        loss_avg = loss.item() if n == 0 else loss_avg + ((loss.item() - loss_avg)/(n+1))
+        accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
+        loss_avg = loss.cpu().item() if n == 0 else loss_avg + ((loss.cpu().item() - loss_avg)/(n+1))
         acc_avg = accuracy if n == 0 else acc_avg + ((accuracy - acc_avg)/(n+1))
         n += 1
         
-        print(f"Loss = {loss.item()} ----- Accuracy = {accuracy}")
+        print(f"Loss = {loss.cpu().item()} ----- Accuracy = {accuracy}")
     print(f"Training avg {i}: Loss = {loss_avg} --  Accuracy = {acc_avg}")
 
     for b in val_loader:
         with torch.no_grad():
             out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
             loss = bce(out, b.y)
-            accuracy = accuracy_score(b.y.detach().numpy(), out.detach().sigmoid().numpy().round())
+            accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
 
         
     print(f"Validation {i}: Loss = {loss.item()} -- Accuracy = {accuracy}")
