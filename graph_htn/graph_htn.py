@@ -11,10 +11,11 @@ import random
 
 class GraphHTN(nn.Module):
 
-    def __init__(self, out_features, n_bu, n_td, C, M, set2set_steps=10):
+    def __init__(self, out_features, n_bu, n_td, C, M, set2set_steps=10, device='cpu:0'):
         super(GraphHTN, self).__init__()
-        self.bu = UniformBottomUpHTMM(n_bu, C, M) if n_bu is not None and n_bu > 0 else None
-        self.td = TopDownHTMM(n_td, C, M) if n_td is not None and n_td > 0 else None
+        self.device = torch.device(device)
+        self.bu = UniformBottomUpHTMM(n_bu, C, M, device) if n_bu is not None and n_bu > 0 else None
+        self.td = TopDownHTMM(n_td, C, M, device) if n_td is not None and n_td > 0 else None
 
         self.td_norm = BatchNorm(n_td, affine=False) if n_td is not None and n_td > 0 else None
         self.bu_norm = BatchNorm(n_bu, affine=True) if n_bu is not None and n_bu > 0 else None
@@ -22,6 +23,7 @@ class GraphHTN(nn.Module):
         self.contrastive = contrastive_matrix(n_bu + n_td)
         self.set2set = Set2Set(self.contrastive.size(1), set2set_steps, 1)
         self.output = nn.Linear(2*self.contrastive.size(1), out_features)
+        self.to(device=self.device)
     
     def forward(self, x, trees, batch):
 

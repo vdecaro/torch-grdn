@@ -7,8 +7,9 @@ from torch_scatter.scatter import scatter
 
 class UniformBottomUpHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, M, cuda=[]):
+    def __init__(self, n_gen, C, M, device='cpu:0'):
         super(UniformBottomUpHTMM, self).__init__()
+        self.device = torch.device(device)
         self.n_gen = n_gen
         self.C = C
         self.M = M
@@ -16,13 +17,15 @@ class UniformBottomUpHTMM(nn.Module):
         self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen)), a=-5, b=5))
         self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen)), a=-5, b=5))
         self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen)), a=-5, b=5))
+
+        self.to(device=self.device)
     
 
     def forward(self, x, trees):
         sm_A, sm_B, sm_Pi = _softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
 
-        beta, t_beta = _reversed_upward(x, trees, self.n_gen, sm_A, sm_B, sm_Pi, self.C)
-        eps, t_eps = _reversed_downward(x, trees, self.n_gen, sm_A, sm_Pi, beta, t_beta, self.C)
+        beta, t_beta = _reversed_upward(x, trees, self.n_gen, sm_A, sm_B, sm_Pi, self.C, self.device)
+        eps, t_eps = _reversed_downward(x, trees, self.n_gen, sm_A, sm_Pi, beta, t_beta, self.C, self.device)
 
         log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps)  # Negative log likelihood
             
@@ -39,9 +42,9 @@ def _softmax_reparameterization(n_gen, A, B, Pi):
     return torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1)
 
 
-def _reversed_upward(x, tree, n_gen, A, B, Pi, C):
-    beta = torch.zeros((tree['dim'], C, n_gen))
-    t_beta = torch.zeros((tree['dim'], C, n_gen))
+def _reversed_upward(x, tree, n_gen, A, B, Pi, C, device):
+    beta = torch.zeros((tree['dim'], C, n_gen), device=device)
+    t_beta = torch.zeros((tree['dim'], C, n_gen), device=device)
 
     Pi_leaves = Pi.unsqueeze(1)
     leaves_idx = tree['inv_map'][tree['leaves']]
@@ -66,9 +69,9 @@ def _reversed_upward(x, tree, n_gen, A, B, Pi, C):
     return beta, t_beta
 
 
-def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C):
-    eps = torch.zeros((tree['dim'], C, n_gen))
-    t_eps = torch.zeros((tree['dim'], C, C, n_gen))
+def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C, device):
+    eps = torch.zeros((tree['dim'], C, n_gen), device=device)
+    t_eps = torch.zeros((tree['dim'], C, C, n_gen), device=device)
 
     eps[tree['roots']] = beta[tree['roots']]
     for l in tree['levels']:
