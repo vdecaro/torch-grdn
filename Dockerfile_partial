@@ -1,6 +1,10 @@
-FROM torch_base:latest
+FROM pytorch-base:latest
 
 # Install PyTorch Geometric.
+
+RUN CPATH=/usr/local/cuda/include:$CPATH \
+ && LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH \
+ && DYLD_LIBRARY_PATH=/usr/local/cuda/lib:$DYLD_LIBRARY_PATH
 
 RUN pip install torch-scatter==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.5.0.html \
  && pip install torch-sparse==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.5.0.html \
