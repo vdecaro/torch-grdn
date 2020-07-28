@@ -10,6 +10,8 @@ import numpy as np
 
 from graph_htn.graph_htn import GraphHTN
 
+import time
+
 def nci1_pre_transform(max_depth):
     
     def func(data):
