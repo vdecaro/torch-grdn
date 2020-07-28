@@ -20,7 +20,7 @@ class GraphHTN(nn.Module):
         self.td_norm = BatchNorm(n_td, affine=False) if n_td is not None and n_td > 0 else None
         self.bu_norm = BatchNorm(n_bu, affine=True) if n_bu is not None and n_bu > 0 else None
 
-        self.contrastive = contrastive_matrix(n_bu + n_td)
+        self.contrastive = contrastive_matrix(n_bu + n_td, self.device)
         self.set2set = Set2Set(self.contrastive.size(1), set2set_steps, 1)
         self.output = nn.Linear(2*self.contrastive.size(1), out_features)
         self.to(device=self.device)

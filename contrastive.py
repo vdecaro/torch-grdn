@@ -2,9 +2,9 @@ import torch
 from math import factorial as fact
 
 
-def contrastive_matrix(N_GEN):
+def contrastive_matrix(N_GEN, device):
     contrastive_units = fact(N_GEN) // (2*fact(N_GEN-2))
-    contrastive_matrix = torch.zeros((N_GEN, contrastive_units))
+    contrastive_matrix = torch.zeros((N_GEN, contrastive_units), device=device)
 
     p = 0
     s = 1
@@ -15,4 +15,5 @@ def contrastive_matrix(N_GEN):
             p = p + 1
             s = p
         s = s + 1
+
     return contrastive_matrix
