@@ -58,11 +58,13 @@ for i in range(200):
         opt.step()
         t2 = time.time()
         print(f"Backward time = {t2-t1}")
+        t3 = time.time()
         accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
         loss_avg = loss.cpu().item() if n == 0 else loss_avg + ((loss.cpu().item() - loss_avg)/(n+1))
         acc_avg = accuracy if n == 0 else acc_avg + ((accuracy - acc_avg)/(n+1))
         n += 1
-        
+        t4 = time.time()
+        print(f"Stats time = {t4-t3}")
         #print(f"Loss = {loss.cpu().item()} ----- Accuracy = {accuracy}")
     print(f"Training avg {i}: Loss = {loss_avg} --  Accuracy = {acc_avg}")
 
