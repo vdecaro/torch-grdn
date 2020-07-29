@@ -7,17 +7,24 @@ import sys
 
 class Graph2TreesLoader(torch.utils.data.DataLoader):
 
-    def __init__(self, dataset, max_depth, batch_size=1, shuffle=False, device=None, num_workers=0, follow_batch=[],
+    def __init__(self, dataset, max_depth, batch_size=1, shuffle=False, num_workers=0, follow_batch=[],
                  **kwargs):
         super(Graph2TreesLoader,
               self).__init__(dataset, batch_size, shuffle,
-                             collate_fn=TreeCollater(max_depth, device, follow_batch), num_workers=num_workers, **kwargs)
+                             collate_fn=TreeCollater(max_depth, follow_batch), num_workers=num_workers, **kwargs)
 
+class TreeDecomposedData(Data):
+
+    def to(self, device, *keys, **kwargs):
+        self.x = self.x.to(device=device)
+        self.y = self.y.to(device=device)
+        self.batch = self.batch.to(device=device)
+        for k in self.trees:
+            self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
 
 class TreeCollater(object):
-    def __init__(self, max_depth, device, follow_batch):
+    def __init__(self, max_depth, follow_batch):
         self.follow_batch = follow_batch
-        self.device = device
         self.max_depth = max_depth
 
     def collate(self, batch):
@@ -56,19 +63,19 @@ class TreeCollater(object):
 
         x = torch.cat(x)
         y = torch.cat(y)
-        coll_t = {'roots': torch.cat(roots).to(device=self.device),
-                'levels': [torch.cat(l, 1).to(device=self.device) for l in levels if l],
-                'leaves': torch.cat(leaves).to(device=self.device),
-                'inv_map': torch.cat(inv_map).to(device=self.device),
-                'trees_ind': torch.cat(trees_ind).to(device=self.device),
+        coll_t = {'roots': torch.cat(roots),
+                'levels': [torch.cat(l, 1) for l in levels if l],
+                'leaves': torch.cat(leaves),
+                'inv_map': torch.cat(inv_map),
+                'trees_ind': torch.cat(trees_ind),
                 'dim': dim
                 }
         batch_ind = torch.LongTensor(batch_ind)
         
-        return Data(x=x.to(device=self.device), 
-                    batch=batch_ind.to(device=self.device), 
-                    trees=coll_t, 
-                    y=y.to(device=self.device))
+        return TreeDecomposedData(x=x, 
+                                  batch=batch_ind, 
+                                  trees=coll_t, 
+                                  y=y)
 
 
     def __call__(self, batch):

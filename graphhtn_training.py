@@ -37,18 +37,19 @@ kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset]))
 tr_i, vl_i = next(split)
 tr_data, vl_data = dataset[tr_i.tolist()], dataset[vl_i.tolist()]
-loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, device=torch.device(DEVICE), pin_memory=True)
-val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, device=torch.device(DEVICE), pin_memory=True)
+loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, n_workers=6)
+val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True, n_workers=6)
 
 ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
 bce = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(ghtn.parameters())
-
+device = torch.device(DEVICE)
 for i in range(EPOCHS):
     loss_avg = 0
     acc_avg = 0
     n = 0
     for b in loader:
+        b_gpu = b.to(DEVICE)
         out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
         loss = bce(out, b.y)
         opt.zero_grad()
