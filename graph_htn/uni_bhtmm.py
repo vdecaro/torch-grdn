@@ -87,8 +87,8 @@ def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C, device):
 
 
 def _log_likelihood(x, tree, A, B, Pi, eps, t_eps, device):
-    all_nodes = torch.range(start=0, end=tree['dim'])
-    internal = all_nodes[all_nodes != tree['leaves']]
+    internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
+    all_nodes = torch.cat([internal, tree['leaves']])
     l_hood_size = eps.size(0), eps.size(-1)
 
     likelihood = torch.zeros(l_hood_size, device=device)
