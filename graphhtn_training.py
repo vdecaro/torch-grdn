@@ -37,8 +37,8 @@ kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset]))
 tr_i, vl_i = next(split)
 tr_data, vl_data = dataset[tr_i.tolist()], dataset[vl_i.tolist()]
-loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, device=torch.device(DEVICE))
-val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, device=torch.device(DEVICE))
+loader = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, device=torch.device(DEVICE), num_workers=8)
+val_loader = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, device=torch.device(DEVICE), num_workers=1)
 
 ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
 bce = torch.nn.BCEWithLogitsLoss()

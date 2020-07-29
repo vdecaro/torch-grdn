@@ -7,11 +7,11 @@ import sys
 
 class Graph2TreesLoader(torch.utils.data.DataLoader):
 
-    def __init__(self, dataset, max_depth, batch_size=1, shuffle=False, device=None, follow_batch=[],
+    def __init__(self, dataset, max_depth, batch_size=1, shuffle=False, device=None, num_workers=0, follow_batch=[],
                  **kwargs):
         super(Graph2TreesLoader,
               self).__init__(dataset, batch_size, shuffle,
-                             collate_fn=TreeCollater(max_depth, device, follow_batch), **kwargs)
+                             collate_fn=TreeCollater(max_depth, device, follow_batch), num_workers=num_workers **kwargs)
 
 
 class TreeCollater(object):
