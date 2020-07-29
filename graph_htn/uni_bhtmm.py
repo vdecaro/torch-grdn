@@ -52,8 +52,8 @@ def _reversed_upward(x, tree, n_gen, A, B, Pi, C, device):
     beta_leaves = Pi_leaves * B_leaves
     beta_leaves = (beta_leaves / beta_leaves.sum(dim=0, keepdim=True)).permute(1, 0, 2)
     
-    beta = scatter(src=beta_leaves, index=tree['leaves'], dim=0, out=beta)
-    
+    beta[tree['leaves']] = beta_leaves
+
     for l in reversed(tree['levels']):
         # Computing unnormalized beta_uv children = A_ch @ beta_ch
         beta_ch = beta[l[1]]
@@ -64,7 +64,7 @@ def _reversed_upward(x, tree, n_gen, A, B, Pi, C, device):
         B_l = B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2)
         beta_l = t_beta[u_idx] * B_l
         beta_l = beta_l / (beta_l.sum(dim=1, keepdim=True))
-        beta = scatter(src=beta_l, index=u_idx, dim=0, out=beta)
+        beta[u_idx] = beta_l
 
     return beta, t_beta
 
@@ -81,14 +81,14 @@ def _reversed_downward(g, tree, n_gen, A, Pi, beta, t_beta, C, device):
         beta_ch = beta[l[1]].unsqueeze(1)
         eps_joint = (eps_pa * A.unsqueeze(0) * beta_ch) / t_beta_pa
         t_eps = scatter(src=eps_joint, index=l[0], dim=0, out=t_eps, reduce="mean")
-        eps=  scatter(src=eps_joint.sum(1), index=l[1], dim=0, out=eps)
+        eps[l[1]] = eps_joint.sum(1)
 
     return eps, t_eps
 
 
 def _log_likelihood(x, tree, A, B, Pi, eps, t_eps, device):
-    internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
-    all_nodes = torch.cat([internal, tree['leaves']])
+    all_nodes = torch.range(start=0, end=tree['dim'])
+    internal = all_nodes[all_nodes != tree['leaves']]
     l_hood_size = eps.size(0), eps.size(-1)
 
     likelihood = torch.zeros(l_hood_size, device=device)
