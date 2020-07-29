@@ -51,7 +51,7 @@ for i in range(EPOCHS):
     acc_avg = 0
     n = 0
     for b in loader:
-        b.to(device)
+        b.to(device, non_blocking=True)
         out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
         loss = bce(out, b.y)
         opt.zero_grad()
@@ -65,7 +65,7 @@ for i in range(EPOCHS):
     print(f"Training {i}: Loss = {loss_avg} -- Accuracy = {acc_avg}")
     for b in val_loader:
         with torch.no_grad():
-            b.to(device)
+            b.to(device, non_blocking=True)
             out, neg_likelihood = ghtn(b.x, b.trees, b.batch)
             loss = bce(out, b.y)
             accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
