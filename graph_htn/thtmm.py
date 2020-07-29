@@ -71,9 +71,11 @@ def _upward(x, tree, n_gen, A, B, prior, C, device):
         # Computing beta on level = (\prod_ch beta_uv_ch) * prior_u * 
         beta_u = []
         u_idx = l[0].unique(sorted=False)
-        beta = scatter_mul(src=beta_uv, index=l[0], dim=0, out=beta)
-        
-        beta_u = prior[u_idx] * B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2) * beta[u_idx]
+        for u in u_idx:
+            ch_idx = (l[0] == u).nonzero().squeeze(1)
+            beta_u.append(beta_uv[ch_idx].prod(0))
+
+        beta_u = prior[u_idx] * B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2) * torch.stack(beta_u)
         beta[u_idx] = beta_u / beta_u.sum(1, keepdim=True)
     
     return beta, t_beta
