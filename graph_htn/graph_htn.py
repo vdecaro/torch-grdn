@@ -20,7 +20,7 @@ class GraphHTN(nn.Module):
         self.td = TopDownHTMM(n_td, C, M, device) if n_td is not None and n_td > 0 else None
 
         self.td_norm = BatchNorm(n_td, affine=False) if n_td is not None and n_td > 0 else None
-        self.bu_norm = BatchNorm(n_bu, affine=True) if n_bu is not None and n_bu > 0 else None
+        self.bu_norm = BatchNorm(n_bu, affine=False) if n_bu is not None and n_bu > 0 else None
 
         self.contrastive = contrastive_matrix(n_bu + n_td, self.device)
         self.set2set = Set2Set(self.contrastive.size(1), set2set_steps, 1)
@@ -51,9 +51,3 @@ class GraphHTN(nn.Module):
         output = self.output(g_pooling)
         
         return output, neg_log_likelihood.mean(0).sum()
-
-    def get_parameters(self):
-        params = [p for p in self.parameters()]
-        params = params + [p for p in self.bu.parameters()] if self.bu is not None else params
-        params += [p for p in self.td.parameters()] if self.td is not None else params
-        return params
