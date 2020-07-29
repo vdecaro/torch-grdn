@@ -22,10 +22,10 @@ class TopDownHTMM(nn.Module):
     def forward(self, x, trees):
         sm_A, sm_B, sm_Pi = _softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
 
-        prior = _preliminary_downward(trees, self.n_gen, sm_A, sm_Pi, self.C)
-        beta, t_beta = _upward(x, trees, self.n_gen, sm_A, sm_B, prior, self.C)
-        eps, t_eps = _downward(trees, self.n_gen, sm_A, sm_Pi, prior, beta, t_beta, self.C)
-        log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps) 
+        prior = _preliminary_downward(trees, self.n_gen, sm_A, sm_Pi, self.C, self.device)
+        beta, t_beta = _upward(x, trees, self.n_gen, sm_A, sm_B, prior, self.C, self.device)
+        eps, t_eps = _downward(trees, self.n_gen, sm_A, sm_Pi, prior, beta, t_beta, self.C, self.device)
+        log_likelihood = _log_likelihood(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps, self.device) 
 
         return - log_likelihood
 
