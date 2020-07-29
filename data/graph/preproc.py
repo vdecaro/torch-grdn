@@ -20,7 +20,8 @@ class TreeDecomposedData(Data):
         self.y = self.y.to(device=device)
         self.batch = self.batch.to(device=device)
         for k in self.trees:
-            self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
+            if k != 'dim':
+                self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
 
 class TreeCollater(object):
     def __init__(self, max_depth, follow_batch):
@@ -68,7 +69,7 @@ class TreeCollater(object):
                 'leaves': torch.cat(leaves),
                 'inv_map': torch.cat(inv_map),
                 'trees_ind': torch.cat(trees_ind),
-                'dim': torch.LongTensor(dim)
+                'dim': dim
                 }
         batch_ind = torch.LongTensor(batch_ind)
         
