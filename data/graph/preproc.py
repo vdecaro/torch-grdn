@@ -11,7 +11,7 @@ class Graph2TreesLoader(torch.utils.data.DataLoader):
                  **kwargs):
         super(Graph2TreesLoader,
               self).__init__(dataset, batch_size, shuffle,
-                             collate_fn=TreeCollater(max_depth, device, follow_batch), num_workers=num_workers **kwargs)
+                             collate_fn=TreeCollater(max_depth, device, follow_batch), num_workers=num_workers, **kwargs)
 
 
 class TreeCollater(object):
