@@ -68,7 +68,7 @@ class TreeCollater(object):
                 'leaves': torch.cat(leaves),
                 'inv_map': torch.cat(inv_map),
                 'trees_ind': torch.cat(trees_ind),
-                'dim': dim
+                'dim': torch.LongTensor(dim)
                 }
         batch_ind = torch.LongTensor(batch_ind)
         
