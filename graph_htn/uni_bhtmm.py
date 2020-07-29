@@ -53,7 +53,7 @@ def _reversed_upward(x, tree, n_gen, A, B, Pi, C, device):
     beta_leaves = (beta_leaves / beta_leaves.sum(dim=0, keepdim=True)).permute(1, 0, 2)
     
     beta[tree['leaves']] = beta_leaves
-
+    print((beta == scatter(src=beta_leaves, index=tree['leaves'], dim=0, out=beta)).all())
     for l in reversed(tree['levels']):
         # Computing unnormalized beta_uv children = A_ch @ beta_ch
         beta_ch = beta[l[1]]
