@@ -16,16 +16,19 @@ dataset = TUDataset('.', 'NCI1', transform=nci1_transform)
 
 loader = DataLoader(dataset, batch_size=64, shuffle=True)
 C = 4
-cgmn = CGMN(1, 40, C, 37)
+cgmn = CGMN(1, 20, C, 37)
+cgmn.stack_layer()
 bce = torch.nn.BCEWithLogitsLoss()
-opt = torch.optim.Adam(cgmn.get_parameters())
+opt = torch.optim.Adam(cgmn.parameters())
 
 for i in range(200):
     loss_avg = 0
     acc_avg = 0
     n = 0
     for b in loader:
+        print("Prova1")
         out, neg_likelihood = cgmn(b.x, b.edge_index, b.batch)
+        print("Prova2")
         loss = bce(out, b.y)
         opt.zero_grad()
         loss.backward()
@@ -42,7 +45,7 @@ for i in range(200):
     if i > 0 and i%10 == 0:
         C = C - 2 if C > 2 else C
         print(f"Appending Layer {len(cgmn.cgmm.layers)}")
-        cgmn.stack_layer(C)
+        cgmn.stack_laye
         opt = torch.optim.Adam(cgmn.get_parameters())
         
     
