@@ -135,7 +135,7 @@ class CGMMLayer(nn.Module):
 
         likelihood = scatter(likelihood, batch, dim=0)
         
-        h_max = posterior.max(dim=1, keepdim=True)
+        h_max = posterior_i.max(dim=1, keepdim=True)
 
         return likelihood, h_max[0], h_max[1].squeeze()
 
