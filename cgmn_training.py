@@ -40,8 +40,8 @@ for i in range(EPOCHS):
         neg_likelihood.backward()
         opt.step()
 
-        accuracy = accuracy_score(b.y.detach().numpy(), out.detach().sigmoid().numpy().round())
-        loss_avg = loss.item() if n == 0 else loss_avg + ((loss.item() - loss_avg)/(n+1))
+        accuracy = accuracy_score(b.y.detach().cpu().numpy(), out.detach().cpu().sigmoid().numpy().round())
+        loss_avg = loss.cpu().item() if n == 0 else loss_avg + ((loss.cpu().item() - loss_avg)/(n+1))
         acc_avg = accuracy if n == 0 else acc_avg + ((accuracy - acc_avg)/(n+1))
         n += 1
         print(f"Loss = {loss.item()} ----- Likelihood = {neg_likelihood.item()} ----- Accuracy = {accuracy}")
