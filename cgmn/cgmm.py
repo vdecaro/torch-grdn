@@ -25,7 +25,7 @@ class CGMM(nn.Module):
             if i == 0:
                 l_likelihood, l_h_value, l_h_ind = l(x, batch)
             else:
-                h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=2)
+                h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
                 l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index, batch)
                 
             likelihood.append(l_likelihood)
@@ -63,10 +63,8 @@ class CGMMLayer_0(nn.Module):
         likelihood = scatter(likelihood, batch, dim=0)
 
         h_max = posterior.max(dim=1, keepdim=True)
-        h_value = h_max[0]
-        h_ind = F.one_hot(h_max[1], num_classes=self.C).permute(0, 1, 3, 2)
 
-        return likelihood, h_value, h_ind
+        return likelihood, h_max[0], h_max[1].squeeze()
 
     def _softmax_reparameterization(self):
         sm_B, sm_Pi = [], []
@@ -100,12 +98,16 @@ class CGMMLayer(nn.Module):
     def forward(self, x, prev_h, edge_index, batch):
         sm_Q_neigh, sm_B, sm_SP = self._softmax_reparameterization()
 
-        h_value = prev_h[0].unsqueeze(1) # nodes x 1 x 1 x L x n_gen
-        h_ind = prev_h[1].unsqueeze(1) # nodes x 1 x C x L x n_gen
+        trans_i = [[] for _ in range(self.n_gen)]
+        for m in range(self.n_gen):
+            trans_i_m = sm_Q_neigh[:, :, :, m]
+            h_ind_m = prev_h[1][:, :, m]
+            for l in range(self.L):
+                trans_i[m].append(trans_i_m[:, h_ind_m[:, l], l])
 
-        trans_i = sm_Q_neigh if self.L == 1 else sm_SP.unsqueeze(0).unsqueeze(1) * sm_Q_neigh   # C x C x L x n_gen
-        
-        trans_i_neigh = (trans_i.unsqueeze(0) * h_value * h_ind).sum(2)   # nodes x C x L x n_gen 
+        trans_i = torch.stack([torch.stack(l, dim=-1) for l in trans_i], dim=-1).permute(1, 0, 2, 3)
+        trans_i_neigh = trans_i * prev_h[0]
+        trans_i_neigh = trans_i_neigh * sm_SP.unsqueeze(0).unsqueeze(0) if self.L > 1 else trans_i_neigh
 
         # Joint transition
         Qu_i = scatter(trans_i_neigh[edge_index[1]], edge_index[0], dim=0, reduce='mean') # nodes x C x L x n_gen
@@ -119,8 +121,7 @@ class CGMMLayer(nn.Module):
         posterior_i = posterior_il.sum(2)
         
         # Q_neigh Likelihood
-        trans_clamped_prev_h = (sm_Q_neigh.unsqueeze(0) * h_ind).sum(2)
-        Q_neigh_lhood = (posterior_il * trans_clamped_prev_h.log()).sum((1, 2))
+        Q_neigh_lhood = (posterior_il * trans_i.log()).sum((1, 2))
 
         # B Likelihood
         B_lhood = (posterior_i * nodes_emissions.log()).sum(1)
@@ -134,11 +135,9 @@ class CGMMLayer(nn.Module):
 
         likelihood = scatter(likelihood, batch, dim=0)
         
-        h_max = posterior_i.max(dim=1, keepdim=True)
-        h_value = h_max[0]
-        h_ind = F.one_hot(h_max[1], num_classes=self.C).permute(0, 1, 3, 2)
+        h_max = posterior.max(dim=1, keepdim=True)
 
-        return likelihood, h_value, h_ind
+        return likelihood, h_max[0], h_max[1].squeeze()
 
     def _softmax_reparameterization(self):
         sm_Q_neigh, sm_B, sm_SP = [], [], []

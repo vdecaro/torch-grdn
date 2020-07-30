@@ -1,4 +1,5 @@
 import torch
+import sys
 
 from torch_geometric.datasets import TUDataset
 from data.graph.preproc import Graph2TreesLoader
@@ -12,23 +13,28 @@ def nci1_transform(data):
     data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
     return data
 
+DEVICE=sys.argv[1]
+N_GEN = int(sys.argv[2])
+C = int(sys.argv[3])
+BATCH_SIZE = int(sys.argv[4])
+EPOCHS = int(sys.argv[5])
+
 dataset = TUDataset('.', 'NCI1', transform=nci1_transform)
 
-loader = DataLoader(dataset, batch_size=64, shuffle=True)
+loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 C = 4
-cgmn = CGMN(1, 20, C, 37)
-cgmn.stack_layer()
+cgmn = CGMN(1, N_GEN, C, 37, DEVICE)
+
 bce = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(cgmn.parameters())
-
-for i in range(200):
+device = torch.device(DEVICE)
+for i in range(EPOCHS):
     loss_avg = 0
     acc_avg = 0
     n = 0
     for b in loader:
-        print("Prova1")
+        b = b.to(device)
         out, neg_likelihood = cgmn(b.x, b.edge_index, b.batch)
-        print("Prova2")
         loss = bce(out, b.y)
         opt.zero_grad()
         loss.backward()
@@ -42,10 +48,9 @@ for i in range(200):
         print(f"Loss = {loss.item()} ----- Likelihood = {neg_likelihood.item()} ----- Accuracy = {accuracy}")
 
     print(f"---------- Loss avg at epoch {i} = {loss_avg} --  Accuracy = {acc_avg} -----------")
-    if i > 0 and i%10 == 0:
-        C = C - 2 if C > 2 else C
+    if i > 0 and i%40 == 0:
         print(f"Appending Layer {len(cgmn.cgmm.layers)}")
-        cgmn.stack_laye
-        opt = torch.optim.Adam(cgmn.get_parameters())
+        cgmn.stack_layer()
+        opt = torch.optim.Adam(cgmn.parameters())
         
     
