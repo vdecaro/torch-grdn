@@ -30,9 +30,12 @@ class CGMN(nn.Module):
 
     def stack_layer(self):
         self.cgmm.stack_layer()
-        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False, device=self.device))
+        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
+        self.b_norm[-1].to(device=self.device)
+        
         self.output_backup = self.output
         self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output_backup.out_features)
+        self.output.to(device=self.device)
     
     def rollback(self):
         self.cgmm.layers = self.cgmm.layers[:-1]
