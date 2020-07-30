@@ -22,7 +22,6 @@ EPOCHS = int(sys.argv[5])
 dataset = TUDataset('.', 'NCI1', transform=nci1_transform)
 
 loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-C = 4
 cgmn = CGMN(1, N_GEN, C, 37, DEVICE)
 
 bce = torch.nn.BCEWithLogitsLoss()

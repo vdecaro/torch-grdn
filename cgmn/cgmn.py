@@ -12,11 +12,12 @@ class CGMN(nn.Module):
         super(CGMN, self).__init__()
         self.device = torch.device(device)
         self.cgmm = CGMM(n_gen, C, M, device)
-        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
+        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, device=)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
         self.output_backup = None
         self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)
+        self.to(device=self.device)
     
     def forward(self, x, edge_index, batch):
         neg_likelihood = self.cgmm(x, edge_index, batch)
