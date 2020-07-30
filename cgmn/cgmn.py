@@ -12,7 +12,7 @@ class CGMN(nn.Module):
         super(CGMN, self).__init__()
         self.device = torch.device(device)
         self.cgmm = CGMM(n_gen, C, M, device)
-        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, device=)])
+        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
         self.output_backup = None
