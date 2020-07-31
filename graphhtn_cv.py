@@ -78,7 +78,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
     ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
-    opt = torch.optim.Adam(ghtn.parameters(), lr=0.0005)
+    opt = torch.optim.Adam(ghtn.parameters(), lr=0.001)
     if CV_CHK['restore']:
         print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
         ghtn.load_state_dict(MOD_CHK['model_state'])
