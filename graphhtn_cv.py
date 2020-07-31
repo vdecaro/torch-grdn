@@ -142,4 +142,4 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     CV_CHK['model_state'] = None
     CV_CHK['opt_state'] = None
     CV_CHK['restore'] = False
-    torch.save(CV_CHK, chk_path)
+    torch.save(CV_CHK, f"{chk_path}/cv_chk.tar")
