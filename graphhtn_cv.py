@@ -65,8 +65,7 @@ split = list(kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in data
 bce = torch.nn.BCEWithLogitsLoss()
 for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     ds_data, ts_data = dataset[ds_i.tolist()], dataset[ts_i.tolist()]
-    tr_vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1,  stratify=np.array([g.y for g in ds_data]))
-    tr_i, vl_i = tr_vl_i[0], tr_vl_i[2]
+    tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1,  stratify=np.array([g.y for g in ds_data]))
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
     tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
