@@ -43,10 +43,10 @@ PATIENCE = 20
 
 chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}"
 
-if not os.path.exists:
+if not os.path.exists(chk_path):
     os.mkdir(chk_path)
 
-if os.path.exists(f"{chk_path}/cv_chk.tar"):
+if os.path.exists(f"{chk_path}/cv_chk.tar") and os.path.exists(f"{chk_path}/mod_chk.tar"):
     CV_CHK = torch.load(f"{chk_path}/cv_chk.tar")
     MOD_CHK = torch.load(f"{chk_path}/mod_chk.tar")
 else:
@@ -83,6 +83,10 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
         print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
         ghtn.load_state_dict(MOD_CHK['model_state'])
         opt.load_state_dict(MOD_CHK['opt_state'])
+    
+    MOD_CHK['model_state'] = ghtn.state_dict()
+    MOD_CHK['opt_state'] = opt.state_dict()
+    torch.save(MOD_CHK, f"{chk_path}/mod_chk.tar")
 
     pat_cnt = 0
     for i in range(CV_CHK['epoch'], EPOCHS):
