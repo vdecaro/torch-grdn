@@ -43,7 +43,7 @@ PATIENCE = 15
 
 chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}.tar"
 
-if os.path.exists(chk_path)
+if os.path.exists(chk_path):
     CV_CHK = torch.load(chk_path)
 else:
     CV_CHK = {
