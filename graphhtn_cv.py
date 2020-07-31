@@ -39,7 +39,7 @@ C = int(sys.argv[4])
 
 BATCH_SIZE = 256
 EPOCHS = 500
-PATIENCE = 15
+PATIENCE = 20
 
 chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}.tar"
 
@@ -70,9 +70,9 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
 
     tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True)
-    ts_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
+    ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
     ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
-    opt = torch.optim.Adam(ghtn.parameters())
+    opt = torch.optim.Adam(ghtn.parameters(), lr=0.0005)
     if CV_CHK['restore']:
         print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
         ghtn.load_state_dict(CV_CHK['model_state'])
@@ -124,7 +124,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     print(f"Fold {CV_CHK['fold_i']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
     CV_CHK['loss'].append(ts_loss.item())
-    CV_CHK['acc'].append(ts_acc.item())
+    CV_CHK['acc'].append(ts_acc)
     CV_CHK['fold_i'] += 1
     CV_CHK['epoch'] = 0
     CV_CHK['best_v_loss'] = float('inf')
