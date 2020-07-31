@@ -112,7 +112,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
         print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_acc}")
         
         CV_CHK['epoch'] += 1
-        if vl_acc.item() > CV_CHK['best_v_acc']:
+        if vl_acc > CV_CHK['best_v_acc']:
             CV_CHK['best_v_acc'] = vl_acc
             CV_CHK['restore'] = True
             torch.save(CV_CHK, f"{chk_path}/cv_chk.tar")
