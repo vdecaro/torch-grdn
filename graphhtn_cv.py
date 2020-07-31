@@ -96,7 +96,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
                 vl_batch.to(DEVICE, non_blocking=True)
                 out, neg_likelihood = ghtn(vl_batch.x, vl_batch.trees, vl_batch.batch)
                 vl_loss = bce(out, vl_batch.y)
-                vl_accuracy = accuracy(ts_batch.y, out.sigmoid().round())
+                vl_accuracy = accuracy(vl_batch.y, out.sigmoid().round())
         print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy.item()}")
         
         CV_CHK['epoch'] += 1
