@@ -36,10 +36,12 @@ DEVICE = torch.device(sys.argv[1])
 MAX_DEPTH = int(sys.argv[2])
 M = int(sys.argv[3])
 C = int(sys.argv[4])
+lr = float(sys.argv[5])
+l2 = float(sys.argv[6])
 
 BATCH_SIZE = 256
 EPOCHS = 500
-PATIENCE = 20
+PATIENCE = 25
 
 chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}"
 
@@ -53,7 +55,7 @@ else:
     CV_CHK = {
         'fold_i': 0,
         'epoch': 0,
-        'best_v_loss': float('inf'),
+        'best_v_acc': 0,
         'loss': [],
         'acc': [],
         'restore': False
@@ -78,7 +80,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
     ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
-    opt = torch.optim.Adam(ghtn.parameters(), lr=0.001)
+    opt = torch.optim.AdamW(ghtn.parameters(), lr=lr, weight_decay=l2)
     if CV_CHK['restore']:
         print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
         ghtn.load_state_dict(MOD_CHK['model_state'])
@@ -106,12 +108,12 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
                 vl_batch.to(DEVICE, non_blocking=True)
                 out, neg_likelihood = ghtn(vl_batch.x, vl_batch.trees, vl_batch.batch)
                 vl_loss = bce(out, vl_batch.y)
-                vl_accuracy = accuracy(vl_batch.y, out.sigmoid().round())
-        print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+                vl_acc = accuracy(vl_batch.y, out.sigmoid().round())
+        print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_acc}")
         
         CV_CHK['epoch'] += 1
-        if vl_loss.item() < CV_CHK['best_v_loss'] - 1e-2:
-            CV_CHK['best_v_loss'] = vl_loss.item()
+        if vl_acc.item() > CV_CHK['best_v_acc']:
+            CV_CHK['best_v_acc'] = vl_acc
             CV_CHK['restore'] = True
             torch.save(CV_CHK, f"{chk_path}/cv_chk.tar")
 
@@ -124,6 +126,8 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
             if pat_cnt == PATIENCE:
                 print("Patience over: training stopped.")
                 break
+
+
     best_model_state = torch.load(f"{chk_path}/mod_chk.tar")['model_state']
     ghtn.load_state_dict(best_model_state)
     for ts_batch in ts_ld:
@@ -138,7 +142,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     CV_CHK['acc'].append(ts_acc)
     CV_CHK['fold_i'] += 1
     CV_CHK['epoch'] = 0
-    CV_CHK['best_v_loss'] = float('inf')
+    CV_CHK['best_v_acc'] = 0
     CV_CHK['model_state'] = None
     CV_CHK['opt_state'] = None
     CV_CHK['restore'] = False
