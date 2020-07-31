@@ -97,7 +97,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
                 out, neg_likelihood = ghtn(vl_batch.x, vl_batch.trees, vl_batch.batch)
                 vl_loss = bce(out, vl_batch.y)
                 vl_accuracy = accuracy(vl_batch.y, out.sigmoid().round())
-        print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy.item()}")
+        print(f"Fold {CV_CHK['fold_i']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
         
         CV_CHK['epoch'] += 1
         if vl_loss.item() < CV_CHK['best_v_loss'] - 1e-2:
@@ -120,7 +120,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
             out, neg_likelihood = ghtn(ts_batch.x, ts_batch.trees, ts_batch.batch)
             ts_loss = bce(out, ts_batch.y)
             ts_acc = accuracy(ts_batch.y, out.sigmoid().round())
-    print(f"Fold {CV_CHK['fold_i']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc.item()}")
+    print(f"Fold {CV_CHK['fold_i']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
     CV_CHK['loss'].append(ts_loss.item())
     CV_CHK['acc'].append(ts_acc.item())
