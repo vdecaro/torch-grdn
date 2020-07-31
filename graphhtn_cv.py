@@ -43,8 +43,8 @@ PATIENCE = 15
 
 chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}.tar"
 
-if os.path.exists(f"{chk_path}/cv_state.tar"):
-    CV_CHK = torch.load(f"{chk_path}/cv_state.tar")
+if os.path.exists(chk_path)
+    CV_CHK = torch.load(chk_path)
 else:
     CV_CHK = {
         'fold_i': 0,
@@ -74,6 +74,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
     opt = torch.optim.Adam(ghtn.parameters())
     if CV_CHK['restore']:
+        print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
         ghtn.load_state_dict(CV_CHK['model_state'])
         opt.load_state_dict(CV_CHK['opt_state'])
         restore=False
