@@ -41,20 +41,26 @@ BATCH_SIZE = 256
 EPOCHS = 500
 PATIENCE = 20
 
-chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}.tar"
+chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}"
 
-if os.path.exists(chk_path):
-    CV_CHK = torch.load(chk_path)
+if not os.path.exists:
+    os.mkdir(chk_path)
+
+if os.path.exists(f"{chk_path}/cv_chk.tar"):
+    CV_CHK = torch.load(f"{chk_path}/cv_chk.tar")
+    MOD_CHK = torch.load(f"{chk_path}/mod_chk.tar")
 else:
     CV_CHK = {
         'fold_i': 0,
         'epoch': 0,
         'best_v_loss': float('inf'),
-        'model_state': None,
-        'opt_state': None,
         'loss': [],
         'acc': [],
         'restore': False
+    }
+    MOD_CHK = {
+        'model_state': None,
+        'opt_state': None
     }
 
 dataset = TUDataset(f'./NCI1_{MAX_DEPTH}', 'NCI1', pre_transform=nci1_pre_transform(MAX_DEPTH), transform=nci1_transform)
@@ -75,9 +81,8 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
     opt = torch.optim.Adam(ghtn.parameters(), lr=0.0005)
     if CV_CHK['restore']:
         print(f"Restarting from fold {CV_CHK['fold_i']}, epoch {CV_CHK['epoch']} with best loss {CV_CHK['best_v_loss']}")
-        ghtn.load_state_dict(CV_CHK['model_state'])
-        opt.load_state_dict(CV_CHK['opt_state'])
-        restore=False
+        ghtn.load_state_dict(MOD_CHK['model_state'])
+        opt.load_state_dict(MOD_CHK['opt_state'])
 
     pat_cnt = 0
     for i in range(CV_CHK['epoch'], EPOCHS):
@@ -90,7 +95,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
             tr_loss.backward()
             neg_likelihood.backward()
             opt.step()
-            
+
         ghtn.eval()
         for vl_batch in vl_ld:
             with torch.no_grad():
@@ -103,18 +108,20 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
         CV_CHK['epoch'] += 1
         if vl_loss.item() < CV_CHK['best_v_loss'] - 1e-2:
             CV_CHK['best_v_loss'] = vl_loss.item()
-            CV_CHK['model_state'] = ghtn.state_dict()
-            CV_CHK['opt_state'] = opt.state_dict()
             CV_CHK['restore'] = True
-            torch.save(CV_CHK, chk_path)
+            torch.save(CV_CHK, f"{chk_path}/cv_chk.tar")
+
+            MOD_CHK['model_state'] = ghtn.state_dict()
+            MOD_CHK['opt_state'] = opt.state_dict()
+            torch.save(MOD_CHK, f"{chk_path}/mod_chk.tar")
             pat_cnt = 0
         else:
             pat_cnt += 1
             if pat_cnt == PATIENCE:
                 print("Patience over: training stopped.")
                 break
-        
-    ghtn.load_state_dict(CV_CHK['model_state'])
+    best_model_state = torch.load(f"{chk_path}/mod_chk.tar")['model_state']
+    ghtn.load_state_dict(best_model_state)
     for ts_batch in ts_ld:
         with torch.no_grad():
             ts_batch.to(DEVICE, non_blocking=True)
