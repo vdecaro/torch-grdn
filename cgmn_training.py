@@ -33,7 +33,6 @@ loader = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=Tru
 val_loader = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
 
 cgmn = CGMN(1, N_GEN, C, 37, DEVICE)
-
 bce = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(cgmn.parameters())
 device = torch.device(DEVICE)
@@ -77,5 +76,3 @@ for i in range(EPOCHS):
             cgmn.stack_layer()
             opt = torch.optim.Adam(cgmn.parameters())
             pat_cnt = 0
-        
-    

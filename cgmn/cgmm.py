@@ -16,23 +16,29 @@ class CGMM(nn.Module):
 
         self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
 
-    def forward(self, x, edge_index, batch):
-        h_value = []
-        h_ind = []
-        likelihood = []
-        
-        for i, l in enumerate(self.layers):
-            if i == 0:
-                l_likelihood, l_h_value, l_h_ind = l(x, batch)
-            else:
-                h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
-                l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index, batch)
-                
-            likelihood.append(l_likelihood)
-            h_value.append(l_h_value)
-            h_ind.append(l_h_ind)
-        
-        return -torch.stack(likelihood, dim=1)   # nodes x L x n_gen
+    def forward(self, x, edge_index, batch, likelihood_prev=None, h_prev=None):
+        if likelihood_prev is None and h_prev is None:
+            h_value = []
+            h_ind = []
+            likelihood = []
+
+            for i, l in enumerate(self.layers):
+                if i == 0:
+                    l_likelihood, l_h_value, l_h_ind = l(x, batch)
+                else:
+                    h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
+                    l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index, batch)
+                    
+                likelihood.append(l_likelihood)
+                h_value.append(l_h_value)
+                h_ind.append(l_h_ind)
+            likelihood = torch.stack(likelihood, dim=1)   # nodes x L x n_gen
+
+        else:
+            l_likelihood, _ = l(x, h_prev, edge_index, batch)
+            likelihood = torch.cat([likelihood_prev, l_likelihood.unsqueeze(1)], dim=1)
+            
+        return -likelihood
         
     def stack_layer(self):
         for p in self.layers[-1].parameters():
