@@ -90,7 +90,7 @@ for ds_i, ts_i in split[CV_CHK['fold_i']:]:
             tr_loss.backward()
             neg_likelihood.backward()
             opt.step()
-        
+            
         ghtn.eval()
         for vl_batch in vl_ld:
             with torch.no_grad():
