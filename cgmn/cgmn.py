@@ -15,7 +15,8 @@ class CGMN(nn.Module):
         self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
-        self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)
+        self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
+
         self.to(device=self.device)
     
     def forward(self, x, edge_index, batch):
@@ -24,7 +25,7 @@ class CGMN(nn.Module):
 
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
         c_neurons = c_neurons.flatten(start_dim=-2)
-        output = self.output(c_neurons)
+        output = self.output[-1](c_neurons)
         return output, neg_likelihood.mean(0).sum()
 
     def stack_layer(self):
@@ -32,6 +33,6 @@ class CGMN(nn.Module):
         self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
         self.b_norm[-1].to(device=self.device)
         
-        self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output.out_features)
-        self.output.to(device=self.device)
+        self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output.out_features))
+        self.output[-1].to(device=self.device)
 
