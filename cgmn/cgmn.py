@@ -15,7 +15,6 @@ class CGMN(nn.Module):
         self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
-        self.output_backup = None
         self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)
         self.to(device=self.device)
     
@@ -33,10 +32,6 @@ class CGMN(nn.Module):
         self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
         self.b_norm[-1].to(device=self.device)
         
-        self.output_backup = self.output
-        self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output_backup.out_features)
+        self.output = nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output.out_features)
         self.output.to(device=self.device)
-    
-    def rollback(self):
-        self.cgmm.layers = self.cgmm.layers[:-1]
-        self.output = self.output_backup
+

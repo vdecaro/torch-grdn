@@ -43,7 +43,7 @@ BATCH_SIZE = 128
 EPOCHS = 500
 PATIENCE = 20
 
-chk_path = f"NCI1_{MAX_DEPTH}_{M}_{C}"
+chk_path = f"CV_GHTN_NCI1_{MAX_DEPTH}_{M}_{C}"
 
 if not os.path.exists(chk_path):
     os.mkdir(chk_path)
