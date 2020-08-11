@@ -33,6 +33,6 @@ class CGMN(nn.Module):
         self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
         self.b_norm[-1].to(device=self.device)
         
-        self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output.out_features))
+        self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
 
