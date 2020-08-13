@@ -73,10 +73,6 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1, random_state=15, stratify=np.array([g.y for g in ds_data]))
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
-    tr_ld = DataLoader(tr_data,batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
-    vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
-    ts_ld = DataLoader(ts_data,batch_size=len(ts_data), shuffle=False, pin_memory=True)
-
     restore_ld = DataLoader(ds_data, batch_size=2048)
     while True:
         cgmn = CGMN(1, M, C, 37, device=DEVICE)
@@ -107,7 +103,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                 lhood = torch.cat(lhood, dim=0)
                 h_v = torch.cat(h_v, dim=0)
                 h_i = torch.cat(h_i, dim=0)
-                for i, d in enumerate(dataset):
+                for i, d in enumerate(ds_data):
                     if preproc_from_layer > 0:
                         d.likelihood = torch.cat([d.likelihood, lhood[i]], dim=0)
                         d.h_v = torch.cat([d.h_v, h_v[i]], dim=0)
@@ -117,6 +113,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                         d.h_v = h_v[i]
                         d.h_i = h_i[i]
                 preproc_from_layer = CHK['MOD']['curr']['L'] - 1
+        tr_ld = DataLoader(tr_data,batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
+        vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
 
         opt = torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
         if CHK['OPT'] is not None:
@@ -173,7 +171,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
         cgmn.stack_layer()
     cgmn.load_state_dict(CHK['MOD']['best']['state'])
-
+    
+    ts_ld = DataLoader(ts_data,batch_size=len(ts_data), shuffle=False, pin_memory=True)
     for ts_batch in ts_ld:
         with torch.no_grad():
             ts_batch = ts_batch.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else ts_batch
