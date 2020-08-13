@@ -59,7 +59,7 @@ else:
         },
         'OPT': None
     }
-    preproc_from_layer = 0
+preproc_from_layer = 0
 
 dataset = TUDataset(f'./NCI1', 'NCI1', transform=nci1_transform)
 
@@ -171,7 +171,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
         cgmn.stack_layer()
     cgmn.load_state_dict(CHK['MOD']['best']['state'])
-    
+
     ts_ld = DataLoader(ts_data,batch_size=len(ts_data), shuffle=False, pin_memory=True)
     for ts_batch in ts_ld:
         with torch.no_grad():
