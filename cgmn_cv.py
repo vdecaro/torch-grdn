@@ -59,6 +59,8 @@ else:
         },
         'OPT': None
     }
+    preproc_from_layer = 0
+
 dataset = TUDataset(f'./NCI1', 'NCI1', transform=nci1_transform)
 
 kfold = StratifiedKFold(10, shuffle=True, random_state=15)
@@ -68,23 +70,22 @@ bce = torch.nn.BCEWithLogitsLoss()
 
 for ds_i, ts_i in split[CHK['CV']['fold']:]:
     ds_data, ts_data = dataset[ds_i.tolist()], dataset[ts_i.tolist()]
-    tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1,  stratify=np.array([g.y for g in ds_data]))
+    tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1, random_state=15, stratify=np.array([g.y for g in ds_data]))
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
     tr_ld = DataLoader(tr_data,batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
     vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = DataLoader(ts_data,batch_size=len(ts_data), shuffle=False, pin_memory=True)
 
-
+    restore_ld = DataLoader(ds_data, batch_size=2048)
     while True:
         cgmn = CGMN(1, M, C, 37, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
             cgmn.stack_layer()
-        
 
         if CHK['MOD']['curr']['state'] is not None:
             cgmn.load_state_dict(CHK['MOD']['curr']['state'])
-
+            
             # This condition checks whether the current state of the CGMN is fully trained
             if CHK['OPT'] is None:
                 if CHK['MOD']['curr']['L'] + 1 > MAX_DEPTH:
@@ -92,6 +93,30 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                 else:
                     cgmn.stack_layer()
                     CHK['MOD']['curr']['L'] += 1
+            if preproc_from_layer < CHK['MOD']['curr']['L'] - 1:
+                lhood, h_v, h_i = [], [], []
+                for b in restore_ld:
+                    b = b.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else b
+                    if preproc_from_layer > 0:
+                        b_lhood, b_h_v, b_h_i = cgmn.cgmm(b.x, b.edge_index, (b.h_v, b.h_i), preproc_from_layer, True)
+                    else:
+                        b_lhood, b_h_v, b_h_i = cgmn.cgmm(b.x, b.edge_index, from_layer=0, no_last=True)
+                    lhood.append(b_lhood)
+                    h_v.append(b_h_v)
+                    h_i.append(b_h_i)
+                lhood = torch.cat(lhood, dim=0)
+                h_v = torch.cat(h_v, dim=0)
+                h_i = torch.cat(h_i, dim=0)
+                for i, d in enumerate(dataset):
+                    if preproc_from_layer > 0:
+                        d.likelihood = torch.cat([d.likelihood, lhood[i]], dim=0)
+                        d.h_v = torch.cat([d.h_v, h_v[i]], dim=0)
+                        d.h_i = torch.cat([d.h_i, h_i[i]], dim=0)
+                    else:
+                        d.likelihood = lhood[i]
+                        d.h_v = h_v[i]
+                        d.h_i = h_i[i]
+                preproc_from_layer = CHK['MOD']['curr']['L'] - 1
 
         opt = torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
         if CHK['OPT'] is not None:
@@ -103,7 +128,9 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             cgmn.train()
             for tr_batch in tr_ld:
                 tr_batch = tr_batch.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else tr_batch
-                out, neg_likelihood = cgmn(tr_batch.x, tr_batch.edge_index, tr_batch.batch)
+                b_h_prev = (tr_batch.h_v, tr_batch.h_i) if preproc_from_layer > 0 else None
+                b_lhood_prev = tr_batch.likelihood if preproc_from_layer > 0 else None
+                out, neg_likelihood = cgmn(tr_batch.x, tr_batch.edge_index, tr_batch.batch, b_h_prev, b_lhood_prev)
                 tr_loss = bce(out, tr_batch.y)
                 opt.zero_grad()
                 tr_loss.backward()
@@ -155,6 +182,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             ts_acc = accuracy(ts_batch.y, out.sigmoid().round())
     print(f"Fold {CHK['CV']['fold']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
+    preproc_from_layer = 0
     CHK['CV']['loss'].append(ts_loss.item())
     CHK['CV']['acc'].append(ts_acc)
     CHK['CV']['fold'] += 1

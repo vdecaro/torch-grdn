@@ -4,7 +4,7 @@ import torch.nn as nn
 from contrastive import contrastive_matrix
 
 from cgmn.cgmm import CGMM
-
+from torch_scatter.scatter import scatter
 
 class CGMN(nn.Module):
 
@@ -19,8 +19,12 @@ class CGMN(nn.Module):
 
         self.to(device=self.device)
     
-    def forward(self, x, edge_index, batch):
-        neg_likelihood = self.cgmm(x, edge_index, batch)
+    def forward(self, x, edge_index, batch, h_prev=None, likelihood_prev=None):
+        neg_likelihood, _, _ = self.cgmm(x, edge_index, batch, h_prev, likelihood_prev.size(1))
+        if h_prev is not None and likelihood_prev is not None:
+            neg_likelihood = torch.cat([likelihood_prev, neg_likelihood], dim=1)
+        neg_likelihood = scatter(neg_likelihood, batch, dim=0)
+
         b_norm_lhood = torch.stack([b(neg_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
 
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()

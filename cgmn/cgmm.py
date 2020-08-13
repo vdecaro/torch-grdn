@@ -16,30 +16,26 @@ class CGMM(nn.Module):
 
         self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
 
-    def forward(self, x, edge_index, batch, likelihood_prev=None, h_prev=None):
-        if likelihood_prev is None and h_prev is None:
-            h_value = []
-            h_ind = []
-            likelihood = []
+    def forward(self, x, edge_index, h_prev=None, from_layer=0, no_last=False):
+        h_value, h_ind = (h_prev[0].unbind(2), h_prev[1].unbind(1)) if h_prev is not None else ([],[])
+        likelihood = []
 
-            for i, l in enumerate(self.layers):
-                if i == 0:
-                    l_likelihood, l_h_value, l_h_ind = l(x, batch)
-                else:
-                    h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
-                    l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index, batch)
-                    
-                likelihood.append(l_likelihood)
-                h_value.append(l_h_value)
-                h_ind.append(l_h_ind)
-            likelihood = torch.stack(likelihood, dim=1)   # nodes x L x n_gen
+        to_layer = len(self.layers) - 1 if no_last else len(self.layers)
 
-        else:
-            l_likelihood, _ = l(x, h_prev, edge_index, batch)
-            likelihood = torch.cat([likelihood_prev, l_likelihood.unsqueeze(1)], dim=1)
+        for i, l in enumerate(self.layers[from_layer:to_layer]):
+            if i + from_layer == 0:
+                l_likelihood, l_h_value, l_h_ind = l(x)
+            else:
+                h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
+                l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index)
+                
+            likelihood.append(l_likelihood)
+            h_value.append(l_h_value)
+            h_ind.append(l_h_ind)
+        likelihood = torch.stack(likelihood, dim=1)   # nodes x L x n_gen
             
-        return -likelihood
-        
+        return -likelihood, torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
+
     def stack_layer(self):
         for p in self.layers[-1].parameters():
             p.requires_grad = False
@@ -59,14 +55,13 @@ class CGMMLayer_0(nn.Module):
         self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen)), a=-5, b=5))
         self.to(device=self.device)
     
-    def forward(self, x, batch):
+    def forward(self, x):
         sm_B, sm_Pi = self._softmax_reparameterization()
         
         numerator = sm_Pi.unsqueeze(0) * sm_B[:, x].permute(1, 0, 2)
         posterior = numerator / numerator.sum(1, keepdim=True)
         
         likelihood = (posterior * numerator.log()).sum(1)
-        likelihood = scatter(likelihood, batch, dim=0)
 
         h_max = posterior.max(dim=1, keepdim=True)
 
@@ -101,7 +96,7 @@ class CGMMLayer(nn.Module):
 
         self.to(device=self.device)
     
-    def forward(self, x, prev_h, edge_index, batch):
+    def forward(self, x, prev_h, edge_index):
         sm_Q_neigh, sm_B, sm_SP = self._softmax_reparameterization()
 
         trans_i = [[] for _ in range(self.n_gen)]
@@ -138,8 +133,6 @@ class CGMMLayer(nn.Module):
         if self.L > 1:
             SP_lhood = (posterior_il.sum(1) * sm_SP.unsqueeze(0).log()).sum(1)
             likelihood += SP_lhood
-
-        likelihood = scatter(likelihood, batch, dim=0)
         
         h_max = posterior_i.max(dim=1, keepdim=True)
 
