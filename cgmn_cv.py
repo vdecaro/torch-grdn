@@ -80,23 +80,23 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         cgmn = CGMN(1, M, C, 37, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
             cgmn.stack_layer()
-
-        opt = torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
+        
 
         if CHK['MOD']['curr']['state'] is not None:
             cgmn.load_state_dict(CHK['MOD']['curr']['state'])
 
             # This condition checks whether the current state of the CGMN is fully trained
-            if CHK['OPT'] is not None:
-                opt.load_state_dict(CHK['OPT'])
-            else:
+            if CHK['OPT'] is None:
                 if CHK['MOD']['curr']['L'] + 1 > MAX_DEPTH:
                     break
                 else:
                     cgmn.stack_layer()
                     CHK['MOD']['curr']['L'] += 1
 
-        
+        opt = torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
+        if CHK['OPT'] is not None:
+            opt.load_state_dict(CHK['OPT'])
+
         print(f"Training of layer {CHK['MOD']['curr']['L']}")
         pat_cnt = 0
         for i in range(CHK['CV']['epoch'], EPOCHS):
