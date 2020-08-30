@@ -6,13 +6,15 @@ from contrastive import contrastive_matrix
 from cgmn.cgmm import CGMM
 from torch_scatter.scatter import scatter
 
+import time
+
 class CGMN(nn.Module):
 
     def __init__(self, out_features, n_gen, C, M, device='cpu:0'):
         super(CGMN, self).__init__()
         self.device = torch.device(device)
         self.cgmm = CGMM(n_gen, C, M, device)
-        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
+        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
@@ -30,11 +32,12 @@ class CGMN(nn.Module):
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
         c_neurons = c_neurons.flatten(start_dim=-2)
         output = self.output[-1](c_neurons)
+        
         return output, neg_likelihood.mean(0).sum()
 
     def stack_layer(self):
         self.cgmm.stack_layer()
-        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
+        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4))
         self.b_norm[-1].to(device=self.device)
         
         self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output[-1].out_features))

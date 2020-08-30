@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torch_scatter.scatter import scatter
-
+import time
 
 class CGMM(nn.Module):
 
@@ -17,7 +17,7 @@ class CGMM(nn.Module):
         self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
 
     def forward(self, x, edge_index, h_prev=None, from_layer=0, no_last=False):
-        h_value, h_ind = (h_prev[0].unbind(2), h_prev[1].unbind(1)) if h_prev is not None else ([],[])
+        h_value, h_ind = h_prev if h_prev is not None else (None, None)
         likelihood = []
 
         to_layer = len(self.layers) - 1 if no_last else len(self.layers)
@@ -25,16 +25,15 @@ class CGMM(nn.Module):
         for i, l in enumerate(self.layers[from_layer:to_layer]):
             if i + from_layer == 0:
                 l_likelihood, l_h_value, l_h_ind = l(x)
+                h_value, h_ind = l_h_value.unsqueeze(2), l_h_ind.unsqueeze(1)
             else:
-                h_prev = torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
-                l_likelihood, l_h_value, l_h_ind = l(x, h_prev, edge_index)
+                l_likelihood, l_h_value, l_h_ind = l(x, (h_value, h_ind), edge_index)
+                h_value, h_ind = torch.cat([h_value, l_h_value.unsqueeze(2)], dim=2), torch.cat([h_ind, l_h_ind.unsqueeze(1)], dim=1)
                 
             likelihood.append(l_likelihood)
-            h_value.append(l_h_value)
-            h_ind.append(l_h_ind)
         likelihood = torch.stack(likelihood, dim=1)   # nodes x L x n_gen
             
-        return -likelihood, torch.stack(h_value, dim=2), torch.stack(h_ind, dim=1)
+        return -likelihood, h_value, h_ind
 
     def stack_layer(self):
         for p in self.layers[-1].parameters():
