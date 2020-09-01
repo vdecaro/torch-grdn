@@ -19,8 +19,8 @@ class GraphHTN(nn.Module):
         self.bu = UniformBottomUpHTMM(n_bu, C, M, device) if n_bu is not None and n_bu > 0 else None
         self.td = TopDownHTMM(n_td, C, M, device) if n_td is not None and n_td > 0 else None
 
-        self.td_norm = BatchNorm(n_td, affine=False) if n_td is not None and n_td > 0 else None
-        self.bu_norm = BatchNorm(n_bu, affine=False) if n_bu is not None and n_bu > 0 else None
+        self.td_norm = BatchNorm(n_td, affine=False, momentum=0.3) if n_td is not None and n_td > 0 else None
+        self.bu_norm = BatchNorm(n_bu, affine=False, momentum=0.3) if n_bu is not None and n_bu > 0 else None
 
         self.contrastive = contrastive_matrix(n_bu + n_td, self.device)
         self.set2set = Set2Set(self.contrastive.size(1), set2set_steps, 1)
@@ -28,26 +28,22 @@ class GraphHTN(nn.Module):
         self.to(device=self.device)
     
     def forward(self, x, trees, batch):
-        if self.bu is not None and self.td is not None:
-            g_neg_td_likelihood = self.td(x, trees)
-            g_neg_bu_likelihood = self.bu(x, trees)
-            norm_td = self.td_norm(g_neg_td_likelihood)
-            norm_bu = self.bu_norm(g_neg_bu_likelihood)
-            to_contrastive = torch.cat([norm_td, norm_bu], dim=1)
-            neg_log_likelihood = torch.cat([g_neg_td_likelihood, g_neg_bu_likelihood], dim=1)
+        to_contrastive = []
+        if self.bu is not None:
+            g_bu_likelihood = self.bu(x, trees)
+            to_contrastive.append(self.bu_norm(g_bu_likelihood))
 
-        elif self.bu is not None:
-            g_neg_bu_likelihood = self.bu(x, trees)
-            to_contrastive = self.bu_norm(g_neg_bu_likelihood)
-            neg_log_likelihood = g_neg_bu_likelihood
+        if self.td is not None:
+            g_td_likelihood = self.td(x, trees)
+            to_contrastive.append(self.td_norm(g_td_likelihood))
 
-        elif self.td is not None:
-            g_neg_td_likelihood = self.td(x, trees)
-            to_contrastive = self.td_norm(g_neg_td_likelihood)
-            neg_log_likelihood = g_neg_td_likelihood
-        
+        if len(to_contrastive) == 2:
+            to_contrastive = torch.cat(to_contrastive, dim=1)
+        else:
+            to_contrastive = to_contrastive[0]
+
         c_neurons = (to_contrastive @ self.contrastive).tanh().detach_()
         g_pooling = self.set2set(c_neurons, batch)
         output = self.output(g_pooling)
         
-        return output, neg_log_likelihood.mean(0).sum()
+        return output
