@@ -40,7 +40,7 @@ lr = float(sys.argv[5])
 
 BATCH_SIZE = 128
 EPOCHS = 5000
-PATIENCE = 40
+PATIENCE = 15
 
 chk_path = f"CV_GHTN_NCI1_{MAX_DEPTH}_{M}_{C}.tar"
 
