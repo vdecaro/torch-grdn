@@ -17,18 +17,15 @@ class UniformBottomUpHTMM(nn.Module):
         self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen)), a=-5, b=5))
         self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen)), a=-5, b=5))
         self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen)), a=-5, b=5))
-
         self.to(device=self.device)
-    
 
-    def forward(self, x, trees):
+    def forward(self, x, trees, batch):
         sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
 
         log_likelihood, beta, t_beta = self._reversed_upward(x, trees, self.n_gen, sm_A, sm_B, sm_Pi, self.C, self.device)
-        
         if self.training:
             eps, t_eps = self._reversed_downward(trees, self.n_gen, sm_A, sm_Pi, beta, t_beta, self.C, self.device)
-            self._compute_gradient(x, trees, sm_A, sm_B, sm_Pi, eps, t_eps)
+            self._compute_gradient(x, trees, batch, sm_A, sm_B, sm_Pi, eps, t_eps, self.device)
 
         return log_likelihood
 
@@ -89,22 +86,21 @@ class UniformBottomUpHTMM(nn.Module):
 
         return eps.detach(), t_eps.detach()
 
-    def _compute_gradient(self, x, tree, A, B, Pi, eps, t_eps):
+    def _compute_gradient(self, x, tree, batch, A, B, Pi, eps, t_eps, device):
         internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
-
-        A, B, Pi = A.detach(), B.detach(), Pi.detach()
-        A.requires_grad, B.requires_grad, Pi.requires_grad = True, True, True
-
-        # Likelihood A
-        exp_likelihood = (t_eps[internal] * A.log().unsqueeze(0)).sum([0, 1, 2])
-
+        
         # Likelihood B
         B_nodes = B[:, x[tree['inv_map']]].permute(1, 0, 2)
-        exp_likelihood += (eps * B_nodes.log()).sum([0, 1])
+        exp_likelihood = (eps * B_nodes.log()).sum(1)
+
+        # Likelihood A
+        exp_likelihood[internal] += (t_eps[internal] * A.log().unsqueeze(0)).sum([1, 2])
 
         # Likelihood Pi
-        exp_likelihood += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum([0, 1])
-        neg_exp_likelihood = -exp_likelihood.sum()
+        exp_likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
+        bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > 0.3).to(device)
+        exp_likelihood *= bitmask
+        exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
+        exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='mean')
+        neg_exp_likelihood = -exp_likelihood.mean(0).sum()
         neg_exp_likelihood.backward()
-
-        self.A.grad, self.B.grad, self.Pi.grad = A.grad, B.grad, Pi.grad

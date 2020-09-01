@@ -37,11 +37,10 @@ MAX_DEPTH = int(sys.argv[2])
 M = int(sys.argv[3])
 C = int(sys.argv[4])
 lr = float(sys.argv[5])
-l2 = float(sys.argv[6])
 
 BATCH_SIZE = 128
-EPOCHS = 500
-PATIENCE = 20
+EPOCHS = 5000
+PATIENCE = 40
 
 chk_path = f"CV_GHTN_NCI1_{MAX_DEPTH}_{M}_{C}.tar"
 
@@ -53,7 +52,7 @@ else:
             'fold': 0,
             'epoch': 0,
             'pat': 0,
-            'v_loss': float('inf'),
+            'v_loss': float('+inf'),
             'loss': [],
             'acc': [],
         },
@@ -72,12 +71,12 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1,  stratify=np.array([g.y for g in ds_data]))
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
-    tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+    tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
 
     ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
-    opt = torch.optim.AdamW(ghtn.parameters(), lr=lr, weight_decay=l2)
+    opt = torch.optim.Adam(ghtn.parameters(), lr=lr)
     if CHK['OPT'] is not None:
         print(f"Restarting from fold {CHK['CV']['fold']}, epoch {CHK['CV']['epoch']} with best loss {CHK['CV']['v_loss']}")
         ghtn.load_state_dict(CHK['MOD'])
@@ -103,8 +102,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         print(f"Fold {CHK['CV']['fold']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
         
         CHK['CV']['epoch'] += 1
-        if vl_loss.item() < CHK['CV']['v_loss'] - 1e-2:
-            CHK['CV']['v_loss'] = vl_loss.item() 
+        if  vl_loss < CHK['CV']['v_loss']:
+            CHK['CV']['v_loss'] = vl_loss
             CHK['CV']['pat'] = 0
             CHK['MOD'] = ghtn.state_dict()
             CHK['OPT'] = opt.state_dict()
@@ -124,12 +123,11 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             ts_acc = accuracy(ts_batch.y, out.sigmoid().round())
     print(f"Fold {CHK['CV']['fold']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
-    CHK['CV']['loss'].append(ts_loss.item())
     CHK['CV']['acc'].append(ts_acc)
     CHK['CV']['fold'] += 1
     CHK['CV']['epoch'] = 0
     CHK['CV']['pat'] = 0
-    CHK['CV']['v_loss'] = float('inf')
+    CHK['CV']['v_loss'] = float('+inf')
     CHK['MOD'] = None
     CHK['OPT'] = None
     torch.save(CHK, chk_path)
