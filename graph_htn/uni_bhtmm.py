@@ -49,8 +49,8 @@ class UniformBottomUpHTMM(nn.Module):
         log_likelihood = torch.zeros((tree['dim'], n_gen), device=device)
 
         Pi_leaves = Pi.unsqueeze(0)
-        leaves_idx = tree['inv_map'][tree['leaves']].permute(1, 0, 2)
-        B_leaves = B[:, x[leaves_idx]]
+        leaves_idx = tree['inv_map'][tree['leaves']]
+        B_leaves = B[:, x[leaves_idx]].permute(1, 0, 2)
         beta_leaves = Pi_leaves * B_leaves
         nu = beta_leaves.sum(dim=1)
 
@@ -94,7 +94,7 @@ class UniformBottomUpHTMM(nn.Module):
 
         A, B, Pi = A.detach(), B.detach(), Pi.detach()
         A.requires_grad, B.requires_grad, Pi.requires_grad = True, True, True
-        
+
         # Likelihood A
         exp_likelihood = (t_eps[internal] * A.log().unsqueeze(0)).sum([0, 1, 2])
 
