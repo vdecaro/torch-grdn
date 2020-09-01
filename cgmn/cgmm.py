@@ -60,9 +60,11 @@ class CGMMLayer_0(nn.Module):
 
         unnorm_posterior = sm_Pi.unsqueeze(0) * sm_B[:, x].permute(1, 0, 2)
         posterior = unnorm_posterior / unnorm_posterior.sum(1, keepdim=True)
-        
+
         if self.training and not self.frozen:
             B, Pi, posterior = sm_B.detach(),  sm_Pi.detach(), posterior.detach()
+            B.requires_grad, Pi.requires_grad = True, True
+
             exp_likelihood = posterior * (Pi.unsqueeze(0).log() + B[:, x].permute(1, 0, 2).log()).sum()
             exp_likelihood.backward()
             self.B.grad, self.Pi.grad = B.grad, Pi.grad
@@ -108,6 +110,7 @@ class CGMMLayer(nn.Module):
         posterior_i = posterior_il.sum(2)
         if self.training and not self.frozen:
             posterior_il, Q_neigh, B = posterior_il.detach(), sm_Q_neigh.detach(), sm_B.detach()
+            Q_neigh.requires_grad, B.requires_grad = True, True
             B_nodes = B[:, x].permute(1, 0, 2)  # nodes x C x n_gen, necessary for backpropagating in the new, detached graph
 
             exp_likelihood = (posterior_il * Q_neigh.log().unsqueeze(0)).sum() + (posterior_i * B_nodes.log()).sum()

@@ -23,7 +23,6 @@ class UniformBottomUpHTMM(nn.Module):
 
     def forward(self, x, trees):
         sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
-        sm_A, sm_B, sm_Pi = sm_A.detach(), sm_B.detach(), sm_Pi.detach()
 
         log_likelihood, beta, t_beta = self._reversed_upward(x, trees, self.n_gen, sm_A, sm_B, sm_Pi, self.C, self.device)
         
@@ -92,6 +91,9 @@ class UniformBottomUpHTMM(nn.Module):
 
     def _compute_gradient(self, x, tree, A, B, Pi, eps, t_eps):
         internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
+
+        A, B, Pi = A.detach(), B.detach(), Pi.detach()
+        A.requires_grad, B.requires_grad, Pi.requires_grad = True, True, True
         
         # Likelihood A
         exp_likelihood = (t_eps[internal] * A.log().unsqueeze(0)).sum([0, 1, 2])
