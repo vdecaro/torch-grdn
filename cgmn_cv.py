@@ -44,6 +44,7 @@ else:
             'epoch': 0,
             'abs_v_loss': float('inf'),
             'v_loss': float('inf'),
+            'pat': 0,
             'loss': [],
             'acc': []
         },
@@ -74,6 +75,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
     restore_ld = DataLoader(ds_data, batch_size=2048)
+
     while True:
         cgmn = CGMN(1, M, C, 37, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
@@ -81,7 +83,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
 
         if CHK['MOD']['curr']['state'] is not None:
             cgmn.load_state_dict(CHK['MOD']['curr']['state'])
-            
+
             # This condition checks whether the current state of the CGMN is fully trained
             if CHK['OPT'] is None:
                 if CHK['MOD']['curr']['L'] + 1 > MAX_DEPTH:
@@ -90,29 +92,26 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     cgmn.stack_layer()
                     CHK['MOD']['curr']['L'] += 1
             if preproc_from_layer < CHK['MOD']['curr']['L'] - 1:
-                lhood, h_v, h_i = [], [], []
+                lhood, h_state = [], []
                 for b in restore_ld:
                     b = b.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else b
                     if preproc_from_layer > 0:
-                        b_lhood, b_h_v, b_h_i = cgmn.cgmm(b.x, b.edge_index, (b.h_v, b.h_i), preproc_from_layer, True)
+                        b_lhood, b_h = cgmn.cgmm(b.x, b.edge_index, b.h, preproc_from_layer, True)
                     else:
-                        b_lhood, b_h_v, b_h_i = cgmn.cgmm(b.x, b.edge_index, from_layer=0, no_last=True)
+                        b_lhood, b_h = cgmn.cgmm(b.x, b.edge_index, from_layer=0, no_last=True)
                     lhood.append(b_lhood)
-                    h_v.append(b_h_v)
-                    h_i.append(b_h_i)
+                    h_state.append(b_h)
                 lhood = torch.cat(lhood, dim=0)
-                h_v = torch.cat(h_v, dim=0)
-                h_i = torch.cat(h_i, dim=0)
+                h_state = torch.cat(h_state, dim=0)
                 for i, d in enumerate(ds_data):
                     if preproc_from_layer > 0:
                         d.likelihood = torch.cat([d.likelihood, lhood[i]], dim=0)
-                        d.h_v = torch.cat([d.h_v, h_v[i]], dim=0)
-                        d.h_i = torch.cat([d.h_i, h_i[i]], dim=0)
+                        d.h = torch.cat([d.h, h_state[i]], dim=0)
                     else:
                         d.likelihood = lhood[i]
-                        d.h_v = h_v[i]
-                        d.h_i = h_i[i]
+                        d.h = h_state[i]
                 preproc_from_layer = CHK['MOD']['curr']['L'] - 1
+    
         tr_ld = DataLoader(tr_data,batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
         vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
 
@@ -121,18 +120,16 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             opt.load_state_dict(CHK['OPT'])
 
         print(f"Training of layer {CHK['MOD']['curr']['L']}")
-        pat_cnt = 0
         for i in range(CHK['CV']['epoch'], EPOCHS):
             cgmn.train()
             for tr_batch in tr_ld:
                 tr_batch = tr_batch.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else tr_batch
+                opt.zero_grad()
                 b_h_prev = (tr_batch.h_v, tr_batch.h_i) if preproc_from_layer > 0 else None
                 b_lhood_prev = tr_batch.likelihood if preproc_from_layer > 0 else None
-                out, neg_likelihood = cgmn(tr_batch.x, tr_batch.edge_index, tr_batch.batch, b_h_prev, b_lhood_prev)
+                out = cgmn(tr_batch.x, tr_batch.edge_index, tr_batch.batch, b_h_prev, b_lhood_prev)
                 tr_loss = bce(out, tr_batch.y)
-                opt.zero_grad()
                 tr_loss.backward()
-                neg_likelihood.backward()
                 opt.step()
 
             cgmn.eval()
@@ -154,11 +151,11 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     CHK['MOD']['best']['state'] = cgmn.state_dict()
                     CHK['MOD']['best']['L'] = CHK['MOD']['curr']['L']
                 torch.save(CHK, chk_path)
-
-                pat_cnt = 0
+                
+                CHK['CV']['pat'] = 0
             else:
-                pat_cnt += 1
-                if pat_cnt == PATIENCE:
+                CHK['CV']['pat'] += 1
+                if CHK['CV']['pat'] == PATIENCE:
                     print("Patience over: training stopped.")
                     break
         CHK['CV']['epoch'] = 0
@@ -186,6 +183,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     CHK['CV']['acc'].append(ts_acc)
     CHK['CV']['fold'] += 1
     CHK['CV']['epoch'] = 0
+    CHK['CV']['pat'] = 0
     CHK['CV']['abs_v_loss'] = float('inf')
     CHK['CV']['v_loss'] = float('inf')
     CHK['MOD'] = {

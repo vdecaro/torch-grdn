@@ -14,7 +14,7 @@ class CGMN(nn.Module):
         super(CGMN, self).__init__()
         self.device = torch.device(device)
         self.cgmm = CGMM(n_gen, C, M, device)
-        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4)])
+        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.3)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
 
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
@@ -22,18 +22,18 @@ class CGMN(nn.Module):
         self.to(device=self.device)
     
     def forward(self, x, edge_index, batch, h_prev=None, likelihood_prev=None):
-        neg_likelihood, _, _ = self.cgmm(x, edge_index, h_prev, 0 if likelihood_prev is None else likelihood_prev.size(1))
+        log_likelihood, _, _ = self.cgmm(x, edge_index, h_prev, 0 if likelihood_prev is None else likelihood_prev.size(1))
         if h_prev is not None and likelihood_prev is not None:
-            neg_likelihood = torch.cat([likelihood_prev, neg_likelihood], dim=1)
-        neg_likelihood = scatter(neg_likelihood, batch, dim=0)
+            log_likelihood = torch.cat([likelihood_prev, log_likelihood], dim=1)
+        log_likelihood = scatter(log_likelihood, batch, dim=0)
 
-        b_norm_lhood = torch.stack([b(neg_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
+        b_norm_lhood = torch.stack([b(log_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
 
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
         c_neurons = c_neurons.flatten(start_dim=-2)
         output = self.output[-1](c_neurons)
         
-        return output, neg_likelihood.mean(0).sum()
+        return output
 
     def stack_layer(self):
         self.cgmm.stack_layer()

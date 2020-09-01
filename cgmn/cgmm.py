@@ -16,29 +16,29 @@ class CGMM(nn.Module):
 
         self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
 
-    def forward(self, x, edge_index, h_prev=None, from_layer=0, no_last=False):
-        h_value, h_ind = h_prev if h_prev is not None else (None, None)
-        likelihood = []
-
+    def forward(self, x, edge_index, h_prev, from_layer=0, no_last=False):
         to_layer = len(self.layers) - 1 if no_last else len(self.layers)
 
+        h_prev = h_prev if h_prev is not None else None
+        log_likelihood = []
         for i, l in enumerate(self.layers[from_layer:to_layer]):
             if i + from_layer == 0:
-                l_likelihood, l_h_value, l_h_ind = l(x)
-                h_value, h_ind = l_h_value.unsqueeze(2), l_h_ind.unsqueeze(1)
+                l_log_likelihood, h_prev = l(x)
             else:
-                l_likelihood, l_h_value, l_h_ind = l(x, (h_value, h_ind), edge_index)
-                h_value, h_ind = torch.cat([h_value, l_h_value.unsqueeze(2)], dim=2), torch.cat([h_ind, l_h_ind.unsqueeze(1)], dim=1)
+                l_log_likelihood, l_h_state = l(x, h_prev[:, :, l], edge_index)
+                h_prev = torch.cat([h_prev, l_h_state.unsqueeze(2)], dim=2)
                 
-            likelihood.append(l_likelihood)
-        likelihood = torch.stack(likelihood, dim=1)   # nodes x L x n_gen
-            
-        return -likelihood, h_value, h_ind
+            log_likelihood.append(l_log_likelihood)
+
+        log_likelihood = torch.stack(log_likelihood, dim=1)   # nodes x L x n_gen
+        
+        return log_likelihood, h_prev
 
     def stack_layer(self):
         for p in self.layers[-1].parameters():
             p.requires_grad = False
-        self.layers.append(CGMMLayer(self.n_gen, self.C, len(self.layers), self.M, self.device))
+        self.layers[-1].frozen = True
+        self.layers.append(CGMMLayer(self.n_gen, self.C, self.M, self.device))
 
 
 class CGMMLayer_0(nn.Module):
@@ -53,18 +53,22 @@ class CGMMLayer_0(nn.Module):
         self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen)), a=-5, b=5))
         self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen)), a=-5, b=5))
         self.to(device=self.device)
+        self.frozen = False
     
     def forward(self, x):
         sm_B, sm_Pi = self._softmax_reparameterization()
-        
-        numerator = sm_Pi.unsqueeze(0) * sm_B[:, x].permute(1, 0, 2)
-        posterior = numerator / numerator.sum(1, keepdim=True)
-        
-        likelihood = (posterior * numerator.log()).sum(1)
 
-        h_max = posterior.max(dim=1, keepdim=True)
+        unnorm_posterior = sm_Pi.unsqueeze(0) * sm_B[:, x].permute(1, 0, 2)
+        posterior = unnorm_posterior / unnorm_posterior.sum(1, keepdim=True)
+        
+        if self.training and not self.frozen:
+            B, Pi, posterior = sm_B.detach(),  sm_Pi.detach(), posterior.detach()
+            exp_likelihood = posterior * (Pi.unsqueeze(0).log() + B[:, x].permute(1, 0, 2).log()).sum()
+            exp_likelihood.backward()
+            self.B.grad, self.Pi.grad = B.grad, Pi.grad
 
-        return likelihood, h_max[0], h_max[1].squeeze()
+        log_likelihood = unnorm_posterior.sum(1).log()
+        return log_likelihood, posterior
 
     def _softmax_reparameterization(self):
         sm_B, sm_Pi = [], []
@@ -78,81 +82,49 @@ class CGMMLayer_0(nn.Module):
 
 class CGMMLayer(nn.Module):
 
-    def __init__(self, n_gen, C, L, M, device):
+    def __init__(self, n_gen, C, M, device):
         super(CGMMLayer, self).__init__()
         self.device = device
         self.n_gen = n_gen
         self.C = C
-        self.L = L
         self.M = M
         
-        self.Q_neigh = nn.Parameter(nn.init.uniform_(torch.empty((C, C, L, n_gen)),  a=-5, b=5))
+        self.Q_neigh = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen)),  a=-5, b=5))
         self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen)),  a=-5, b=5))
-        if self.L > 1:
-            self.SP = nn.Parameter(nn.init.uniform_(torch.empty((L, n_gen)),  a=-5, b=5))
-        else:
-            self.SP = 1
 
         self.to(device=self.device)
+        self.frozen = False
     
     def forward(self, x, prev_h, edge_index):
-        sm_Q_neigh, sm_B, sm_SP = self._softmax_reparameterization()
+        sm_Q_neigh, sm_B = self._softmax_reparameterization()
+        
+        prev_h_neigh = prev_h[edge_index[1]]
+        prev_h_neigh_aggr = scatter(prev_h_neigh, edge_index[0], dim=0, reduce='mean')
 
-        trans_i = [[] for _ in range(self.n_gen)]
-        for m in range(self.n_gen):
-            trans_i_m = sm_Q_neigh[:, :, :, m]
-            h_ind_m = prev_h[1][:, :, m]
-            for l in range(self.L):
-                trans_i[m].append(trans_i_m[:, h_ind_m[:, l], l])
-
-        trans_i = torch.stack([torch.stack(l, dim=-1) for l in trans_i], dim=-1).permute(1, 0, 2, 3)
-        trans_i_neigh = trans_i * prev_h[0]
-        trans_i_neigh = trans_i_neigh * sm_SP.unsqueeze(0).unsqueeze(0) if self.L > 1 else trans_i_neigh
-
-        # Joint transition
-        Qu_i = scatter(trans_i_neigh[edge_index[1]], edge_index[0], dim=0, reduce='mean') # nodes x C x L x n_gen
-
-        # Emission
-        nodes_emissions = sm_B[:, x].permute(1, 0, 2)   # nodes x C x n_gen
-
-        # Posterior computation
-        posterior_unnorm = Qu_i * nodes_emissions.unsqueeze(2)
-        posterior_il = posterior_unnorm / (posterior_unnorm.sum((1, 2), keepdim=True)+1e-12) # nodes x C x L x n_gen
+        B_nodes = sm_B[:, x].permute(1, 0, 2).unsqueeze(2)   # nodes x C x 1 x n_gen
+        prev_h_neigh_aggr = prev_h_neigh_aggr.unsqueeze(1) # nodes x 1 x C x n_gen
+        unnorm_posterior = B_nodes * sm_Q_neigh * prev_h_neigh_aggr
+        posterior_il = unnorm_posterior / (unnorm_posterior.sum((1, 2), keepdim=True)) # nodes x C x C x n_gen
         posterior_i = posterior_il.sum(2)
-        
-        # Q_neigh Likelihood
-        Q_neigh_lhood = (posterior_il * trans_i.log()).sum((1, 2))
+        if self.training and not self.frozen:
+            posterior_il, Q_neigh, B = posterior_il.detach(), sm_Q_neigh.detach(), sm_B.detach()
+            B_nodes = B[:, x].permute(1, 0, 2)  # nodes x C x n_gen, necessary for backpropagating in the new, detached graph
 
-        # B Likelihood
-        B_lhood = (posterior_i * nodes_emissions.log()).sum(1)
-        
-        likelihood = Q_neigh_lhood + B_lhood
+            exp_likelihood = (posterior_il * Q_neigh.log().unsqueeze(0)).sum() + (posterior_i * B_nodes.log()).sum()
+            exp_likelihood.backward()
+            self.B.grad, self.Q_neigh.grad = B.grad, Q_neigh.grad
 
-        # SP Likelihood
-        if self.L > 1:
-            SP_lhood = (posterior_il.sum(1) * sm_SP.unsqueeze(0).log()).sum(1)
-            likelihood += SP_lhood
-        
-        h_max = posterior_i.max(dim=1, keepdim=True)
-
-        return likelihood, h_max[0], h_max[1].squeeze()
+        likelihood = unnorm_posterior.sum([1, 2]).log()
+        return likelihood, posterior_i
 
     def _softmax_reparameterization(self):
-        sm_Q_neigh, sm_B, sm_SP = [], [], []
+        sm_Q_neigh, sm_B = [], []
         
         for j in range(self.n_gen):
-            sm_Q_neigh_j = []
-            for l in range(self.L):
-                sm_Q_neigh_j.append(F.softmax(self.Q_neigh[:, :, l, j], dim=0))
-            sm_Q_neigh.append(torch.stack(sm_Q_neigh_j, dim=-1))
-
+            sm_Q_neigh.append(F.softmax(self.Q_neigh[:, :, j], dim=0))
             sm_B.append(F.softmax(self.B[:, :, j], dim=1))
-
-            if self.L > 1:
-                sm_SP.append(F.softmax(self.SP[:, j], dim=0))
 
         sm_Q_neigh = torch.stack(sm_Q_neigh, dim=-1)
         sm_B = torch.stack(sm_B, dim=-1)
-        sm_SP = torch.stack(sm_SP, dim=-1) if self.L > 1 else 1
 
-        return sm_Q_neigh, sm_B, sm_SP
+        return sm_Q_neigh, sm_B
