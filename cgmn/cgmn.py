@@ -16,7 +16,8 @@ class CGMN(nn.Module):
         self.cgmm = CGMM(n_gen, C, M, device)
         self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.3)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
-
+        
+        self.dropout = nn.Dropout(0.25)
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
 
         self.to(device=self.device)
@@ -31,6 +32,7 @@ class CGMN(nn.Module):
 
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
         c_neurons = c_neurons.flatten(start_dim=-2)
+        c_neurons = self.dropout(c_neurons)
         output = self.output[-1](c_neurons)
         
         return output
@@ -42,4 +44,13 @@ class CGMN(nn.Module):
         
         self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
+    
+    def train(self, mode=True):
+        super(CGMN, self).train(mode=mode)  # will turn on batchnorm (buffers not params).
+
+        for b in self.b_norm[:-1]:
+            b.eval()
+
+        return self
+
 

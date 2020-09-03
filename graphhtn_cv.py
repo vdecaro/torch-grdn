@@ -16,7 +16,7 @@ from graph_htn.graph_htn import GraphHTN
 ###################################
 #        DATASET SETTING          #
 ###################################
-def nci1_pre_transform(max_depth):
+def pre_transform(max_depth):
     
     def func(data):
         data['trees'] = bfs_transform(data.x, data.edge_index, max_depth)
@@ -24,25 +24,39 @@ def nci1_pre_transform(max_depth):
 
     return func 
 
-def nci1_transform(data):
-    data.x = data.x.argmax(1)
-    data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
-    return data
+def transform(dataset):
+    if dataset == 'NCI1':
+        def func(data):
+            data.x = data.x.argmax(1)
+            data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
+            return data
+    
+    if dataset == 'PROTEINS':
+        def func(data):
+            return data
+    
+    if dataset == 'DD':
+        def func(data):
+            return data # TODO
+    
+    return func
+
 
 ###################################
 #          CV HPARAMS             #
 ###################################
 DEVICE = torch.device(sys.argv[1])
-MAX_DEPTH = int(sys.argv[2])
-M = int(sys.argv[3])
-C = int(sys.argv[4])
-lr = float(sys.argv[5])
+DATASET = sys.argv[2]
+MAX_DEPTH = int(sys.argv[3])
+M = int(sys.argv[4])
+C = int(sys.argv[5])
+lr = float(sys.argv[6])
 
 BATCH_SIZE = 128
 EPOCHS = 5000
 PATIENCE = 15
 
-chk_path = f"CV_GHTN_NCI1_{MAX_DEPTH}_{M}_{C}.tar"
+chk_path = f"CV_GHTN_{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -60,8 +74,12 @@ else:
         'OPT': None
     }
 
-dataset = TUDataset(f'./NCI1_{MAX_DEPTH}', 'NCI1', pre_transform=nci1_pre_transform(MAX_DEPTH), transform=nci1_transform)
-
+dataset = TUDataset(f'./{DATASET}_{MAX_DEPTH}', DATASET, pre_transform=pre_transform(MAX_DEPTH), transform=transform(DATASET))
+tr_ld = Graph2TreesLoader(dataset, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
+for i in tr_ld:
+    print(i)
+    break
+sys.exit()
 kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = list(kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
 

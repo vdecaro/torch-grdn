@@ -13,26 +13,38 @@ from torch_geometric.utils.metric import accuracy
 
 from cgmn.cgmn import CGMN
 
-def nci1_transform(data):
-    data.x = data.x.argmax(1)
-    data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
-    return data
+def transform(dataset):
+    if dataset == 'NCI1':
+        def func(data):
+            data.x = data.x.argmax(1)
+            data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
+            return data
+    
+    if dataset == 'PROTEINS':
+        def func(data):
+            return data
+    
+    if dataset == 'DD':
+        def func(data):
+            return data # TODO
+    
+    return func
 
 ###################################
 #          CV HPARAMS             #
 ###################################
 DEVICE = torch.device(sys.argv[1])
-MAX_DEPTH = int(sys.argv[2])
-M = int(sys.argv[3])
-C = int(sys.argv[4])
-lr = float(sys.argv[5])
-l2 = float(sys.argv[6])
+DATASET = sys.argv[2]
+MAX_DEPTH = int(sys.argv[3])
+M = int(sys.argv[4])
+C = int(sys.argv[5])
+lr = float(sys.argv[6])
 
 BATCH_SIZE = 128
-EPOCHS = 500
+EPOCHS = 5000
 PATIENCE = 20
 
-chk_path = f"CV_CGMN_NCI1_{MAX_DEPTH}_{M}_{C}_chk.tar"
+chk_path = f"CV_CGMN_{DATASET}_{MAX_DEPTH}_{M}_{C}_chk.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -62,7 +74,7 @@ else:
     }
 preproc_from_layer = 0
 
-dataset = TUDataset(f'./NCI1', 'NCI1', transform=nci1_transform)
+dataset = TUDataset(f'./{DATASET}', DATASET, transform=transform(DATASET))
 
 kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = list(kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
@@ -115,7 +127,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         tr_ld = DataLoader(tr_data,batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
         vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
 
-        opt = torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
+        opt = torch.optim.Adam(cgmn.parameters(), lr=lr)
         if CHK['OPT'] is not None:
             opt.load_state_dict(CHK['OPT'])
 
