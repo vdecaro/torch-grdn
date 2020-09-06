@@ -14,9 +14,9 @@ class UniformBottomUpHTMM(nn.Module):
         self.C = C
         self.M = M
 
-        self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen)), a=-5, b=5))
-        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen)), a=-5, b=5))
-        self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen)), a=-5, b=5))
+        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, n_gen)), std=2.5))
+        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
+        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
         self.to(device=self.device)
 
     def forward(self, x, trees, batch):

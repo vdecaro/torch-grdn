@@ -5,6 +5,7 @@ from contrastive import contrastive_matrix
 from graph_htn.uni_bhtmm import UniformBottomUpHTMM
 from graph_htn.thtmm import TopDownHTMM
 from torch_geometric.nn import Set2Set, BatchNorm
+from torch_scatter.scatter import scatter
 
 from math import factorial as fact
 import random
@@ -42,7 +43,7 @@ class GraphHTN(nn.Module):
             to_contrastive = torch.cat(to_contrastive, dim=1)
         else:
             to_contrastive = to_contrastive[0]
-
+        
         c_neurons = (to_contrastive @ self.contrastive).tanh().detach_()
         c_neurons = self.dropout(c_neurons)
         g_pooling = self.set2set(c_neurons, batch)

@@ -25,19 +25,11 @@ def pre_transform(max_depth):
     return func 
 
 def transform(dataset):
-    if dataset == 'NCI1':
+    if dataset in ['NCI1', 'PROTEINS', 'DD']:
         def func(data):
             data.x = data.x.argmax(1)
             data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
             return data
-    
-    if dataset == 'PROTEINS':
-        def func(data):
-            return data
-    
-    if dataset == 'DD':
-        def func(data):
-            return data # TODO
     
     return func
 
@@ -51,10 +43,19 @@ MAX_DEPTH = int(sys.argv[3])
 M = int(sys.argv[4])
 C = int(sys.argv[5])
 lr = float(sys.argv[6])
+#l2 = float(sys.argv[7])
 
 BATCH_SIZE = 128
 EPOCHS = 5000
-PATIENCE = 15
+PATIENCE = 20
+
+if DATASET == 'NCI1':
+    N_SYMBOLS = 37
+elif DATASET == 'PROTEINS':
+    N_SYMBOLS = 3
+elif DATASET == 'DD':
+    N_SYMBOLS = 89
+    BATCH_SIZE = 32
 
 chk_path = f"CV_GHTN_{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
 
@@ -75,11 +76,6 @@ else:
     }
 
 dataset = TUDataset(f'./{DATASET}_{MAX_DEPTH}', DATASET, pre_transform=pre_transform(MAX_DEPTH), transform=transform(DATASET))
-tr_ld = Graph2TreesLoader(dataset, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
-for i in tr_ld:
-    print(i)
-    break
-sys.exit()
 kfold = StratifiedKFold(10, shuffle=True, random_state=15)
 split = list(kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
 
@@ -89,11 +85,11 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1,  stratify=np.array([g.y for g in ds_data]))
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
-    tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
-    vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=True)
-    ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=True)
+    tr_ld = Graph2TreesLoader(tr_data, max_depth=MAX_DEPTH, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, drop_last=True)
+    vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=False)
+    ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=False)
 
-    ghtn = GraphHTN(1, M, 0, C, 37, 8, device=DEVICE)
+    ghtn = GraphHTN(1, M, 0, C, N_SYMBOLS, 8, device=DEVICE)
     opt = torch.optim.Adam(ghtn.parameters(), lr=lr)
     if CHK['OPT'] is not None:
         print(f"Restarting from fold {CHK['CV']['fold']}, epoch {CHK['CV']['epoch']} with best loss {CHK['CV']['v_loss']}")

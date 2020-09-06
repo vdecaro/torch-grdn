@@ -14,25 +14,22 @@ class CGMN(nn.Module):
         super(CGMN, self).__init__()
         self.device = torch.device(device)
         self.cgmm = CGMM(n_gen, C, M, device)
-        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.3)])
+        self.b_norm = nn.ModuleList([nn.BatchNorm1d(self.cgmm.n_gen, affine=False)])
         self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
         
-        self.dropout = nn.Dropout(0.25)
+        #self.dropout = nn.Dropout(0.25)
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
 
         self.to(device=self.device)
     
-    def forward(self, x, edge_index, batch, h_prev=None, likelihood_prev=None):
-        log_likelihood, _, _ = self.cgmm(x, edge_index, h_prev, 0 if likelihood_prev is None else likelihood_prev.size(1))
-        if h_prev is not None and likelihood_prev is not None:
-            log_likelihood = torch.cat([likelihood_prev, log_likelihood], dim=1)
+    def forward(self, x, edge_index, batch):
+        log_likelihood = self.cgmm(x, edge_index)
         log_likelihood = scatter(log_likelihood, batch, dim=0)
-
         b_norm_lhood = torch.stack([b(log_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
 
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
         c_neurons = c_neurons.flatten(start_dim=-2)
-        c_neurons = self.dropout(c_neurons)
+        #c_neurons = self.dropout(c_neurons)
         output = self.output[-1](c_neurons)
         
         return output
