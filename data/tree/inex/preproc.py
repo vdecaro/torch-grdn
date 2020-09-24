@@ -1,33 +1,28 @@
 import torch
+from torch_geometric.data import Data
 
 
-INEX2005 = './data/tree/inex/2005/inex05.test.elastic.tree'
-INEX2006 = './data/tree/inex/2006/inex06.test.elastic.tree'
+INEX2005 = './data/tree/inex/2005/inex05'
+INEX2006 = './data/tree/inex/2006/inex06'
 
 
 def load_and_preproc_inex(file):
-    with open(INEX2005 if file == 'inex2005' else INEX2006, "r") as ins:
+    if file == 'inex2005train':
+        f = f'{INEX2005}.train.elastic.tree'
+    if file == 'inex2005test':
+        f = f'{INEX2005}.test.elastic.tree'
+    if file == 'inex2006train':
+        f = f'{INEX2006}.train.elastic.tree'
+    if file == 'inex2006test':
+        f = f'{INEX2006}.test.elastic.tree'
+    with open(f, "r") as ins:
         line_tree = []
         for line in ins:
             line_tree.append(line)
-    ins.close()
-
-    features = {'levels': [],
-                'leaves': [],
-                'labels': [],
-                'pos': []}
-    targets = []
     
-    for line in line_tree:
-        edges, leaves, labels, pos, target = _build_tree(line)
-        features['levels'].append(edges)
-        features['leaves'].append(leaves)
-        features['labels'].append(labels)
-        features['pos'].append(pos)
+    data = [_build_tree(line) for line in line_tree]
 
-        targets.append(target)
-
-    return features, targets
+    return data
 
 
 def _build_tree(line):
@@ -66,8 +61,11 @@ def _build_tree(line):
         except StopIteration:
             break
 
-    edges = [torch.tensor(l) for l in edges]
-    labels = torch.tensor(labels)
-    leaves = torch.tensor(leaves)
-    pos = torch.tensor([0]+pos)
-    return edges, leaves, labels, pos, int(t_class)-1
+    edges = [torch.LongTensor(l) for l in edges]
+    labels = torch.LongTensor(labels)
+    leaves = torch.LongTensor(leaves)
+    pos = torch.LongTensor([0]+pos)
+    dim = torch.LongTensor(labels.size(0))
+    y = torch.LongTensor(int(t_class) - 1)
+    
+    return Data(levels=edges, leaves=leaves, x=labels, pos=pos, y=y, dim=dim)

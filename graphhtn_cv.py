@@ -11,7 +11,7 @@ from data.graph.preproc import Graph2TreesLoader, bfs_transform
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from torch_geometric.utils.metric import accuracy
 
-from graph_htn.graph_htn import GraphHTN
+from graph_htmn.graph_htmn import GraphHTMN
 
 ###################################
 #        DATASET SETTING          #

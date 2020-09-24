@@ -1,39 +1,54 @@
-from torch.utils.data import Dataset, DataLoader
+from torch_geometric.data import Data
+from torch.utils.data import Dataset
 from data.tree.inex.preproc import load_and_preproc_inex
+import random
 
-
-def raw_load(dataset):
-    if dataset == 'inex2005' or dataset == 'inex2006':
-        features, targets = load_and_preproc_inex(dataset)
-        return _TreeDataset(features, targets)
-
-
-def TreeLoader(tree_dataset, batch_size, shuffle=False):
-    
-    def collate_trees_fn(batch):
-        trees, targets = [], []
-        for tree, target in batch:
-            trees.append(tree)
-            targets.append(target)
-
-        return trees, targets
-    
-    return DataLoader(tree_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_trees_fn)
-
-
-class _TreeDataset(Dataset):
-    def __init__(self, features, targets):
-        self.features = features
-        self.targets = targets
+class TreeDataset(Dataset):
+    def __init__(self, name):
+        if name in ['inex2005train', 'inex2005test', 'inex2006train', 'inex2006test']:
+            self.data = load_and_preproc_inex(name)
               
     def __getitem__(self, index):
-        idx_features = {
-            'levels': self.features['levels'][index], 
-            'leaves': self.features['leaves'][index],
-            'labels': self.features['labels'][index],
-            'pos': self.features['pos'][index]
-        }
-        return idx_features, self.targets[index]
+        return self.data[index]
     
     def __len__(self):
-        return len(self.targets)
+        return len(self.data)
+    
+    def shuffle(self):
+        random.shuffle(self.data)
+
+class TreesLoader(torch.utils.data.DataLoader):
+
+    def __init__(self, dataset, batch_size=1, shuffle=False, **kwargs):
+        super(TreesLoader, self).__init__(dataset, shuffle, collate_fn=trees_collate_fn, num_workers=0, **kwargs)
+
+
+def trees_collate_fn(batch):
+    x = []
+    levels = []
+    leaves = []
+    pos = []
+    y = []
+    dim = 0
+    batch = []
+    for b_idx, t in batch:
+        x.append(t.x)
+        for i, l in enumerate(t.levels):
+            if i == len(levels):
+                levels.append([])
+            levels[i].append(l + dim)
+        
+        leaves.append(t.leaves + dim)
+        pos.append(t.pos)
+        y.append(t.y)
+        batch += [b_idx for _ in range(t.dim)]
+        dim += t.dim
+    
+    return Data(
+        x=torch.cat(x),
+        levels=[torch.cat(l, 1) for l in levels],
+        leaves=torch.cat(leaves),
+        pos=torch.cat(pos),
+        y=torch.stack(y),
+        batch=batch
+    )
