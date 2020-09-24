@@ -4,6 +4,7 @@ import torch.nn as nn
 from contrastive import contrastive_matrix
 
 from cgmn.cgmm import CGMM
+from torch_geometric.nn import Set2Set
 from torch_scatter.scatter import scatter
 
 import time

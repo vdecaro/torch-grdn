@@ -40,11 +40,12 @@ elif DATASET == 'PROTEINS':
 elif DATASET == 'DD':
     N_SYMBOLS = 89
 
+_R_STATE = 42
 BATCH_SIZE = 128
 EPOCHS = 5000
 PATIENCE = 20
 
-chk_path = f"CV_CGMN_{DATASET}_{MAX_DEPTH}_{M}_{C}_chk.tar"
+chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_layerloss.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -57,8 +58,10 @@ else:
             'abs_v_loss': float('inf'),
             'v_loss': float('inf'),
             'pat': 0,
+            'f_v_loss': [],
             'loss': [],
-            'acc': []
+            'acc': [],
+            'layer_loss': [[] for _ in range(10)],
         },
         'MOD': {
             'best': {
@@ -75,14 +78,18 @@ else:
 preproc_from_layer = 0
 
 dataset = TUDataset(f'./{DATASET}', DATASET, transform=transform(DATASET))
-kfold = StratifiedKFold(10, shuffle=True, random_state=15)
+kfold = StratifiedKFold(10, shuffle=True, random_state=_R_STATE)
 split = list(kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
 
 bce = torch.nn.BCEWithLogitsLoss()
 
 for ds_i, ts_i in split[CHK['CV']['fold']:]:
     ds_data, ts_data = dataset[ds_i.tolist()], dataset[ts_i.tolist()]
-    tr_i, vl_i = train_test_split(np.arange(len(ds_data)), test_size=0.1, random_state=15, stratify=np.array([g.y for g in ds_data]))
+    tr_i, vl_i = train_test_split(np.arange(len(ds_data)), 
+                                  test_size=0.1,  
+                                  stratify=np.array([g.y for g in ds_data]), 
+                                  shuffle=True, 
+                                  random_state=_R_STATE)
     tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
     
     tr_ld = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
@@ -109,7 +116,6 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         if CHK['OPT'] is not None:
             opt.load_state_dict(CHK['OPT'])                
         torch.save(CHK, chk_path)
-        print(f"Training of layer {CHK['MOD']['curr']['L']}")
         for i in range(CHK['CV']['epoch'], EPOCHS):
             cgmn.train()
             for tr_batch in tr_ld:
@@ -127,7 +133,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     out = cgmn(vl_batch.x, vl_batch.edge_index, vl_batch.batch)
                     vl_loss = bce(out, vl_batch.y)
                     vl_accuracy = accuracy(vl_batch.y, out.sigmoid().round())
-            print(f"Fold {CHK['CV']['fold']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+            print(f"Fold {CHK['CV']['fold']} - Layer {CHK['MOD']['curr']['L']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
             
             CHK['CV']['epoch'] += 1
             if vl_loss.item() < CHK['CV']['v_loss']:
@@ -145,6 +151,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                 CHK['CV']['pat'] += 1
                 torch.save(CHK, chk_path)
                 if CHK['CV']['pat'] >= PATIENCE:
+                    CHK['CV']['layer_loss'][CHK['CV']['fold']].append(CHK['CV']['v_loss'])
+                    torch.save(CHK, chk_path)
                     print("Patience over: training stopped.")
                     break
                     
@@ -168,7 +176,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             ts_acc = accuracy(ts_batch.y, out.sigmoid().round())
     print(f"Fold {CHK['CV']['fold']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
-    preproc_from_layer = 0
+    CHK['CV']['f_v_loss'].append(CHK['CV']['abs_v_loss'])
     CHK['CV']['loss'].append(ts_loss.item())
     CHK['CV']['acc'].append(ts_acc)
     CHK['CV']['fold'] += 1

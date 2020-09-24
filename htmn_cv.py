@@ -11,18 +11,7 @@ from data.graph.preproc import Graph2TreesLoader, bfs_transform
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from torch_geometric.utils.metric import accuracy
 
-from graph_htn.graph_htn import GraphHTN
-
-###################################
-#        DATASET SETTING          #
-###################################
-def pre_transform(max_depth):
-    
-    def func(data):
-        data['trees'] = bfs_transform(data.x, data.edge_index, max_depth)
-        return data
-
-    return func 
+from graph_htmn.graph_htmn import GraphHTMN
 
 def transform(dataset):
     if dataset in ['NCI1', 'PROTEINS', 'DD']:
@@ -95,7 +84,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=False)
     ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=False)
 
-    ghtn = GraphHTN(1, M, 0, C, N_SYMBOLS, 8, device=DEVICE)
+    ghtn = GraphHTMN(1, M, 0, C, N_SYMBOLS, 8, device=DEVICE)
     opt = torch.optim.Adam(ghtn.parameters(), lr=lr)
     if CHK['OPT'] is not None:
         print(f"Restarting from fold {CHK['CV']['fold']}, epoch {CHK['CV']['epoch']} with best loss {CHK['CV']['v_loss']}")

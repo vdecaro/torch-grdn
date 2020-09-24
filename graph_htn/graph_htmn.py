@@ -12,10 +12,10 @@ import random
 
 import time
 
-class GraphHTN(nn.Module):
+class GraphHTMN(nn.Module):
 
     def __init__(self, out_features, n_bu, n_td, C, M, set2set_steps=10, device='cpu:0'):
-        super(GraphHTN, self).__init__()
+        super(GraphHTMN, self).__init__()
         self.device = torch.device(device)
         self.bu = UniformBottomUpHTMM(n_bu, C, M, device) if n_bu is not None and n_bu > 0 else None
         self.td = TopDownHTMM(n_td, C, M, device) if n_td is not None and n_td > 0 else None
