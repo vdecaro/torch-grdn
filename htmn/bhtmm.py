@@ -110,7 +110,7 @@ class BottomUpHTMM(nn.Module):
         leaves_pos = tree['pos'][tree['leaves']]
         exp_likelihood += (eps[tree['leaves']] * Pi[:, leaves_pos].log().permute(1, 0, 2)).sum()
 
-        for l, eps_joint in zip(tree['levels'], eps_joint):
+        for l, eps_joint in zip(tree['levels'], t_eps):
             # Likelihood A
             pos_ch = tree['pos'][l[1]]
             exp_likelihood += (eps_joint * A[:, :, pos_ch].permute(2, 0, 1, 3).log()).sum()

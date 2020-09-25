@@ -3,6 +3,7 @@ import os
 import time
 
 import torch
+import torch.nn.functional as F
 import numpy as np
 
 from data.tree.loader import TreeDataset, TreesLoader
@@ -13,13 +14,12 @@ from torch_geometric.utils.metric import accuracy
 from htmn.htmn import HTMN
 
 def batch_to(b, device):
-    b['x'].to(device)
-    for l in b['levels']:
-        l.to(device)
-    b['leaves'].to(device)
-    b['pos'].to(device)
-    b['y'].to(device)
-    b['batch'].to(device)
+    b['x'] = b['x'].to(device)
+    b['levels'] = [l.to(device) for l in b['levels']]
+    b['leaves'] = b['leaves'].to(device)
+    b['pos'] = b['pos'].to(device)
+    b['y'] = b['y'].to(device)
+    b['batch'] = b['batch'].to(device)
 
 ###################################
 #          CV HPARAMS             #
@@ -38,13 +38,15 @@ if DATASET == 'inex2005':
     N_SYMBOLS = 366
     L = 32
     CLASSES = 11
+    BATCH_SIZE = 64
+    PATIENCE = 10
 if DATASET == 'inex2006':
     N_SYMBOLS = 65
     L = 66
     CLASSES = 18
-BATCH_SIZE = 64
+    BATCH_SIZE = 128
+    PATIENCE = 15
 EPOCHS = 2000
-PATIENCE = 25
 
 
 chk_path = f"HTMN_CV/{DATASET}_{M}_{C}_{sys.argv[5]}.tar"
@@ -57,7 +59,8 @@ else:
             'epoch': 0,
             'pat': 0,
             'v_loss': float('+inf'),
-            'acc': [],
+            't_acc': None,
+            'pat': 0
         },
         'MOD': None,
         'OPT': None
@@ -70,12 +73,14 @@ tr_i, vl_i = train_test_split(np.arange(len(ds_data)),
                               stratify=np.array([t.y for t in ds_data]), 
                               shuffle=True, 
                               random_state=_R_STATE)
-tr_data, vl_data = ds_data[tr_i.tolist()], ds_data[vl_i.tolist()]
 
-tr_ld = TreesLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True)
-vl_ld = TreesLoader(vl_data, batch_size=len(vl_data), shuffle=False)
+tr_data = TreeDataset(data=[ds_data[i] for i in tr_i.tolist()])
+vl_data = TreeDataset(data=[ds_data[i] for i in vl_i.tolist()])
 
-htmn = HTMN(CLASSES, M/2, M/2, C, L, N_SYMBOLS, B_NORM, device=DEVICE)
+tr_ld = TreesLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+vl_ld = TreesLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
+
+htmn = HTMN(CLASSES, M//2, M//2, C, L, N_SYMBOLS, B_NORM, device=DEVICE)
 opt = torch.optim.Adam(htmn.parameters(), lr=lr)
 ce_loss = torch.nn.CrossEntropyLoss()
 if CHK['OPT'] is not None:
@@ -83,37 +88,40 @@ if CHK['OPT'] is not None:
     htmn.load_state_dict(CHK['MOD'])
     opt.load_state_dict(CHK['OPT'])
 
-for i in range(CHK['CV']['epoch'], EPOCHS):
-    htmn.train()
-    for tr_batch in tr_ld:
-        batch_to(tr_batch, DEVICE)
-        opt.zero_grad()
-        out = htmn(tr_batch)
-        tr_loss = ce_loss(out, tr_batch.y)
-        tr_loss.backward()
-        opt.step()
+if CHK['CV']['pat'] < PATIENCE:
+    for i in range(CHK['CV']['epoch'], EPOCHS):
+        htmn.train()
+        for tr_batch in tr_ld:
+            batch_to(tr_batch, DEVICE)
+            opt.zero_grad()
+            out = htmn(tr_batch)
+            tr_loss = ce_loss(out, tr_batch.y[:, 0])
+            tr_loss.backward()
+            opt.step()
+            tr_accuracy = accuracy(tr_batch.y[:, 0], out.argmax(1))
+            print(f"Training: Loss = {tr_loss.item()} ---- Accuracy = {tr_accuracy}")
 
-    htmn.eval()
-    for vl_batch in vl_ld:
-        with torch.no_grad():
-            batch_to(vl_batch, DEVICE)
-            out = htmn(vl_batch.x, vl_batch.trees, vl_batch.batch)
-            vl_loss = ce_loss(out, vl_batch.y)
-            vl_accuracy = accuracy(vl_batch.y, out.argmax(1))
-    print(f"Fold {CHK['CV']['fold']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
-    
-    CHK['CV']['epoch'] += 1
-    if  vl_loss < CHK['CV']['v_loss']:
-        CHK['CV']['v_loss'] = vl_loss
-        CHK['CV']['pat'] = 0
-        CHK['MOD'] = htmn.state_dict()
-        CHK['OPT'] = opt.state_dict()
-        torch.save(CHK, chk_path)
-    else:
-        CHK['CV']['pat'] += 1
-        if CHK['CV']['pat'] == PATIENCE:
-            print("Patience over: training stopped.")
-            break
+        htmn.eval()
+        for vl_batch in vl_ld:
+            with torch.no_grad():
+                batch_to(vl_batch, DEVICE)
+                out = htmn(vl_batch)
+                vl_loss = ce_loss(out, vl_batch.y[:, 0])
+                vl_accuracy = accuracy(vl_batch.y[:, 0], out.argmax(1))
+        print(f"\n\n Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+
+        CHK['CV']['epoch'] += 1
+        if  vl_loss < CHK['CV']['v_loss']:
+            CHK['CV']['v_loss'] = vl_loss
+            CHK['CV']['pat'] = 0
+            CHK['MOD'] = htmn.state_dict()
+            CHK['OPT'] = opt.state_dict()
+            torch.save(CHK, chk_path)
+        else:
+            CHK['CV']['pat'] += 1
+            if CHK['CV']['pat'] == PATIENCE:
+                print("Patience over: training stopped.")
+                break
 
 ts_ld = TreesLoader(ts_data, batch_size=len(ts_data), shuffle=False)
 htmn.load_state_dict(CHK['MOD'])
@@ -121,9 +129,9 @@ for ts_batch in ts_ld:
     with torch.no_grad():
         batch_to(ts_batch, DEVICE)
         out = htmn(ts_batch)
-        ts_loss = ce_loss(out, ts_batch.y)
-        ts_acc = accuracy(ts_batch.y, out.argmax(1))
-print(f"Fold {CHK['CV']['fold']}: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
+        ts_loss = ce_loss(out, ts_batch.y[:, 0])
+        ts_acc = accuracy(ts_batch.y[:, 0], out.argmax(1))
+print(f"Test: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
-CHK['CV']['acc'].append(ts_acc)
+CHK['CV']['t_acc'] = ts_acc
 torch.save(CHK, chk_path)

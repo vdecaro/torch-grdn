@@ -5,7 +5,7 @@ from torch_scatter.scatter import scatter
 
 class PositionalTopDownHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, L, M, device):
+    def __init__(self, n_gen, C, L, M, device='cpu:0'):
         super(PositionalTopDownHTMM, self).__init__()
         self.device = torch.device(device)
         self.n_gen = n_gen

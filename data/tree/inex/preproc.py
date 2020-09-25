@@ -21,7 +21,6 @@ def load_and_preproc_inex(file):
             line_tree.append(line)
     
     data = [_build_tree(line) for line in line_tree]
-
     return data
 
 
@@ -52,7 +51,7 @@ def _build_tree(line):
                 curr_label = ''
 
             elif c in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]:
-               curr_label += c
+                curr_label += c
             elif c == '$':
                 leaves.append(stack[-1][0])
             elif c == ')':
@@ -61,11 +60,10 @@ def _build_tree(line):
         except StopIteration:
             break
 
-    edges = [torch.LongTensor(l) for l in edges]
+    edges = [torch.LongTensor(l).T for l in edges]
     labels = torch.LongTensor(labels)
     leaves = torch.LongTensor(leaves)
     pos = torch.LongTensor([0]+pos)
-    dim = torch.LongTensor(labels.size(0))
-    y = torch.LongTensor(int(t_class) - 1)
-    
+    dim = torch.LongTensor([labels.size(0)])
+    y = torch.LongTensor([int(t_class)-1])
     return Data(levels=edges, leaves=leaves, x=labels, pos=pos, y=y, dim=dim)
