@@ -14,12 +14,12 @@ from torch_geometric.utils.metric import accuracy
 from htmn.htmn import HTMN
 
 def batch_to(b, device):
-    b['x'] = b['x'].to(device)
-    b['levels'] = [l.to(device) for l in b['levels']]
-    b['leaves'] = b['leaves'].to(device)
-    b['pos'] = b['pos'].to(device)
-    b['y'] = b['y'].to(device)
-    b['batch'] = b['batch'].to(device)
+    b['x'] = b['x'].to(device, non_blocking=True)
+    b['levels'] = [l.to(device, non_blocking=True) for l in b['levels']]
+    b['leaves'] = b['leaves'].to(device, non_blocking=True)
+    b['pos'] = b['pos'].to(device, non_blocking=True)
+    b['y'] = b['y'].to(device, non_blocking=True)
+    b['batch'] = b['batch'].to(device, non_blocking=True)
 
 ###################################
 #          CV HPARAMS             #

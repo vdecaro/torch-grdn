@@ -29,6 +29,7 @@ def _build_graph(line):
     t_class, t_line = line.split(':')
     labels = []
     edges = []
+    pos = []
     t_iter = iter(t_line)
     c = next(t_iter)
 
@@ -40,6 +41,7 @@ def _build_graph(line):
                 if stack:
                     edges.append([stack[-1][0], len(labels)])
                     edges.append([len(labels), stack[-1][0]])
+                    pos.append(stack[-1][1])
                     stack[-1][1] += 1
                     
                 stack.append([len(labels), 0])
@@ -56,7 +58,8 @@ def _build_graph(line):
         except StopIteration:
             break
 
-    edges = [torch.LongTensor(l).T for l in edges]
+    edges = torch.LongTensor(edges).T
     x = torch.LongTensor(labels)
     y = torch.LongTensor([int(t_class)-1])
-    return Data(edges=edges, x=x,y=y)
+    pos = torch.LongTensor([0] + pos)
+    return Data(edge_index=edges, x=x,y=y, pos=pos)

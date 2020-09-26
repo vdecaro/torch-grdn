@@ -24,22 +24,23 @@ lr = float(sys.argv[6])
 _R_STATE = 42
 if DATASET == 'inex2005':
     N_SYMBOLS = 366
-    L = 32
     CLASSES = 11
-    BATCH_SIZE = 64
-    PATIENCE = 10
+    L = 32
+    BATCH_SIZE = 128
+    PATIENCE = 30
 if DATASET == 'inex2006':
     N_SYMBOLS = 65
-    L = 66
     CLASSES = 18
+    L = 66
     BATCH_SIZE = 128
-    PATIENCE = 15
+    PATIENCE = 40
 EPOCHS = 2000
 
-chk_path = f"CGMN_CV/{DATASET}_{M}_{C}_{sys.argv[5]}.tar"
+chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
+    print(f"Restarting from epoch {CHK['CV']['epoch']} with curr best loss {CHK['CV']['v_loss']} and abs best loss {CHK['CV']['abs_v_loss']}")
 else:
     CHK = {
         'CV': {
@@ -76,7 +77,7 @@ vl_data = [ds_data[i] for i in vl_i.tolist()]
 ce_loss = torch.nn.CrossEntropyLoss()
 
 while CHK['MOD']['curr']['L'] < MAX_DEPTH:
-    cgmn = CGMN(CLASSES, M, C, N_SYMBOLS, device=DEVICE)
+    cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, device=DEVICE)
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
         cgmn.stack_layer()
 
@@ -97,28 +98,27 @@ while CHK['MOD']['curr']['L'] < MAX_DEPTH:
         opt.load_state_dict(CHK['OPT'])                
     torch.save(CHK, chk_path)
 
-    for i in range(CHK['CV']['epoch'], EPOCHS):
+    for e in range(CHK['CV']['epoch'], EPOCHS):
         random.shuffle(tr_data)
         cgmn.train()
         for i in range(0, len(tr_data), BATCH_SIZE):
             tr_batch = Batch.from_data_list(tr_data[i:min(i+BATCH_SIZE, len(tr_data))])
-            tr_batch.to(DEVICE)
+            tr_batch.to(DEVICE, non_blocking=True)
             opt.zero_grad()
-            out = cgmn(tr_batch)
-            tr_loss = ce_loss(out, tr_batch.y[:, 0])
+            out = cgmn(tr_batch.x, tr_batch.edge_index, tr_batch.batch, tr_batch.pos)
+            tr_loss = ce_loss(out, tr_batch.y)
             tr_loss.backward()
             opt.step()
-            tr_accuracy = accuracy(tr_batch.y[:, 0], out.argmax(1))
-            print(f"Training: Loss = {tr_loss.item()} ---- Accuracy = {tr_accuracy}")
+            tr_accuracy = accuracy(tr_batch.y, out.argmax(1))
 
-        CGMN.eval()
+        cgmn.eval()
         with torch.no_grad():
             vl_batch = Batch.from_data_list(vl_data)
-            vl_batch.to(DEVICE)
-            out = cgmn(vl_batch)
-            vl_loss = ce_loss(out, vl_batch.y[:, 0])
-            vl_accuracy = accuracy(vl_batch.y[:, 0], out.argmax(1))
-        print(f"\n\n Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+            vl_batch.to(DEVICE, non_blocking=True)
+            out = cgmn(vl_batch.x, vl_batch.edge_index, vl_batch.batch, vl_batch.pos)
+            vl_loss = ce_loss(out, vl_batch.y)
+            vl_accuracy = accuracy(vl_batch.y, out.argmax(1))
+        print(f"Layer {CHK['MOD']['curr']['L']} - Epoch {e}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
 
         CHK['CV']['epoch'] += 1
         if vl_loss.item() < CHK['CV']['v_loss']:
@@ -134,24 +134,27 @@ while CHK['MOD']['curr']['L'] < MAX_DEPTH:
             
         else:
             CHK['CV']['pat'] += 1
-            torch.save(CHK, chk_path)
-            if CHK['CV']['pat'] >= PATIENCE:
-                CHK['CV']['layer_loss'][CHK['CV']['fold']].append(CHK['CV']['v_loss'])
-                torch.save(CHK, chk_path)
+            if CHK['CV']['pat'] == PATIENCE:
                 print("Patience over: training stopped.")
                 break
+        
+    CHK['CV']['epoch'] = 0
+    CHK['CV']['v_loss'] = float('inf')
+    CHK['OPT'] = None
+    CHK['CV']['pat'] = 0
+    torch.save(CHK, chk_path)
 
-cgmn = CGMN(1, M, C, N_SYMBOLS, device=DEVICE)
+cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, device=DEVICE)
 for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
     cgmn.stack_layer()
 cgmn.load_state_dict(CHK['MOD']['best']['state'])
 cgmn.eval()
 with torch.no_grad():
     ts_batch = Batch.from_data_list(ts_data)
-    ts_batch.to(DEVICE)
-    out = htmn(ts_batch)
-    ts_loss = ce_loss(out, ts_batch.y[:, 0])
-    ts_acc = accuracy(ts_batch.y[:, 0], out.argmax(1))
+    ts_batch.to(DEVICE, non_blocking=True)
+    out = cgmn(ts_batch.x, ts_batch.edge_index, ts_batch.batch, ts_batch.pos)
+    ts_loss = ce_loss(out, ts_batch.y)
+    ts_acc = accuracy(ts_batch.y, out.argmax(1))
 print(f"Test: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
 CHK['CV']['t_acc'] = ts_acc
