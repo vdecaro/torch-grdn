@@ -59,8 +59,7 @@ else:
             'epoch': 0,
             'pat': 0,
             'v_loss': float('+inf'),
-            't_acc': None,
-            'pat': 0
+            't_acc': None
         },
         'MOD': None,
         'OPT': None

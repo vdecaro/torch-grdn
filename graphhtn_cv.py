@@ -6,7 +6,7 @@ import torch
 import numpy as np
 
 from torch_geometric.datasets import TUDataset
-from data.graph.preproc import Graph2TreesLoader, bfs_transform
+from data.graph.g2t import Graph2TreesLoader, bfs_transform
 
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from torch_geometric.utils.metric import accuracy
