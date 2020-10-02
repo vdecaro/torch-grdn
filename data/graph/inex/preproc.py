@@ -42,6 +42,7 @@ def _build_graph(line):
                     edges.append([stack[-1][0], len(labels)])
                     edges.append([len(labels), stack[-1][0]])
                     pos.append(stack[-1][1])
+                    pos.append(stack[-1][1])
                     stack[-1][1] += 1
                     
                 stack.append([len(labels), 0])
@@ -61,5 +62,5 @@ def _build_graph(line):
     edges = torch.LongTensor(edges).T
     x = torch.LongTensor(labels)
     y = torch.LongTensor([int(t_class)-1])
-    pos = torch.LongTensor([0] + pos)
+    pos = torch.LongTensor(pos)
     return Data(edge_index=edges, x=x,y=y, pos=pos)

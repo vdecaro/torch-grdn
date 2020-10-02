@@ -58,7 +58,7 @@ elif DATASET == 'DD':
     N_SYMBOLS = 89
     BATCH_SIZE = 32
 
-chk_path = f"GHTN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
+chk_path = f"GHTN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_layerloss.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -72,6 +72,7 @@ else:
             'f_v_loss': [],
             'loss': [],
             'acc': [],
+            'layer_loss': [[] for _ in range(10)],
         },
         'MOD': None,
         'OPT': None
@@ -95,7 +96,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     vl_ld = Graph2TreesLoader(vl_data, max_depth=MAX_DEPTH, batch_size=len(vl_data), shuffle=False, pin_memory=False)
     ts_ld = Graph2TreesLoader(ts_data, max_depth=MAX_DEPTH, batch_size=len(ts_data), shuffle=False, pin_memory=False)
 
-    ghtn = GraphHTN(1, M, 0, C, N_SYMBOLS, 8, device=DEVICE)
+    ghtn = GraphHTMN(1, M, 0, C, N_SYMBOLS, 8, device=DEVICE)
     opt = torch.optim.Adam(ghtn.parameters(), lr=lr)
     if CHK['OPT'] is not None:
         print(f"Restarting from fold {CHK['CV']['fold']}, epoch {CHK['CV']['epoch']} with best loss {CHK['CV']['v_loss']}")
@@ -131,6 +132,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         else:
             CHK['CV']['pat'] += 1
             if CHK['CV']['pat'] == PATIENCE:
+                CHK['CV']['layer_loss'][CHK['CV']['fold']].append(CHK['CV']['v_loss'])
+                torch.save(CHK, chk_path)
                 print("Patience over: training stopped.")
                 break
 

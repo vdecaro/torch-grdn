@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 from contrastive import contrastive_matrix
-from graph_htn.uni_bhtmm import UniformBottomUpHTMM
-from graph_htn.thtmm import TopDownHTMM
+from graph_htmn.uni_bhtmm import UniformBottomUpHTMM
+from graph_htmn.thtmm import TopDownHTMM
 from torch_geometric.nn import Set2Set, BatchNorm
 from torch_scatter.scatter import scatter
 

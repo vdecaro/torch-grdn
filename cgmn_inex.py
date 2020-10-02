@@ -33,7 +33,7 @@ if DATASET == 'inex2006':
     CLASSES = 18
     L = 66
     BATCH_SIZE = 128
-    PATIENCE = 40
+    PATIENCE = 25
 EPOCHS = 2000
 
 chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
@@ -76,7 +76,7 @@ vl_data = [ds_data[i] for i in vl_i.tolist()]
 
 ce_loss = torch.nn.CrossEntropyLoss()
 
-while CHK['MOD']['curr']['L'] < MAX_DEPTH:
+while CHK['MOD']['curr']['L'] <= MAX_DEPTH:
     cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, device=DEVICE)
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
         cgmn.stack_layer()
@@ -112,13 +112,20 @@ while CHK['MOD']['curr']['L'] < MAX_DEPTH:
             tr_accuracy = accuracy(tr_batch.y, out.argmax(1))
 
         cgmn.eval()
-        with torch.no_grad():
-            vl_batch = Batch.from_data_list(vl_data)
-            vl_batch.to(DEVICE, non_blocking=True)
-            out = cgmn(vl_batch.x, vl_batch.edge_index, vl_batch.batch, vl_batch.pos)
-            vl_loss = ce_loss(out, vl_batch.y)
-            vl_accuracy = accuracy(vl_batch.y, out.argmax(1))
-        print(f"Layer {CHK['MOD']['curr']['L']} - Epoch {e}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+        outputs = []
+        targets = []
+        for i in range(0, len(vl_data), BATCH_SIZE):
+            with torch.no_grad():
+                vl_batch = Batch.from_data_list(ts_data[i:min(i+BATCH_SIZE, len(vl_data))])
+                vl_batch.to(DEVICE, non_blocking=True)
+                out = cgmn(vl_batch.x, vl_batch.edge_index, vl_batch.batch, vl_batch.pos)
+                outputs.append(out)
+                targets.append(vl_batch.y)
+        outputs = torch.cat(outputs)
+        targets = torch.cat(targets)
+        vl_loss = ce_loss(outputs, targets)
+        vl_acc = accuracy(targets, outputs.argmax(1))
+        print(f"Layer {CHK['MOD']['curr']['L']} - Epoch {e}: Loss = {vl_loss.item()} ---- Accuracy = {vl_acc}")
 
         CHK['CV']['epoch'] += 1
         if vl_loss.item() < CHK['CV']['v_loss']:
@@ -149,12 +156,19 @@ for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
     cgmn.stack_layer()
 cgmn.load_state_dict(CHK['MOD']['best']['state'])
 cgmn.eval()
-with torch.no_grad():
-    ts_batch = Batch.from_data_list(ts_data)
-    ts_batch.to(DEVICE, non_blocking=True)
-    out = cgmn(ts_batch.x, ts_batch.edge_index, ts_batch.batch, ts_batch.pos)
-    ts_loss = ce_loss(out, ts_batch.y)
-    ts_acc = accuracy(ts_batch.y, out.argmax(1))
+outputs = []
+targets = []
+for i in range(0, len(ts_data), BATCH_SIZE):
+    with torch.no_grad():
+        ts_batch = Batch.from_data_list(ts_data[i:min(i+BATCH_SIZE, len(ts_data))])
+        ts_batch.to(DEVICE, non_blocking=True)
+        out = cgmn(ts_batch.x, ts_batch.edge_index, ts_batch.batch, ts_batch.pos)
+        outputs.append(out)
+        targets.append(ts_batch.y)
+outputs = torch.cat(outputs)
+targets = torch.cat(targets)
+ts_loss = ce_loss(outputs, targets)
+ts_acc = accuracy(targets, outputs.argmax(1))
 print(f"Test: Loss = {ts_loss.item()} ---- Accuracy = {ts_acc}")
 
 CHK['CV']['t_acc'] = ts_acc

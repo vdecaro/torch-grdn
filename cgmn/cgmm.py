@@ -150,12 +150,11 @@ class PositionalCGMMLayer(nn.Module):
         Q_neigh, B = self._softmax_reparameterization()
         
         prev_h_neigh = prev_h[edge_index[1]].unsqueeze(1)
-        pos_neigh = pos[edge_index[1]]
-        trans_neigh = Q_neigh[:, :, pos_neigh].permute(2, 0, 1, 3)
+        trans_neigh = Q_neigh[:, :, pos].permute(2, 0, 1, 3)
         
         B_nodes = B[:, x[edge_index[0]]].permute(1, 0, 2).unsqueeze(2)   # edges x C x 1 x n_gen
         unnorm_posterior = B_nodes * trans_neigh * prev_h_neigh # edges x C x C x n_gen
-        likelihood = scatter(unnorm_posterior.sum([1, 2], keepdim=True), edge_index[0], dim=0)
+        likelihood = scatter(unnorm_posterior.sum([1, 2], keepdim=True), edge_index[0], dim=0, reduce='mean')
         
         posterior_il = (unnorm_posterior / (likelihood[edge_index[0]] + 1e-8)).detach() # edges x C x C x n_gen
         posterior_i = scatter(posterior_il.sum(2), index=edge_index[0], dim=0).detach() # nodes x C x n_gen
@@ -176,5 +175,5 @@ class PositionalCGMMLayer(nn.Module):
 
         sm_Q_neigh = torch.stack(sm_Q_neigh, dim=-1)
         sm_B = torch.stack(sm_B, dim=-1)
-
+        
         return sm_Q_neigh, sm_B
