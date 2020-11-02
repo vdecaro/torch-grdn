@@ -40,7 +40,8 @@ class CGMN(nn.Module):
         self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4))
         self.b_norm[-1].to(device=self.device)
         
-        self.pooling.append(GlobalAttention(_gate_nn(self.node_features, self.gate_units)))
+        self.pooling.append(GlobalAttention(_GateNN(self.node_features, self.gate_units)))
+        self.pooling[-1].to(device=self.device)
 
         self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
@@ -55,9 +56,14 @@ class CGMN(nn.Module):
         return self
 
 
-def _gate_nn(input_features, gate_units):
-    return nn.Sequential([
-        nn.Linear(input_features, gate_units), 
-        nn.Tanh, 
-        nn.Linear(gate_units, 1)
-    ])
+class _GateNN(nn.Module):
+    def __init__(self, input_features, gate_units):
+        super(_GateNN, self).__init__()
+        self.model = nn.Sequential([
+            nn.Linear(input_features, gate_units), 
+            nn.Tanh, 
+            nn.Linear(gate_units, 1)
+        ])
+
+    def forward(self, x):
+        return self.model(x)
