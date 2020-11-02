@@ -59,11 +59,8 @@ class CGMN(nn.Module):
 class _GateNN(nn.Module):
     def __init__(self, input_features, gate_units):
         super(_GateNN, self).__init__()
-        self.model = nn.Sequential([
-            nn.Linear(input_features, gate_units), 
-            nn.Tanh, 
-            nn.Linear(gate_units, 1)
-        ])
+        self.h = nn.Linear(input_features, gate_units)
+        self.out = nn.Linear(gate_units, 1)
 
     def forward(self, x):
-        return self.model(x)
+        return self.out(self.h(x).tanh())
