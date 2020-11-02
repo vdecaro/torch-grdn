@@ -40,7 +40,7 @@ class CGMN(nn.Module):
         self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4))
         self.b_norm[-1].to(device=self.device)
         
-        self.pooling.append(GlobalAttention(_gate_nn(self.node_features, gate_units)))
+        self.pooling.append(GlobalAttention(_gate_nn(self.node_features, self.gate_units)))
 
         self.output.append(nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
@@ -48,8 +48,9 @@ class CGMN(nn.Module):
     def train(self, mode=True):
         super(CGMN, self).train(mode=mode)  # will turn on batchnorm (buffers not params).
 
-        for b in self.b_norm[:-1]:
+        for b, att in zip(self.b_norm[:-1], self.pooling[:-1]):
             b.eval()
+            att.eval()
 
         return self
 
