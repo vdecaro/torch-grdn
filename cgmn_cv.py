@@ -31,7 +31,8 @@ DATASET = sys.argv[2]
 MAX_DEPTH = int(sys.argv[3])
 M = int(sys.argv[4])
 C = int(sys.argv[5])
-lr = float(sys.argv[6])
+GATE_UNITS = int(sys.argv[6])
+lr = float(sys.argv[7])
 
 if DATASET == 'NCI1':
     N_SYMBOLS = 37
@@ -45,7 +46,7 @@ BATCH_SIZE = 128
 EPOCHS = 5000
 PATIENCE = 20
 
-chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_layerloss.tar"
+chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_{GATE_UNITS}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -96,7 +97,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = DataLoader(ts_data, batch_size=len(ts_data), shuffle=False, pin_memory=True)
     while CHK['MOD']['curr']['L'] < MAX_DEPTH:
-        cgmn = CGMN(1, M, C, N_SYMBOLS, device=DEVICE)
+        cgmn = CGMN(1, M, C, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
             cgmn.stack_layer()
 
@@ -163,7 +164,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
         torch.save(CHK, chk_path)
 
     # TESTING
-    cgmn = CGMN(1, M, C, N_SYMBOLS, device=DEVICE)
+    cgmn = CGMN(1, M, C, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
         cgmn.stack_layer()
     cgmn.load_state_dict(CHK['MOD']['best']['state'])

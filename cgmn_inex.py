@@ -19,7 +19,8 @@ DATASET = sys.argv[2]
 MAX_DEPTH = int(sys.argv[3])
 M = int(sys.argv[4])
 C = int(sys.argv[5])
-lr = float(sys.argv[6])
+GATE_UNITS = int(sys.argv[6])
+lr = float(sys.argv[7])
 
 _R_STATE = 42
 if DATASET == 'inex2005':
@@ -36,7 +37,7 @@ if DATASET == 'inex2006':
     PATIENCE = 25
 EPOCHS = 2000
 
-chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}.tar"
+chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_{GATE_UNITS}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -77,7 +78,7 @@ vl_data = [ds_data[i] for i in vl_i.tolist()]
 ce_loss = torch.nn.CrossEntropyLoss()
 
 while CHK['MOD']['curr']['L'] <= MAX_DEPTH:
-    cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, device=DEVICE)
+    cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
     for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
         cgmn.stack_layer()
 
@@ -151,7 +152,7 @@ while CHK['MOD']['curr']['L'] <= MAX_DEPTH:
     CHK['CV']['pat'] = 0
     torch.save(CHK, chk_path)
 
-cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, device=DEVICE)
+cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
 for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['best']['L']):
     cgmn.stack_layer()
 cgmn.load_state_dict(CHK['MOD']['best']['state'])
