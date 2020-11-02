@@ -30,7 +30,7 @@ class CGMN(nn.Module):
         b_norm_lhood = torch.stack([b(log_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
 
-        to_out = torch.cat([att(c_neurons[:, i]) for i, att in enumerate(self.pooling)], -1)
+        to_out = torch.cat([att(c_neurons[:, i], batch) for i, att in enumerate(self.pooling)], -1)
         output = self.output[-1](to_out)
         
         return output
