@@ -20,7 +20,7 @@ class CGMN(nn.Module):
         self.node_features = self.contrastive.size(1)
         self.gate_units = gate_units
 
-        self.pooling = nn.ModuleList([GlobalAttention(_gate_nn(self.node_features, gate_units))])
+        self.pooling = nn.ModuleList([GlobalAttention(_GateNN(self.node_features, gate_units))])
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1) * len(self.cgmm.layers), out_features)])
 
         self.to(device=self.device)
