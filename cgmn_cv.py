@@ -44,7 +44,7 @@ elif DATASET == 'DD':
 _R_STATE = 42
 BATCH_SIZE = 128
 EPOCHS = 5000
-PATIENCE = 20
+PATIENCE = 30
 
 chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_{GATE_UNITS}.tar"
 
@@ -58,7 +58,9 @@ else:
             'epoch': 0,
             'abs_v_loss': float('inf'),
             'v_loss': float('inf'),
-            'pat': 0,
+            'abs_v_acc': -float('inf'),
+            'v_acc': -float('inf'),
+            'pat': [0, float('inf')],
             'f_v_loss': [],
             'loss': [],
             'acc': [],
@@ -137,30 +139,34 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
             print(f"Fold {CHK['CV']['fold']} - Layer {CHK['MOD']['curr']['L']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
             
             CHK['CV']['epoch'] += 1
-            if vl_loss.item() < CHK['CV']['v_loss']:
+            if vl_accuracy > CHK['CV']['v_acc'] or (vl_accuracy == CHK['CV']['v_acc'] and vl_loss.item() < CHK['CV']['v_loss']):
+                CHK['CV']['v_acc'] = vl_accuracy
                 CHK['CV']['v_loss'] = vl_loss.item()
                 CHK['MOD']['curr']['state'] = cgmn.state_dict()
                 CHK['OPT'] = opt.state_dict()
-                if vl_loss.item() < CHK['CV']['abs_v_loss']:
+                if  vl_accuracy > CHK['CV']['abs_v_acc'] or (vl_accuracy == CHK['CV']['abs_v_acc'] and vl_loss.item() < CHK['CV']['abs_v_loss']):
+                    CHK['CV']['abs_v_acc'] = vl_accuracy
                     CHK['CV']['abs_v_loss'] = vl_loss.item()
                     CHK['MOD']['best']['state'] = cgmn.state_dict()
                     CHK['MOD']['best']['L'] = CHK['MOD']['curr']['L']
-                CHK['CV']['pat'] = 0
-                torch.save(CHK, chk_path)
                 
+            if vl_loss.item() < CHK['CV']['pat'][1]:
+                CHK['CV']['pat'][0] = 0
+                CHK['CV']['pat'][1] = vl_loss.item()
             else:
-                CHK['CV']['pat'] += 1
-                torch.save(CHK, chk_path)
-                if CHK['CV']['pat'] >= PATIENCE:
+                CHK['CV']['pat'][0] += 1
+                if CHK['CV']['pat'][0] >= PATIENCE:
                     CHK['CV']['layer_loss'][CHK['CV']['fold']].append(CHK['CV']['v_loss'])
-                    torch.save(CHK, chk_path)
                     print("Patience over: training stopped.")
                     break
+            torch.save(CHK, chk_path)
+            
                     
         CHK['CV']['epoch'] = 0
+        CHK['CV']['v_acc'] = -float('inf')
         CHK['CV']['v_loss'] = float('inf')
         CHK['OPT'] = None
-        CHK['CV']['pat'] = 0
+        CHK['CV']['pat'] = [0, float('inf')]
         torch.save(CHK, chk_path)
 
     # TESTING
@@ -182,9 +188,11 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     CHK['CV']['acc'].append(ts_acc)
     CHK['CV']['fold'] += 1
     CHK['CV']['epoch'] = 0
-    CHK['CV']['pat'] = 0
+    CHK['CV']['pat'] = [0, float('inf')]
     CHK['CV']['abs_v_loss'] = float('inf')
     CHK['CV']['v_loss'] = float('inf')
+    CHK['CV']['abs_v_acc'] = -float('inf')
+    CHK['CV']['v_acc'] = -float('inf')
     CHK['MOD'] = {
         'best': {
             'L': 1,

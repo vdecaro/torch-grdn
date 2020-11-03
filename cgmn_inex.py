@@ -46,9 +46,11 @@ else:
     CHK = {
         'CV': {
             'epoch': 0,
-            'pat': 0,
+            'pat': [0, float('inf')],
             'v_loss': float('+inf'),
             'abs_v_loss': float('+inf'),
+            'abs_v_acc': -float('inf'),
+            'v_acc': -float('inf'),
             't_acc': None,
         },
         'MOD': {
@@ -129,27 +131,32 @@ while CHK['MOD']['curr']['L'] <= MAX_DEPTH:
         print(f"Layer {CHK['MOD']['curr']['L']} - Epoch {e}: Loss = {vl_loss.item()} ---- Accuracy = {vl_acc}")
 
         CHK['CV']['epoch'] += 1
-        if vl_loss.item() < CHK['CV']['v_loss']:
+        if vl_acc > CHK['CV']['v_acc'] or (vl_acc == CHK['CV']['v_acc'] and vl_loss.item() < CHK['CV']['v_loss']):
+            CHK['CV']['v_acc'] = vl_acc
             CHK['CV']['v_loss'] = vl_loss.item()
             CHK['MOD']['curr']['state'] = cgmn.state_dict()
             CHK['OPT'] = opt.state_dict()
-            if vl_loss.item() < CHK['CV']['abs_v_loss']:
+            if  vl_acc > CHK['CV']['abs_v_acc'] or (vl_acc == CHK['CV']['abs_v_acc'] and vl_loss.item() < CHK['CV']['abs_v_loss']):
+                CHK['CV']['abs_v_acc'] = vl_acc
                 CHK['CV']['abs_v_loss'] = vl_loss.item()
                 CHK['MOD']['best']['state'] = cgmn.state_dict()
                 CHK['MOD']['best']['L'] = CHK['MOD']['curr']['L']
-            CHK['CV']['pat'] = 0
-            torch.save(CHK, chk_path)
-            
+
+        if vl_loss.item() < CHK['CV']['pat'][1]:
+            CHK['CV']['pat'][0] = 0
+            CHK['CV']['pat'][1] = vl_loss.item()
         else:
-            CHK['CV']['pat'] += 1
-            if CHK['CV']['pat'] == PATIENCE:
+            CHK['CV']['pat'][0] += 1
+            if CHK['CV']['pat'][0] >= PATIENCE:
                 print("Patience over: training stopped.")
                 break
-        
+        torch.save(CHK, chk_path)
+
     CHK['CV']['epoch'] = 0
+    CHK['CV']['v_acc'] = -float('inf')
     CHK['CV']['v_loss'] = float('inf')
     CHK['OPT'] = None
-    CHK['CV']['pat'] = 0
+    CHK['CV']['pat'] = [0, float('inf')]
     torch.save(CHK, chk_path)
 
 cgmn = CGMN(CLASSES, M, C, L, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)

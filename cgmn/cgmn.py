@@ -29,15 +29,22 @@ class CGMN(nn.Module):
         log_likelihood = self.cgmm(x, edge_index, pos)
         b_norm_lhood = torch.stack([b(log_likelihood[:, i]) for i, b in enumerate(self.b_norm)], dim=1)
         c_neurons = (b_norm_lhood @ self.contrastive).tanh().detach_()
-
-        to_out = torch.cat([att(c_neurons[:, i], batch) for i, att in enumerate(self.pooling)], -1)
-        output = self.output[-1](to_out)
+        
+        r_i = []
+        for i, att in enumerate(self.pooling):
+            if i < len(self.pooling)-1:
+                with torch.no_grad():
+                    r_i.append(att(c_neurons[:, i], batch))
+            else:
+                r_i.append(att(c_neurons[:, i], batch))
+        r_i = torch.cat(r_i, -1)
+        output = self.output[-1](r_i)
         
         return output
 
     def stack_layer(self):
         self.cgmm.stack_layer()
-        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False, momentum=0.4))
+        self.b_norm.append(nn.BatchNorm1d(self.cgmm.n_gen, affine=False))
         self.b_norm[-1].to(device=self.device)
         
         self.pooling.append(GlobalAttention(_GateNN(self.node_features, self.gate_units)))
@@ -49,9 +56,8 @@ class CGMN(nn.Module):
     def train(self, mode=True):
         super(CGMN, self).train(mode=mode)  # will turn on batchnorm (buffers not params).
 
-        for b, att in zip(self.b_norm[:-1], self.pooling[:-1]):
+        for b in self.b_norm[:-1]:
             b.eval()
-            att.eval()
 
         return self
 
