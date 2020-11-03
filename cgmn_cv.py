@@ -61,7 +61,7 @@ else:
             'abs_v_acc': -float('inf'),
             'v_acc': -float('inf'),
             'pat': [0, float('inf')],
-            'l_pat': [0, False],
+            'l_pat': 0,
             'f_v_loss': [],
             'loss': [],
             'acc': [],
@@ -100,7 +100,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = DataLoader(ts_data, batch_size=len(ts_data), shuffle=False, pin_memory=True)
 
-    while CHK['CV']['l_pat'][0] < L_PATIENCE:
+    while CHK['CV']['l_pat'][0] <= L_PATIENCE:
         cgmn = CGMN(1, M, C, None, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
             cgmn.stack_layer()
@@ -148,8 +148,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     CHK['CV']['abs_v_loss'] = vl_loss
                     CHK['MOD']['best']['state'] = cgmn.state_dict()
                     CHK['MOD']['best']['L'] = CHK['MOD']['curr']['L']
+                    CHK['CV']['l_pat'] = 0
             
-            CHK['CV']['l_pat'][1] = CHK['CV']['l_pat'][1] or vl_accuracy > CHK['CV']['abs_v_acc'] or vl_loss < CHK['CV']['abs_v_loss']
             if vl_loss < CHK['CV']['pat'][1]:
                 CHK['CV']['pat'][0] = 0
                 CHK['CV']['pat'][1] = vl_loss
@@ -161,8 +161,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     break
             torch.save(CHK, chk_path)
 
-        CHK['CV']['l_pat'][0] = CHK['CV']['l_pat'][0] + 1 if CHK['CV']['l_pat'][1] else 0
-        CHK['CV']['l_pat'][1] = False         
+        CHK['CV']['l_pat'] += 1
         CHK['CV']['epoch'] = 0
         CHK['CV']['v_acc'] = -float('inf')
         CHK['CV']['v_loss'] = float('inf')
@@ -190,6 +189,7 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     CHK['CV']['fold'] += 1
     CHK['CV']['epoch'] = 0
     CHK['CV']['pat'] = [0, float('inf')]
+    CHK['CV']['l_pat'] = 0
     CHK['CV']['abs_v_loss'] = float('inf')
     CHK['CV']['v_loss'] = float('inf')
     CHK['CV']['abs_v_acc'] = -float('inf')
