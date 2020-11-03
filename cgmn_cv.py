@@ -28,11 +28,10 @@ def transform(dataset):
 ###################################
 DEVICE = torch.device(sys.argv[1])
 DATASET = sys.argv[2]
-MAX_DEPTH = int(sys.argv[3])
-M = int(sys.argv[4])
-C = int(sys.argv[5])
-GATE_UNITS = int(sys.argv[6])
-lr = float(sys.argv[7])
+M = int(sys.argv[3])
+C = int(sys.argv[4])
+GATE_UNITS = int(sys.argv[5])
+lr = float(sys.argv[6])
 
 if DATASET == 'NCI1':
     N_SYMBOLS = 37
@@ -45,8 +44,9 @@ _R_STATE = 42
 BATCH_SIZE = 128
 EPOCHS = 5000
 PATIENCE = 30
+L_PATIENCE = 2
 
-chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_{GATE_UNITS}.tar"
+chk_path = f"CGMN_CV/{DATASET}_{M}_{C}_{GATE_UNITS}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)
@@ -61,6 +61,7 @@ else:
             'abs_v_acc': -float('inf'),
             'v_acc': -float('inf'),
             'pat': [0, float('inf')],
+            'l_pat': [0, False],
             'f_v_loss': [],
             'loss': [],
             'acc': [],
@@ -98,7 +99,8 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
     tr_ld = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
     vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
     ts_ld = DataLoader(ts_data, batch_size=len(ts_data), shuffle=False, pin_memory=True)
-    while CHK['MOD']['curr']['L'] < MAX_DEPTH:
+
+    while CHK['CV']['l_pat'][0] < L_PATIENCE:
         cgmn = CGMN(1, M, C, None, N_SYMBOLS, gate_units=GATE_UNITS, device=DEVICE)
         for _ in range(len(cgmn.cgmm.layers), CHK['MOD']['curr']['L']):
             cgmn.stack_layer()
@@ -108,12 +110,9 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
 
             # This condition checks whether the current state of the CGMN is fully trained
             if CHK['OPT'] is None:
-                if CHK['MOD']['curr']['L'] + 1 > MAX_DEPTH:
-                    break
-                else:
-                    cgmn.stack_layer()
-                    CHK['MOD']['curr']['state'] = cgmn.state_dict()
-                    CHK['MOD']['curr']['L'] += 1
+                cgmn.stack_layer()
+                CHK['MOD']['curr']['state'] = cgmn.state_dict()
+                CHK['MOD']['curr']['L'] += 1
         
         opt = torch.optim.Adam(cgmn.parameters(), lr=lr)
         if CHK['OPT'] is not None:
@@ -134,25 +133,26 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                 with torch.no_grad():
                     vl_batch = vl_batch.to(DEVICE, non_blocking=True) if sys.argv[1] != 'cpu:0' else vl_batch
                     out = cgmn(vl_batch.x, vl_batch.edge_index, vl_batch.batch)
-                    vl_loss = bce(out, vl_batch.y)
+                    vl_loss = bce(out, vl_batch.y).item()
                     vl_accuracy = accuracy(vl_batch.y, out.sigmoid().round())
-            print(f"Fold {CHK['CV']['fold']} - Layer {CHK['MOD']['curr']['L']} - Epoch {i}: Loss = {vl_loss.item()} ---- Accuracy = {vl_accuracy}")
+            print(f"Fold {CHK['CV']['fold']} - Layer {CHK['MOD']['curr']['L']} - Epoch {i}: Loss = {vl_loss} ---- Accuracy = {vl_accuracy}")
             
             CHK['CV']['epoch'] += 1
-            if vl_accuracy > CHK['CV']['v_acc'] or (vl_accuracy == CHK['CV']['v_acc'] and vl_loss.item() < CHK['CV']['v_loss']):
+            if vl_accuracy > CHK['CV']['v_acc'] or (vl_accuracy == CHK['CV']['v_acc'] and vl_loss < CHK['CV']['v_loss']):
                 CHK['CV']['v_acc'] = vl_accuracy
-                CHK['CV']['v_loss'] = vl_loss.item()
+                CHK['CV']['v_loss'] = vl_loss
                 CHK['MOD']['curr']['state'] = cgmn.state_dict()
                 CHK['OPT'] = opt.state_dict()
-                if  vl_accuracy > CHK['CV']['abs_v_acc'] or (vl_accuracy == CHK['CV']['abs_v_acc'] and vl_loss.item() < CHK['CV']['abs_v_loss']):
+                if  vl_accuracy > CHK['CV']['abs_v_acc'] or (vl_accuracy == CHK['CV']['abs_v_acc'] and vl_loss < CHK['CV']['abs_v_loss']):
                     CHK['CV']['abs_v_acc'] = vl_accuracy
-                    CHK['CV']['abs_v_loss'] = vl_loss.item()
+                    CHK['CV']['abs_v_loss'] = vl_loss
                     CHK['MOD']['best']['state'] = cgmn.state_dict()
                     CHK['MOD']['best']['L'] = CHK['MOD']['curr']['L']
-                
-            if vl_loss.item() < CHK['CV']['pat'][1]:
+            
+            CHK['CV']['l_pat'][1] = CHK['CV']['l_pat'][1] or vl_accuracy > CHK['CV']['abs_v_acc'] or vl_loss < CHK['CV']['abs_v_loss']
+            if vl_loss < CHK['CV']['pat'][1]:
                 CHK['CV']['pat'][0] = 0
-                CHK['CV']['pat'][1] = vl_loss.item()
+                CHK['CV']['pat'][1] = vl_loss
             else:
                 CHK['CV']['pat'][0] += 1
                 if CHK['CV']['pat'][0] >= PATIENCE:
@@ -160,8 +160,9 @@ for ds_i, ts_i in split[CHK['CV']['fold']:]:
                     print("Patience over: training stopped.")
                     break
             torch.save(CHK, chk_path)
-            
-                    
+
+        CHK['CV']['l_pat'][0] = CHK['CV']['l_pat'][0] + 1 if CHK['CV']['l_pat'][1] else 0
+        CHK['CV']['l_pat'][1] = False         
         CHK['CV']['epoch'] = 0
         CHK['CV']['v_acc'] = -float('inf')
         CHK['CV']['v_loss'] = float('inf')
