@@ -62,7 +62,7 @@ class CGMMLayer_0(nn.Module):
     def forward(self, x):
         B, Pi = self._softmax_reparameterization()
 
-        unnorm_posterior = Pi.unsqueeze(0) * B[:, x].permute(1, 0, 2) + 1e-8
+        unnorm_posterior = Pi.unsqueeze(0) * B[:, x].permute(1, 0, 2) + 1e-12
         posterior = (unnorm_posterior / (unnorm_posterior.sum(1, keepdim=True))).detach()
 
         if self.training and not self.frozen:
@@ -105,7 +105,7 @@ class CGMMLayer(nn.Module):
         
         B_nodes = B[:, x].permute(1, 0, 2).unsqueeze(2)   # nodes x C x 1 x n_gen
         prev_h_neigh_aggr = prev_h_neigh_aggr.unsqueeze(1) # nodes x 1 x C x n_gen
-        unnorm_posterior = B_nodes * (Q_neigh * prev_h_neigh_aggr) + 1e-8
+        unnorm_posterior = B_nodes * (Q_neigh * prev_h_neigh_aggr) + 1e-12
         
         posterior_il = (unnorm_posterior / unnorm_posterior.sum([1, 2], keepdim=True)).detach() # nodes x C x C x n_gen
         posterior_i = posterior_il.sum(2).detach()
@@ -160,8 +160,11 @@ class PositionalCGMMLayer(nn.Module):
         posterior_i = scatter(posterior_il.sum(2), index=edge_index[0], dim=0).detach() # nodes x C x n_gen
         if self.training and not self.frozen:
             B_nodes = B[:, x].permute(1, 0, 2)  # nodes x C x n_gen, necessary for backpropagating in the new, detached graph
-            exp_likelihood = (posterior_il * trans_neigh.log()).sum() + (posterior_i * B_nodes.log()).sum()
-            (-exp_likelihood).backward()
+            exp_likelihood = (posterior_il * trans_neigh.log()).sum([1, 2]) + (posterior_i * B_nodes.log()).sum(1)
+            bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > 0.4).to(self.device)
+            exp_likelihood *= bitmask
+            neg_exp_likelihood = -exp_likelihood.sum()
+            neg_exp_likelihood.backward()
 
         likelihood = likelihood.log().squeeze()
         return likelihood, posterior_i
