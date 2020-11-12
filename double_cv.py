@@ -98,7 +98,7 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
         tr_ld = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=(len(tr_data)%BATCH_SIZE == 1))
         vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
 
-        for hparams in HPARAMS[INT['params_idx']:]:
+        for hparams in HPARAMS[INT['hparams_idx']:]:
             hparams_ = (OUT_FEATURES, hparams[0], hparams[1], N_SYMBOLS, hparams[2], hparams[3])
             cgmn_incr_train(CHK, hparams_, loss, tr_ld, vl_ld, EPOCHS, E_PAT, L_PAT, MAX_DEPTH, DEVICE)
             INT['loss'][INT['fold']].append(CURR['abs_v_loss'])
