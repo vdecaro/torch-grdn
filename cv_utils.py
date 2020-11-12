@@ -89,7 +89,7 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
         CURR['e_pat'] = 0
         CURR['epoch'] = 0
         CURR['l_pat'] += 1
-        curr['trained'] = MOD['curr']['L'] < max_depth and CURR['l_pat'] <= l_pat
+        CURR['trained'] = MOD['curr']['L'] < max_depth and CURR['l_pat'] <= l_pat
         torch.save(chk, chk['PATH'])
 
 
@@ -99,7 +99,7 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
 def get_cgmn(curr_chk, hparams, which, device):
     CURR = curr_chk
     MOD = CURR['MOD']
-    cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], hparams[5])
+    cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], device)
     for _ in range(len(cgmn.cgmm.layers), MOD[which]['L']):
         cgmn.stack_layer()
 
