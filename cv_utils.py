@@ -34,11 +34,11 @@ def get_cv_dict(chk_path):
                 'l_pat': 0,
                 'MOD': {
                     'best': {
-                        'L': 1,
+                        'L': 0,
                         'state': None
                     },
                     'curr': {
-                        'L': 1,
+                        'L': 0,
                         'state': None
                     },
                 },
@@ -51,22 +51,22 @@ def get_cv_dict(chk_path):
 
 def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_depth, device, verbose=True):
     EXT = chk['EXT']
-    INT = chk['INT']
+    INT = chk['INT'][EXT['fold']]
     CURR = chk['CURR']
-    MOD = chk['CURR']['MOD']
+    MOD = CURR['MOD']
     
     while not CURR['trained']:
         cgmn = get_cgmn(CURR, hparams[:-1], 'curr', device)
-        if CURR['OPT'] is None:
+        if MOD['curr']['L'] > 0 and CURR['OPT'] is None:
             cgmn.stack_layer()
-            MOD['curr']['state'] = cgmn.state_dict()
-            MOD['curr']['L'] += 1
+        MOD['curr']['state'] = cgmn.state_dict()
+        MOD['curr']['L'] += 1
         opt = get_opt(CURR, cgmn, hparams[-1])
         for i in range(CURR['epoch'], epochs):
             _ = train_model(cgmn, opt, loss, tr_ld, cgmn.device)
             vl_loss, vl_acc = eval_model(cgmn, loss, vl_ld, cgmn.device)
             if verbose:
-                print(f"EXT {EXT['fold']} - INT {INT['fold']} - CONF {hparams} - Layer {MOD['curr']['L']} - Epoch {i}: Loss = {vl_loss} ---- Accuracy = {vl_acc}")
+                print(f"EXT {EXT['fold']} - INT {INT['fold']} - CONF ({hparams[1]}, {hparams[2]}, {hparams[4]}) - Layer {MOD['curr']['L']} - Epoch {i}: Loss = {vl_loss} ---- Accuracy = {vl_acc}")
             CURR['epoch'] += 1
             if vl_loss < CURR['v_loss']:
                 CURR['v_loss'] = vl_loss
@@ -77,21 +77,20 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
                     MOD['best']['state'] = cgmn.state_dict()
                     MOD['best']['L'] = MOD['curr']['L']
                     CURR['l_pat'] = 0
-                if vl_loss < CURR['e_pat']:
-                    CURR['e_pat'] = 0
-                else:
-                    CURR['e_pat'][0] += 1
-                    if CURR['e_pat'] >= e_pat:
-                        break 
+                CURR['e_pat'] = 0
+            else:
+                CURR['e_pat'] += 1
+                if CURR['e_pat'] >= e_pat:
+                    break 
             torch.save(chk, chk['PATH'])
         CURR['v_loss'] = float('inf')
         CURR['OPT'] = None
         CURR['e_pat'] = 0
         CURR['epoch'] = 0
+        CURR['trained'] = MOD['curr']['L'] == max_depth or CURR['l_pat'] == l_pat
         CURR['l_pat'] += 1
-        CURR['trained'] = MOD['curr']['L'] < max_depth and CURR['l_pat'] <= l_pat
         torch.save(chk, chk['PATH'])
-
+    CURR['l_pat'] = 0
 
 ######################################################
 #         INIT AND RECOVERING OF MODEL AND OPT       #

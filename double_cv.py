@@ -50,10 +50,10 @@ elif DATASET == 'PROTEINS':
     BATCH_SIZE = 100
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = [
-        (15, 3, 8, 1e-4), (15, 3, 16, 1e-4), (15, 3, 32, 1e-4),
         (25, 4, 16, 1e-4), (25, 4, 32, 1e-4), (25, 4, 48, 1e-4),
         (30, 4, 16, 1e-4), (30, 4, 32, 1e-4), (30, 4, 48, 1e-4),
-        (40, 5, 32, 1e-4), (40, 5, 48, 1e-4), (40, 5, 64, 1e-4),
+        (40, 5, 16, 1e-4), (40, 5, 32, 1e-4), (40, 5, 64, 1e-4),
+        (50, 6, 16, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4),
     ]
 
 elif DATASET == 'DD':
@@ -105,11 +105,11 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
 
             CURR['MOD'] = {
                 'best': {
-                    'L': 1,
+                    'L': 0,
                     'state': None
                 },
                 'curr': {
-                    'L': 1,
+                    'L': 0,
                     'state': None
                 },
             }
@@ -145,7 +145,7 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
             hparams_ = (OUT_FEATURES, best_params[0], best_params[1], N_SYMBOLS, best_params[2], best_params[3])
             cgmn_incr_train(CHK, hparams_, loss, tr_ld, vl_ld, EPOCHS, E_PAT, L_PAT, MAX_DEPTH, DEVICE)
             
-            cgmn = get_cgmn(CURR, best_params, 'best', DEVICE)
+            cgmn = get_cgmn(CURR, hparams_, 'best', DEVICE)
             ts_loss, ts_acc = eval_model(cgmn, loss, ts_ld, DEVICE)
             EXT['loss'][EXT['fold']].append(ts_loss)
             EXT['acc'][EXT['fold']].append(ts_acc)
@@ -153,11 +153,11 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
 
             CURR['MOD'] = {
                 'best': {
-                    'L': 1,
+                    'L': 0,
                     'state': None
                 },
                 'curr': {
-                    'L': 1,
+                    'L': 0,
                     'state': None
                 },
             }
