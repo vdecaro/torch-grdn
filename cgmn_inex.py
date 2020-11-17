@@ -16,11 +16,10 @@ from cgmn.cgmn import CGMN
 
 DEVICE = torch.device(sys.argv[1])
 DATASET = sys.argv[2]
-MAX_DEPTH = int(sys.argv[3])
-M = int(sys.argv[4])
-C = int(sys.argv[5])
-GATE_UNITS = int(sys.argv[6])
-lr = float(sys.argv[7])
+M = int(sys.argv[3])
+C = int(sys.argv[4])
+GATE_UNITS = int(sys.argv[5])
+lr = float(sys.argv[6])
 
 _R_STATE = 42
 if DATASET == 'inex2005':
@@ -35,9 +34,11 @@ if DATASET == 'inex2006':
     L = 66
     BATCH_SIZE = 128
     PATIENCE = 25
+    
 EPOCHS = 2000
+MAX_DEPTH = 2
 
-chk_path = f"CGMN_CV/{DATASET}_{MAX_DEPTH}_{M}_{C}_{GATE_UNITS}.tar"
+chk_path = f"CGMN_CV/{DATASET}_{M}_{C}_{GATE_UNITS}.tar"
 
 if os.path.exists(chk_path):
     CHK = torch.load(chk_path)

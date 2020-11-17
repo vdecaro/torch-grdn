@@ -59,8 +59,11 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
         cgmn = get_cgmn(CURR, hparams[:-1], 'curr', device)
         if MOD['curr']['L'] > 0 and CURR['OPT'] is None:
             cgmn.stack_layer()
+            
+        if CURR['OPT'] is None:
+            MOD['curr']['L'] += 1
+            
         MOD['curr']['state'] = cgmn.state_dict()
-        MOD['curr']['L'] += 1
         opt = get_opt(CURR, cgmn, hparams[-1])
         for i in range(CURR['epoch'], epochs):
             _ = train_model(cgmn, opt, loss, tr_ld, cgmn.device)

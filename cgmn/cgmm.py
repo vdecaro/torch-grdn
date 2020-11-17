@@ -160,11 +160,8 @@ class PositionalCGMMLayer(nn.Module):
         posterior_i = scatter(posterior_il.sum(2), index=edge_index[0], dim=0).detach() # nodes x C x n_gen
         if self.training and not self.frozen:
             B_nodes = B[:, x].permute(1, 0, 2)  # nodes x C x n_gen, necessary for backpropagating in the new, detached graph
-            exp_likelihood = (posterior_il * trans_neigh.log()).sum([1, 2]) + (posterior_i * B_nodes.log()).sum(1)
-            bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > 0.4).to(self.device)
-            exp_likelihood *= bitmask
-            neg_exp_likelihood = -exp_likelihood.sum()
-            neg_exp_likelihood.backward()
+            exp_likelihood = (posterior_il * trans_neigh.log()).sum() + (posterior_i * B_nodes.log()).sum()
+            (-exp_likelihood).backward()
 
         likelihood = likelihood.log().squeeze()
         return likelihood, posterior_i
