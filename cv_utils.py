@@ -4,7 +4,7 @@ import torch
 from torch_geometric.utils.metric import accuracy
 from cgmn.cgmn import CGMN
 
-def get_cv_dict(chk_path):
+def get_cv_dict(chk_path, s_fold):
     if os.path.exists(chk_path):
         restart = True
         CHK = torch.load(chk_path)
@@ -12,12 +12,13 @@ def get_cv_dict(chk_path):
         restart = False
         CHK = {
             'EXT': {
-                'fold': 0,
+                'fold': s_fold,
                 'state': 0,
                 'attempt': 0,
                 'best': [],
-                'loss': [[] for _ in range(10)],
-                'acc': [[] for _ in range(10)],
+                't_loss': [[] for _ in range(10)],
+                't_acc': [[] for _ in range(10)],
+                'v_loss': [[] for _ in range(10)],
             },
 
             'INT': [{

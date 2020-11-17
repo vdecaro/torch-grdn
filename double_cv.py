@@ -28,6 +28,8 @@ RD_STATES = [59, 92, 95]
 
 DEVICE = torch.device(sys.argv[1])
 DATASET = sys.argv[2]
+S_FOLD = int(sys.argv[3])
+F_FOLD = int(sys.argv[4])
 
 if DATASET == 'NCI1':
     OUT_FEATURES = 1
@@ -50,10 +52,9 @@ elif DATASET == 'PROTEINS':
     BATCH_SIZE = 100
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = [
-        (25, 4, 16, 1e-4), (25, 4, 32, 1e-4), (25, 4, 48, 1e-4),
-        (30, 4, 16, 1e-4), (30, 4, 32, 1e-4), (30, 4, 48, 1e-4),
-        (40, 5, 16, 1e-4), (40, 5, 32, 1e-4), (40, 5, 64, 1e-4),
-        (50, 6, 16, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4),
+        (30, 4, 0, 1e-4), (30, 4, 16, 1e-4), (30, 4, 32, 1e-4), (30, 4, 64, 1e-4),
+        (40, 5, 0, 1e-4), (40, 5, 16, 1e-4), (40, 5, 32, 1e-4), (40, 5, 64, 1e-4),
+        (50, 6, 0, 1e-4), (50, 6, 16, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4),
     ]
 
 elif DATASET == 'DD':
@@ -67,8 +68,8 @@ elif DATASET == 'DD':
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = []
 
-chk_path = f"CGMN_CV/{DATASET}.tar"
-CHK, restart = get_cv_dict(chk_path)
+chk_path = f"CGMN_CV/{DATASET}_{S_FOLD}_{F_FOLD}.tar"
+CHK, restart = get_cv_dict(chk_path, S_FOLD)
 EXT = CHK['EXT']
 CURR = CHK['CURR']
 if restart:
@@ -86,7 +87,7 @@ dataset.data.x = dataset.data.x.argmax(1).detach()
 ext_kfold = StratifiedKFold(10, shuffle=True, random_state=42)
 ext_split = list(ext_kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
 
-for int_i, ext_i in ext_split[EXT['fold']:]:
+for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
     int_data, ext_data = dataset[int_i.tolist()], dataset[ext_i.tolist()]
     int_kfold = StratifiedKFold(5, shuffle=True, random_state=15)
     int_split = list(int_kfold.split(X=np.zeros(len(int_data)), y=np.array([g.y for g in int_data])))
@@ -95,8 +96,8 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
     # INTERNAL 5-FOLD CROSS-VALIDATION
     for tr_i, vl_i in int_split[INT['fold']:]:
         tr_data, vl_data = int_data[tr_i.tolist()], int_data[vl_i.tolist()]
-        tr_ld = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=(len(tr_data)%BATCH_SIZE == 1))
-        vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
+        tr_ld = DataLoader(tr_data, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, drop_last=(len(tr_data)%BATCH_SIZE == 1))
+        vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=False)
 
         for hparams in HPARAMS[INT['hparams_idx']:]:
             hparams_ = (OUT_FEATURES, hparams[0], hparams[1], N_SYMBOLS, hparams[2], hparams[3])
@@ -147,8 +148,9 @@ for int_i, ext_i in ext_split[EXT['fold']:]:
             
             cgmn = get_cgmn(CURR, hparams_, 'best', DEVICE)
             ts_loss, ts_acc = eval_model(cgmn, loss, ts_ld, DEVICE)
-            EXT['loss'][EXT['fold']].append(ts_loss)
-            EXT['acc'][EXT['fold']].append(ts_acc)
+            EXT['v_loss'][EXT['fold']].append(CURR['abs_v_loss'])
+            EXT['t_loss'][EXT['fold']].append(ts_loss)
+            EXT['t_acc'][EXT['fold']].append(ts_acc)
             print(f"Test {EXT['fold']} - State {rd_state} - Attempt {attempt}: Loss = {ts_loss} ---- Accuracy = {ts_acc}")
 
             CURR['MOD'] = {
