@@ -3,6 +3,7 @@ import os
 import torch
 from torch_geometric.utils.metric import accuracy
 from cgmn.cgmn import CGMN
+from cgmn.one_gen_cgmn import OneGenCGMN
 
 def get_cv_dict(chk_path, s_fold):
     if os.path.exists(chk_path):
@@ -102,7 +103,10 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
 def get_cgmn(curr_chk, hparams, which, device):
     CURR = curr_chk
     MOD = CURR['MOD']
-    cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], device)
+    if len(hparams) > 3:
+        cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], device)
+    else:
+        cgmn = OneGenCGMN(hparams[0], hparams[1], None, hparams[2], device)
     for _ in range(len(cgmn.cgmm.layers), MOD[which]['L']):
         cgmn.stack_layer()
 

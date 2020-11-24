@@ -17,7 +17,7 @@ class CGMM(nn.Module):
 
         self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
 
-    def forward(self, x, edge_index, pos=None):
+    def forward(self, x, edge_index, pos=None, get_states=False):
         log_likelihood = []
         h_prev = []
         for i, l in enumerate(self.layers):
@@ -25,9 +25,9 @@ class CGMM(nn.Module):
                 l_log_likelihood, l_h_state = l(x)
             else:
                 if pos is None:
-                    l_log_likelihood, l_h_state = l(x, h_prev[i-1], edge_index)
+                    l_log_likelihood, l_h_state = l(x, h_prev[i-1], edge_index, get_states)
                 else:
-                    l_log_likelihood, l_h_state = l(x, h_prev[i-1], edge_index, pos)
+                    l_log_likelihood, l_h_state = l(x, h_prev[i-1], edge_index, pos, get_states)
             h_prev.append(l_h_state)
             log_likelihood.append(l_log_likelihood)
 
@@ -59,7 +59,7 @@ class CGMMLayer_0(nn.Module):
         self.to(device=self.device)
         self.frozen = False
     
-    def forward(self, x):
+    def forward(self, x, get_states=False):
         B, Pi = self._softmax_reparameterization()
 
         unnorm_posterior = Pi.unsqueeze(0) * B[:, x].permute(1, 0, 2) + 1e-12
@@ -69,7 +69,7 @@ class CGMMLayer_0(nn.Module):
             exp_likelihood = (posterior * (Pi.unsqueeze(0).log() + B[:, x].permute(1, 0, 2).log())).sum()
             (-exp_likelihood).backward()
 
-        log_likelihood = unnorm_posterior.sum(1).log()
+        log_likelihood = unnorm_posterior.sum(1).log() if not get_states else unnorm_posterior.log()
         return log_likelihood, posterior
 
     def _softmax_reparameterization(self):
@@ -97,7 +97,7 @@ class CGMMLayer(nn.Module):
         self.to(device=self.device)
         self.frozen = False
     
-    def forward(self, x, prev_h, edge_index):
+    def forward(self, x, prev_h, edge_index, get_states=False):
         Q_neigh, B = self._softmax_reparameterization()
         
         prev_h_neigh = prev_h[edge_index[1]]
@@ -114,7 +114,7 @@ class CGMMLayer(nn.Module):
             exp_likelihood = (posterior_il * Q_neigh.log().unsqueeze(0)).sum() + (posterior_i * B_nodes.log()).sum()
             (-exp_likelihood).backward()
 
-        likelihood = unnorm_posterior.sum([1, 2]).log()
+        likelihood = unnorm_posterior.sum([1, 2] if not get_states else [2]).log()
         return likelihood, posterior_i
 
     def _softmax_reparameterization(self):
@@ -146,7 +146,7 @@ class PositionalCGMMLayer(nn.Module):
         self.to(device=self.device)
         self.frozen = False
     
-    def forward(self, x, prev_h, edge_index, pos):
+    def forward(self, x, prev_h, edge_index, pos, get_states=False):
         Q_neigh, B = self._softmax_reparameterization()
         
         prev_h_neigh = prev_h[edge_index[1]].unsqueeze(1)
@@ -154,9 +154,9 @@ class PositionalCGMMLayer(nn.Module):
         
         B_nodes = B[:, x[edge_index[0]]].permute(1, 0, 2).unsqueeze(2)   # edges x C x 1 x n_gen
         unnorm_posterior = B_nodes * trans_neigh * prev_h_neigh # edges x C x C x n_gen
-        likelihood = scatter(unnorm_posterior.sum([1, 2], keepdim=True), edge_index[0], dim=0, reduce='mean')
+        likelihood = scatter(unnorm_posterior.sum([1, 2] if not get_states else [2], keepdim=True), edge_index[0], dim=0, reduce='mean')
         
-        posterior_il = (unnorm_posterior / (likelihood[edge_index[0]] + 1e-8)).detach() # edges x C x C x n_gen
+        posterior_il = (unnorm_posterior / (likelihood[edge_index[0]] + 1e-16)).detach() # edges x C x C x n_gen
         posterior_i = scatter(posterior_il.sum(2), index=edge_index[0], dim=0).detach() # nodes x C x n_gen
         if self.training and not self.frozen:
             B_nodes = B[:, x].permute(1, 0, 2)  # nodes x C x n_gen, necessary for backpropagating in the new, detached graph
