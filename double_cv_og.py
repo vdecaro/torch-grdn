@@ -67,7 +67,7 @@ elif DATASET == 'DD':
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = []
 
-chk_path = f"CGMN_CV/{DATASET}_{S_FOLD}_{F_FOLD}.tar"
+chk_path = f"CGMN_CV/{DATASET}_{S_FOLD}_{F_FOLD}_OG.tar"
 CHK, restart = get_cv_dict(chk_path, S_FOLD)
 EXT = CHK['EXT']
 CURR = CHK['CURR']
