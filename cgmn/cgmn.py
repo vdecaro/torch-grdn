@@ -20,7 +20,7 @@ class CGMN(nn.Module):
         self.gate_units = gate_units
         
         if gate_units > 0:
-            self.pooling = nn.ModuleList([GlobalAttention(_GateNN(self.node_features, gate_units))])
+            self.pooling = nn.ModuleList([GlobalAttention(_GateNN(self.cgmm.n_gen, gate_units))])
         self.output = nn.ModuleList([nn.Linear(self.contrastive.size(1), out_features)])
 
         self.to(device=self.device)
@@ -39,29 +39,33 @@ class CGMN(nn.Module):
         return output
     
     def fw_with_att(self, x, edge_index, batch, pos=None):
-        log_likelihood = self.cgmm(x, edge_index, pos)
-        c_neurons = (log_likelihood @ self.contrastive).tanh().detach()
-        
+        log_likelihood = self.cgmm(x, edge_index, pos).detach()
         r_i = []
         for i, att in enumerate(self.pooling):
             if i < len(self.pooling)-1:
                 with torch.no_grad():
-                    r_i.append(att(c_neurons[:, i], batch))
+                    r_i.append(att(log_likelihood[:, i], batch))
             else:
-                r_i.append(att(c_neurons[:, i], batch))
-        r_i = torch.cat(r_i, -1)
-        output = self.output[-1](r_i)
+                r_i.append(att(log_likelihood[:, i], batch))
+        r_i = torch.stack(r_i, -2)
+        
+        c_neurons = (r_i @ self.contrastive).tanh().flatten(start_dim=-2)
+        
+        output = self.output[-1](c_neurons)
         return output
     
     def stack_layer(self):
         self.cgmm.stack_layer()
         
         if self.gate_units > 0:
-            self.pooling.append(GlobalAttention(_GateNN(self.node_features, self.gate_units)))
+            self.pooling.append(GlobalAttention(_GateNN(self.cgmm.n_gen, self.gate_units)))
             self.pooling[-1].to(device=self.device)
         
         self.output.append(nn.Linear(self.node_features*len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
+    
+    def get_params(self):
+        return list(self.cgmm.parameters()), list(self.output.parameters())
 
 
 class _GateNN(nn.Module):

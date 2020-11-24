@@ -40,7 +40,10 @@ if DATASET == 'NCI1':
     MAX_DEPTH = 20
     BATCH_SIZE = 100
     loss = torch.nn.BCEWithLogitsLoss()
-    HPARAMS = []
+    HPARAMS = [
+        (40, 5, 0, 1e-4), (40, 6, 0, 1e-4),  (45, 6, 0, 1e-4), (45, 7, 0, 1e-4),
+        (60, 7, 0, 1e-4), (60, 8, 0, 1e-4),  (65, 8, 0, 1e-4),  (60, 9, 0, 1e-4), 
+    ]
 
 elif DATASET == 'PROTEINS':
     OUT_FEATURES = 1
@@ -52,9 +55,14 @@ elif DATASET == 'PROTEINS':
     BATCH_SIZE = 100
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = [
-        (30, 4, 0, 1e-4), (30, 4, 32, 1e-4), (30, 4, 64, 1e-4), (30, 4, 96, 1e-4),
-        (40, 5, 0, 1e-4), (40, 5, 32, 1e-4), (40, 5, 64, 1e-4), (40, 5, 96, 1e-4),
-        (50, 6, 0, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4), (50, 6, 96, 1e-4),
+        (20, 3, 16, 1e-4), (20, 3, 32, 1e-4), (20, 3, 64, 1e-4), (20, 3, 0, 1e-4),
+        (30, 3, 16, 1e-4), (30, 3, 32, 1e-4), (30, 3, 64, 1e-4), (30, 3, 0, 1e-4),  
+        (40, 4, 16, 1e-4), (40, 4, 32, 1e-4), (40, 4, 64, 1e-4), (40, 4, 0, 1e-4),
+        (50, 6, 16, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4), (50, 6, 0, 1e-4), 
+        (60, 6, 16, 1e-4), (60, 6, 32, 1e-4), (60, 6, 64, 1e-4), (60, 6, 0, 1e-4), 
+        (60, 7, 16, 1e-4), (60, 7, 32, 1e-4), (60, 7, 64, 1e-4), (60, 7, 0, 1e-4), 
+        (70, 7, 16, 1e-4), (70, 7, 32, 1e-4), (70, 7, 64, 1e-4), (70, 7, 0, 1e-4), 
+        (70, 8, 16, 1e-4), (70, 8, 32, 1e-4), (70, 8, 64, 1e-4), (70, 8, 0, 1e-4)
     ]
 
 elif DATASET == 'DD':
@@ -77,7 +85,8 @@ if restart:
         INT = CHK['INT'][EXT['fold']]
         print(f"Restarting from EXT {EXT['fold']} - INT {INT['fold']} - CONF {HPARAMS[INT['hparams_idx']]} - Epoch {CURR['epoch']} with curr best loss {CURR['v_loss']} and abs best loss {CURR['abs_v_loss']}")
     else:
-        print(f"Restarting from EXT {EXT['fold']} - TEST - CONF {EXT['best'][EXT['fold']]} - Epoch {CURR['epoch']} with curr best loss {CURR['v_loss']} and abs best loss {CURR['abs_v_loss']}")
+        pass
+        #print(f"Restarting from EXT {EXT['fold']} - TEST - CONF {EXT['best'][EXT['fold'] - S_FOLD]} - Epoch {CURR['epoch']} with curr best loss {CURR['v_loss']} and abs best loss {CURR['abs_v_loss']}")
 
 
 dataset = TUDataset(f'.', DATASET, transform=transform(DATASET))
@@ -124,11 +133,11 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
     torch.save(CHK, CHK['PATH'])
 
     # DEFINING THE BEST CONFIGURATION OF HPARAMS ACROSS THE INTERNAL 5-FOLD CV
-    if len(EXT['best']) == EXT['fold']:
+    if len(EXT['best']) == (EXT['fold'] - S_FOLD):
         best_hparams_idx = np.argmin(np.mean(INT['loss'], axis=0))
         EXT['best'].append(HPARAMS[best_hparams_idx])
         torch.save(CHK, CHK['PATH'])
-    best_params = EXT['best'][EXT['fold']]
+    best_params = EXT['best'][EXT['fold'] - S_FOLD]
 
     # EXTERNAL TEST: three attempts on three different hold-out splits
     for rd_state in RD_STATES[EXT['state']:]:

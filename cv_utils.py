@@ -67,7 +67,7 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
         MOD['curr']['state'] = cgmn.state_dict()
         opt = get_opt(CURR, cgmn, hparams[-1])
         for i in range(CURR['epoch'], epochs):
-            _ = train_model(cgmn, opt, loss, tr_ld, cgmn.device)
+            tr_loss = train_model(cgmn, opt, loss, tr_ld, cgmn.device)
             vl_loss, vl_acc = eval_model(cgmn, loss, vl_ld, cgmn.device)
             if verbose:
                 print(f"EXT {EXT['fold']} - INT {INT['fold']} - CONF ({hparams[1]}, {hparams[2]}, {hparams[4]}) - Layer {MOD['curr']['L']} - Epoch {i}: Loss = {vl_loss} ---- Accuracy = {vl_acc}")
@@ -115,7 +115,8 @@ def get_opt(curr_chk, cgmn, lr):
     CURR = curr_chk
     opt = torch.optim.Adam(cgmn.parameters(), lr=lr)
     if CURR['OPT'] is not None:
-        opt.load_state_dict(CURR['OPT'])                 
+        opt.load_state_dict(CURR['OPT'])
+    
     return opt
 
 
