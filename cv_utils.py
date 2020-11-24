@@ -71,7 +71,8 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
             tr_loss = train_model(cgmn, opt, loss, tr_ld, cgmn.device)
             vl_loss, vl_acc = eval_model(cgmn, loss, vl_ld, cgmn.device)
             if verbose:
-                print(f"EXT {EXT['fold']} - INT {INT['fold']} - CONF ({hparams[1]}, {hparams[2]}, {hparams[4]}) - Layer {MOD['curr']['L']} - Epoch {i}: Loss = {vl_loss} ---- Accuracy = {vl_acc}")
+                params_str = f"{hparams[1]}, {hparams[2]}, {hparams[4]}"
+                print(f"EXT {EXT['fold']} - INT {INT['fold']} - CONF ({params_str}) - Layer {MOD['curr']['L']} - Epoch {i}: Tr loss = {tr_loss} ---- Loss = {vl_loss} ---- Accuracy = {vl_acc}")
             CURR['epoch'] += 1
             if vl_loss < CURR['v_loss']:
                 CURR['v_loss'] = vl_loss
@@ -103,10 +104,7 @@ def cgmn_incr_train(chk, hparams, loss, tr_ld, vl_ld, epochs, e_pat, l_pat, max_
 def get_cgmn(curr_chk, hparams, which, device):
     CURR = curr_chk
     MOD = CURR['MOD']
-    if len(hparams) > 3:
-        cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], device)
-    else:
-        cgmn = OneGenCGMN(hparams[0], hparams[1], None, hparams[2], device)
+    cgmn = CGMN(hparams[0], hparams[1], hparams[2], None, hparams[3], hparams[4], device)
     for _ in range(len(cgmn.cgmm.layers), MOD[which]['L']):
         cgmn.stack_layer()
 
@@ -115,9 +113,9 @@ def get_cgmn(curr_chk, hparams, which, device):
 
     return cgmn
 
-def get_opt(curr_chk, cgmn, lr):
+def get_opt(curr_chk, cgmn, lr, l2=None):
     CURR = curr_chk
-    opt = torch.optim.Adam(cgmn.parameters(), lr=lr)
+    opt = torch.optim.Adam(cgmn.parameters(), lr=lr) if l2 is None else torch.optim.AdamW(cgmn.parameters(), lr=lr, weight_decay=l2)
     if CURR['OPT'] is not None:
         opt.load_state_dict(CURR['OPT'])
     
