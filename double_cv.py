@@ -49,20 +49,52 @@ elif DATASET == 'PROTEINS':
     OUT_FEATURES = 1
     N_SYMBOLS = 3
     EPOCHS = 5000
-    E_PAT = 50
+    E_PAT = 100
     L_PAT = 2
     MAX_DEPTH = 20
     BATCH_SIZE = 100
     loss = torch.nn.BCEWithLogitsLoss()
     HPARAMS = [
-        (20, 3, 16, 1e-4), (20, 3, 32, 1e-4), (20, 3, 64, 1e-4), (20, 3, 0, 1e-4),
-        (30, 3, 16, 1e-4), (30, 3, 32, 1e-4), (30, 3, 64, 1e-4), (30, 3, 0, 1e-4),  
-        (40, 4, 16, 1e-4), (40, 4, 32, 1e-4), (40, 4, 64, 1e-4), (40, 4, 0, 1e-4),
-        (50, 6, 16, 1e-4), (50, 6, 32, 1e-4), (50, 6, 64, 1e-4), (50, 6, 0, 1e-4), 
-        (60, 6, 16, 1e-4), (60, 6, 32, 1e-4), (60, 6, 64, 1e-4), (60, 6, 0, 1e-4), 
-        (60, 7, 16, 1e-4), (60, 7, 32, 1e-4), (60, 7, 64, 1e-4), (60, 7, 0, 1e-4), 
-        (70, 7, 16, 1e-4), (70, 7, 32, 1e-4), (70, 7, 64, 1e-4), (70, 7, 0, 1e-4), 
-        (70, 8, 16, 1e-4), (70, 8, 32, 1e-4), (70, 8, 64, 1e-4), (70, 8, 0, 1e-4)
+        (20, 3, 0, 1e-4, 0), (20, 3, 0, 1e-4, 1e-3), (20, 3, 0, 1e-4, 1e-2), 
+        (20, 3, 16, 1e-4, 0), (20, 3, 16, 1e-4, 1e-3), (20, 3, 16, 1e-4, 1e-2), 
+        (20, 3, 32, 1e-4, 0), (20, 3, 32, 1e-4, 1e-3), (20, 3, 32, 1e-4, 1e-2), 
+        (20, 3, 64, 1e-4, 0), (20, 3, 64, 1e-4, 1e-3), (20, 3, 64, 1e-4, 1e-2), 
+        
+        
+        (30, 3, 0, 1e-4, 0), (30, 3, 0, 1e-4, 1e-3), (30, 3, 0, 1e-4, 1e-2), 
+        (30, 3, 16, 1e-4, 0), (30, 3, 16, 1e-4, 1e-3), (30, 3, 16, 1e-4, 1e-2), 
+        (30, 3, 32, 1e-4, 0), (30, 3, 32, 1e-4, 1e-3), (30, 3, 32, 1e-4, 1e-2), 
+        (30, 3, 64, 1e-4, 0), (30, 3, 64, 1e-4, 1e-3), (30, 3, 64, 1e-4, 1e-2),  
+        
+        (40, 4, 0, 1e-4, 0), (40, 4, 0, 1e-4, 1e-3), (40, 4, 0, 1e-4, 1e-2), 
+        (40, 4, 16, 1e-4, 0), (40, 4, 16, 1e-4, 1e-3), (40, 4, 16, 1e-4, 1e-2), 
+        (40, 4, 32, 1e-4, 0), (40, 4, 32, 1e-4, 1e-3), (40, 4, 32, 1e-4, 1e-2), 
+        (40, 4, 64, 1e-4, 0), (40, 4, 64, 1e-4, 1e-3), (40, 4, 64, 1e-4, 1e-2),
+        
+        (50, 6, 0, 1e-4, 0), (50, 6, 0, 1e-4, 1e-3), (50, 6, 0, 1e-4, 1e-2),
+        (50, 6, 16, 1e-4, 0), (50, 6, 16, 1e-4, 1e-3), (50, 6, 16, 1e-4, 1e-2), 
+        (50, 6, 32, 1e-4, 0), (50, 6, 32, 1e-4, 1e-3), (50, 6, 32, 1e-4, 1e-2), 
+        (50, 6, 64, 1e-4, 0), (50, 6, 64, 1e-4, 1e-3), (50, 6, 64, 1e-4, 1e-2), 
+        
+        (60, 6, 0, 1e-4, 0), (60, 6, 0, 1e-4, 1e-3), (60, 6, 0, 1e-4, 1e-2), 
+        (60, 6, 16, 1e-4, 0), (60, 6, 16, 1e-4, 1e-3), (60, 6, 16, 1e-4, 1e-2), 
+        (60, 6, 32, 1e-4, 0), (60, 6, 32, 1e-4, 1e-3), (60, 6, 32, 1e-4, 1e-2), 
+        (60, 6, 64, 1e-4, 0), (60, 6, 64, 1e-4, 1e-2), 
+        
+        (60, 7, 0, 1e-4, 0), (60, 7, 0, 1e-4, 1e-3), (60, 7, 0, 1e-4, 1e-2), 
+        (60, 7, 16, 1e-4, 0), (60, 7, 16, 1e-4, 1e-3), (60, 7, 16, 1e-4, 1e-2), 
+        (60, 7, 32, 1e-4, 0), (60, 7, 32, 1e-4, 1e-3), (60, 7, 32, 1e-4, 1e-2), 
+        (60, 7, 64, 1e-4, 0), (60, 7, 64, 1e-4, 1e-3), (60, 7, 64, 1e-4, 1e-2), 
+        
+        (70, 7, 0, 1e-4, 0), (70, 7, 0, 1e-4, 1e-3), (70, 7, 0, 1e-4, 1e-2), 
+        (70, 7, 16, 1e-4, 0), (70, 7, 16, 1e-4, 1e-3), (70, 7, 16, 1e-4, 1e-2), 
+        (70, 7, 32, 1e-4, 0), (70, 7, 32, 1e-4, 1e-3), (70, 7, 32, 1e-4, 1e-2), 
+        (70, 7, 64, 1e-4, 0), (70, 7, 64, 1e-4, 1e-3), (70, 7, 64, 1e-4, 1e-2),
+        
+        (70, 8, 0, 1e-4, 0), (70, 8, 0, 1e-4, 1e-3), (70, 8, 0, 1e-4, 1e-2), 
+        (70, 8, 16, 1e-4, 0), (70, 8, 16, 1e-4, 1e-3), (70, 8, 16, 1e-4, 1e-2),
+        (70, 8, 32, 1e-4, 0), (70, 8, 32, 1e-4, 1e-3), (70, 8, 32, 1e-4, 1e-2),
+        (70, 8, 64, 1e-4, 0), (70, 8, 64, 1e-4, 1e-3), (70, 8, 64, 1e-4, 1e-2),
     ]
 
 elif DATASET == 'DD':
@@ -83,10 +115,9 @@ CURR = CHK['CURR']
 if restart:
     if CHK['INT'][EXT['fold']]['fold'] < 5:
         INT = CHK['INT'][EXT['fold']]
-        print(f"Restarting from EXT {EXT['fold']} - INT {INT['fold']} - CONF {HPARAMS[INT['hparams_idx']]} - Epoch {CURR['epoch']} with curr best loss {CURR['v_loss']} and abs best loss {CURR['abs_v_loss']}")
+        print(f"Restarting from EXT {EXT['fold']} - INT {INT['fold']} - CONF {HPARAMS[INT['hparams_idx']]} - Epoch {CURR['epoch']} with curr best acc {CURR['v_acc']} and abs best acc {CURR['abs_v_acc']}")
     else:
-        pass
-        #print(f"Restarting from EXT {EXT['fold']} - TEST - CONF {EXT['best'][EXT['fold'] - S_FOLD]} - Epoch {CURR['epoch']} with curr best loss {CURR['v_loss']} and abs best loss {CURR['abs_v_loss']}")
+        print(f"Restarting from EXT {EXT['fold']} - TEST - CONF {EXT['best'][EXT['fold'] - S_FOLD]} - Epoch {CURR['epoch']} with curr best acc {CURR['v_acc']} and abs best acc {CURR['abs_v_acc']}")
 
 
 dataset = TUDataset(f'.', DATASET, transform=transform(DATASET))
@@ -109,9 +140,10 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
         vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=False)
 
         for hparams in HPARAMS[INT['hparams_idx']:]:
-            hparams_ = (OUT_FEATURES, hparams[0], hparams[1], N_SYMBOLS, hparams[2], hparams[3])
+            hparams_ = (OUT_FEATURES, hparams[0], hparams[1], N_SYMBOLS, hparams[2], hparams[3], hparams[4])
             cgmn_incr_train(CHK, hparams_, loss, tr_ld, vl_ld, EPOCHS, E_PAT, L_PAT, MAX_DEPTH, DEVICE)
-            INT['loss'][INT['fold']].append(CURR['abs_v_loss'])
+            INT['v_acc'][INT['fold']].append(CURR['abs_v_acc'])
+            INT['tr_acc'][INT['fold']].append(CURR['abs_tr_acc'])
 
             CURR['MOD'] = {
                 'best': {
@@ -124,7 +156,8 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
                 },
             }
             CURR['trained'] = False
-            CURR['abs_v_loss'] = float('inf')
+            CURR['abs_v_acc'] = 0
+            CURR['abs_tr_acc'] = 0
             INT['hparams_idx'] += 1
             torch.save(CHK, CHK['PATH'])
         INT['hparams_idx'] = 0
@@ -134,8 +167,29 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
 
     # DEFINING THE BEST CONFIGURATION OF HPARAMS ACROSS THE INTERNAL 5-FOLD CV
     if len(EXT['best']) == (EXT['fold'] - S_FOLD):
-        best_hparams_idx = np.argmin(np.mean(INT['loss'], axis=0))
-        EXT['best'].append(HPARAMS[best_hparams_idx])
+        best_vl = np.mean(INT['v_acc'], axis=0)
+        best_tr = np.mean(INT['tr_acc'], axis=0)
+
+        best_idx = []
+        best_vl_value = 0
+        for idx, value in enumerate(best_vl):
+            if value > best_vl_value:
+                best_vl_value = value
+                best_idx = [idx]
+            elif value == best_vl_value:
+                best_idx.append(idx)
+        
+        if len(best_idx) > 1:
+            best_tr_value = 0
+            final_idx = None
+            for idx in best_idx:
+                if best_tr[idx] > best_tr_value:
+                    final_idx = idx
+                    best_tr_value = best_tr[idx]
+        else:
+            final_idx = best_idx[0]
+        
+        EXT['best'].append(HPARAMS[final_idx])
         torch.save(CHK, CHK['PATH'])
     best_params = EXT['best'][EXT['fold'] - S_FOLD]
 
@@ -152,15 +206,15 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
         vl_ld = DataLoader(vl_data, batch_size=len(vl_data), shuffle=False, pin_memory=True)
         ts_ld = DataLoader(ext_data, batch_size=len(ext_data), shuffle=False, pin_memory=False)
         for attempt in range(EXT['attempt'], 3):
-            hparams_ = (OUT_FEATURES, best_params[0], best_params[1], N_SYMBOLS, best_params[2], best_params[3])
+            hparams_ = (OUT_FEATURES, best_params[0], best_params[1], N_SYMBOLS, best_params[2], best_params[3], best_params[4])
             cgmn_incr_train(CHK, hparams_, loss, tr_ld, vl_ld, EPOCHS, E_PAT, L_PAT, MAX_DEPTH, DEVICE)
             
             cgmn = get_cgmn(CURR, hparams_, 'best', DEVICE)
             ts_loss, ts_acc = eval_model(cgmn, loss, ts_ld, DEVICE)
-            EXT['v_loss'][EXT['fold']].append(CURR['abs_v_loss'])
+            EXT['v_acc'][EXT['fold']].append(CURR['abs_v_acc'])
             EXT['t_loss'][EXT['fold']].append(ts_loss)
             EXT['t_acc'][EXT['fold']].append(ts_acc)
-            print(f"Test {EXT['fold']} - State {rd_state} - Attempt {attempt}: Loss = {ts_loss} ---- Accuracy = {ts_acc}")
+            print(f"Test {EXT['fold']} - State {rd_state} - Attempt {attempt}: Vl acc = {CURR['abs_v_acc']} ---- Ts acc = {ts_acc}")
 
             CURR['MOD'] = {
                 'best': {
@@ -173,7 +227,8 @@ for int_i, ext_i in ext_split[EXT['fold']:F_FOLD]:
                 },
             }
             CURR['trained'] = False
-            CURR['abs_v_loss'] = float('inf')
+            CURR['abs_v_acc'] = 0
+            CURR['abs_tr_acc'] = 0
             EXT['attempt'] += 1
             torch.save(CHK, CHK['PATH'])
 
