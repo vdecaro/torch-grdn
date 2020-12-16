@@ -1,10 +1,13 @@
 import sys
 import os
+
 import ray
 from ray import tune
+from ray.tune.suggest.bohb import TuneBOHB
+from ray.tune.schedulers import HyperBandForBOHB
 
 from exp.ghtmn_trainable import GHTMNTrainable
-from exp.utils import prepare_dir_tree_experiment, get_split, get_seed, prepare_tree_datasets
+from exp.utils import prepare_dir_tree_experiments, get_split, get_seed, prepare_tree_datasets
 from exp.early_stopper import TrialNoImprovementStopper
 
 
@@ -50,21 +53,35 @@ def get_config(name):
 if __name__ == '__main__':
     DATASET = sys.argv[1]
     exp_dir = f'GHTMN_{DATASET}'
+    
+    ray.init(num_gpus=2)
+    if not os.path.exists(exp_dir):
+        prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
         depths = range(2, 9)
-    prepare_dir_tree_experiment(DATASET)
     prepare_tree_datasets(DATASET, depths, 64)
 
-    ray.init(num_gpus=2)
     config = get_config(DATASET)
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
-    
-    experiments = []
+    scheduler = tune.schedulers.HyperBandForBOHB(
+        time_attr="training_iteration",
+        metric="vl_loss",
+        mode="min",
+        max_t=200,
+        reduction_factor=2
+    )
+
+    search_alg = TuneBOHB(
+        max_concurrent=4, 
+        metric='vl_loss', 
+        mode="min"
+    )
+
     for i in range(10):
         tr_idx, vl_idx, ts_idx = get_split(exp_dir, i)
         fold_dir = os.path.join(exp_dir, f'fold_{i}')
         config['tr_idx'], config['vl_idx'] = tr_idx, vl_idx
-        fold_exp = tune.Experiment(
+        fold_exp = tune.run(
             f'fold_{i}',
             GHTMNTrainable,
             stop=early_stopping,
@@ -74,28 +91,8 @@ if __name__ == '__main__':
             keep_checkpoints_num=3,
             checkpoint_score_attr='min-vl_loss',
             checkpoint_freq=1,
-            max_failures=3
+            max_failures=3,
+            search_alg=search_alg,
+            scheduler=scheduler,
+            reuse_actors=True
         )
-        experiments.append(fold_exp)
-
-    scheduler = tune.schedulers.HyperBandForBOHB(
-        time_attr="training_iteration",
-        metric="vl_loss",
-        mode="min",
-        max_t=200,
-        reduction_factor=2
-    )
-
-    search_alg = tune.suggest.bohb.TuneBOHB(
-        max_concurrent=4, 
-        metric='vl_loss', 
-        mode="min",
-        seed=get_seed()
-    )
-
-    tune.run(experiments,
-             search_alg=search_alg,
-             scheduler=scheduler,
-             reuse_actors=True)
-
-

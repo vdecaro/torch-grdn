@@ -31,13 +31,13 @@ def prepare_dir_tree_experiments(name):
 
 def prepare_tree_datasets(name, depths, cores):
     for d in depths:
-        if not os.path.exists(f'{name}_{d}'):
+        if not os.path.exists(f'{name}/D{d}'):
             _ = ParallelTUDataset(f'{name}/D{d}', name, pre_transform=pre_transform(d), pool_size=cores)
 
 
 def get_split(exp_dir, fold):
-    tr_i = np.load(os.path.join(exp_dir, fold, 'tr_i.npy'))
-    vl_i = np.load(os.path.join(exp_dir, fold, 'vl_i.npy'))
-    ts_i = np.load(os.path.join(exp_dir, fold, 'ts_i.npy'))
+    tr_i = np.load(os.path.join(exp_dir, f'fold_{fold}', 'tr_i.npy'))
+    vl_i = np.load(os.path.join(exp_dir, f'fold_{fold}', 'vl_i.npy'))
+    ts_i = np.load(os.path.join(exp_dir, f'fold_{fold}', 'ts_i.npy'))
 
     return tr_i.tolist(), vl_i.tolist(), ts_i.tolist()
