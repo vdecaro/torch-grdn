@@ -106,7 +106,7 @@ class GHTMNTrainable(tune.Trainable):
     def _data_setup(self, mode):
         if mode == 'all':
             self.dataset = ParallelTUDataset(
-                f'./{self.dataset_name}_{self.depth}', 
+                f'{self.dataset_name}/D{self.depth}', 
                 self.dataset_name, 
                 pre_transform=pre_transform(self.depth), 
                 transform=transform(self.dataset_name), 
