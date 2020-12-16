@@ -1,10 +1,13 @@
 import sys
 import os
+
 import ray
 from ray import tune
+from ray.tune.suggest.bohb import TuneBOHB
+from ray.tune.schedulers import HyperBandForBOHB
 
 from exp.ghtmn_trainable import GHTMNTrainable
-from exp.utils import prepare_dir_tree_experiment, get_split, get_seed, prepare_tree_datasets
+from exp.utils import prepare_dir_tree_experiments, get_split, get_seed, prepare_tree_datasets
 from exp.early_stopper import TrialNoImprovementStopper
 
 
@@ -50,12 +53,14 @@ def get_config(name):
 if __name__ == '__main__':
     DATASET = sys.argv[1]
     exp_dir = f'GHTMN_{DATASET}'
+    
+    ray.init(num_gpus=2)
+    if not os.path.exists(exp_dir):
+        prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
         depths = range(2, 9)
-    prepare_dir_tree_experiment(DATASET)
     prepare_tree_datasets(DATASET, depths, 64)
 
-    ray.init(num_gpus=2)
     config = get_config(DATASET)
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
     scheduler = tune.schedulers.HyperBandForBOHB(
@@ -91,6 +96,3 @@ if __name__ == '__main__':
             scheduler=scheduler,
             reuse_actors=True
         )
-
-
-

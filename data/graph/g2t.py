@@ -122,7 +122,7 @@ class ParallelTUDataset(InMemoryDataset):
 
 def pre_transform(max_depth):
     
-    @ray.remote()
+    @ray.remote
     def func(data):
         data['trees'] = bfs_transform(data.x, data.edge_index, max_depth)
         return data
