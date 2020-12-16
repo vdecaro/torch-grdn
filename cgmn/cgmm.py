@@ -7,15 +7,14 @@ import time
 
 class CGMM(nn.Module):
 
-    def __init__(self, n_gen, C, L=None, M=None, device='cpu:0'):
+    def __init__(self, n_gen, C, L=None, M=None):
         super(CGMM, self).__init__()
-        self.device = torch.device(device)
         self.n_gen = n_gen
         self.C = C
         self.L = L
         self.M = M
 
-        self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M, device)])
+        self.layers = nn.ModuleList([CGMMLayer_0(n_gen, C, M)])
 
     def forward(self, x, edge_index, pos=None):
         log_likelihood = []
@@ -40,23 +39,21 @@ class CGMM(nn.Module):
             p.requires_grad = False
         self.layers[-1].frozen = True
         if self.L is None:
-            self.layers.append(CGMMLayer(self.n_gen, self.C, self.M, self.device))
+            self.layers.append(CGMMLayer(self.n_gen, self.C, self.M))
         else:
-            self.layers.append(PositionalCGMMLayer(self.n_gen, self.C, self.L, self.M, self.device))
+            self.layers.append(PositionalCGMMLayer(self.n_gen, self.C, self.L, self.M))
 
 
 class CGMMLayer_0(nn.Module):
 
-    def __init__(self, n_gen, C, M, device):
+    def __init__(self, n_gen, C, M):
         super(CGMMLayer_0, self).__init__()
-        self.device = device
         self.n_gen = n_gen
         self.C = C
         self.M = M
 
         self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
         self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
-        self.to(device=self.device)
         self.frozen = False
     
     def forward(self, x):
@@ -85,9 +82,8 @@ class CGMMLayer_0(nn.Module):
 
 class CGMMLayer(nn.Module):
 
-    def __init__(self, n_gen, C, M, device):
+    def __init__(self, n_gen, C, M):
         super(CGMMLayer, self).__init__()
-        self.device = device
         self.n_gen = n_gen
         self.C = C
         self.M = M
@@ -95,7 +91,6 @@ class CGMMLayer(nn.Module):
         self.Q_neigh = nn.Parameter(nn.init.normal_(torch.empty((C, C, n_gen)), std=2.5))
         self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
 
-        self.to(device=self.device)
         self.frozen = False
     
     def forward(self, x, prev_h, edge_index):
@@ -133,9 +128,8 @@ class CGMMLayer(nn.Module):
     
 class PositionalCGMMLayer(nn.Module):
 
-    def __init__(self, n_gen, C, L, M, device):
+    def __init__(self, n_gen, C, L, M):
         super(PositionalCGMMLayer, self).__init__()
-        self.device = device
         self.n_gen = n_gen
         self.C = C
         self.L = L
@@ -144,7 +138,6 @@ class PositionalCGMMLayer(nn.Module):
         self.Q_neigh = nn.Parameter(nn.init.normal_(torch.empty((C, C, L, n_gen)), std=2.5))
         self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
 
-        self.to(device=self.device)
         self.frozen = False
     
     def forward(self, x, prev_h, edge_index, pos):

@@ -2,16 +2,140 @@ import torch
 
 from torch_geometric.data import Dataset, Data, Batch
 
+import ray
+
 import time
 import sys
+import os
+import os.path as osp
+import shutil
 
-class Graph2TreesLoader(torch.utils.data.DataLoader):
+from torch_geometric.data import InMemoryDataset, download_url, extract_zip
+from torch_geometric.io import read_tu_data
 
-    def __init__(self, dataset, max_depth, batch_size=1, shuffle=False, follow_batch=[],
-                 **kwargs):
-        super(Graph2TreesLoader,
-              self).__init__(dataset, batch_size, shuffle,
-                             collate_fn=TreeCollater(max_depth, follow_batch), num_workers=0, **kwargs)
+
+class ParallelTUDataset(InMemoryDataset):
+
+    url = 'https://www.chrsmrrs.com/graphkerneldatasets'
+    cleaned_url = ('https://raw.githubusercontent.com/nd7141/'
+                   'graph_datasets/master/datasets')
+
+    def __init__(self, root, name, transform=None, pre_transform=None,
+                 pre_filter=None, use_node_attr=False, use_edge_attr=False,
+                 cleaned=False, pool_size=4):
+        self.name = name
+        self.cleaned = cleaned
+        self.pool_size = pool_size
+        super(ParallelTUDataset, self).__init__(root, transform, pre_transform,
+                                        pre_filter)
+        self.data, self.slices = torch.load(self.processed_paths[0])
+        if self.data.x is not None and not use_node_attr:
+            num_node_attributes = self.num_node_attributes
+            self.data.x = self.data.x[:, num_node_attributes:]
+        if self.data.edge_attr is not None and not use_edge_attr:
+            num_edge_attributes = self.num_edge_attributes
+            self.data.edge_attr = self.data.edge_attr[:, num_edge_attributes:]
+
+    @property
+    def raw_dir(self):
+        name = 'raw{}'.format('_cleaned' if self.cleaned else '')
+        return osp.join(self.root, self.name, name)
+
+    @property
+    def processed_dir(self):
+        name = 'processed{}'.format('_cleaned' if self.cleaned else '')
+        return osp.join(self.root, self.name, name)
+
+    @property
+    def num_node_labels(self):
+        if self.data.x is None:
+            return 0
+        for i in range(self.data.x.size(1)):
+            x = self.data.x[:, i:]
+            if ((x == 0) | (x == 1)).all() and (x.sum(dim=1) == 1).all():
+                return self.data.x.size(1) - i
+        return 0
+
+    @property
+    def num_node_attributes(self):
+        if self.data.x is None:
+            return 0
+        return self.data.x.size(1) - self.num_node_labels
+
+    @property
+    def num_edge_labels(self):
+        if self.data.edge_attr is None:
+            return 0
+        for i in range(self.data.edge_attr.size(1)):
+            if self.data.edge_attr[:, i:].sum() == self.data.edge_attr.size(0):
+                return self.data.edge_attr.size(1) - i
+        return 0
+
+    @property
+    def num_edge_attributes(self):
+        if self.data.edge_attr is None:
+            return 0
+        return self.data.edge_attr.size(1) - self.num_edge_labels
+
+    @property
+    def raw_file_names(self):
+        names = ['A', 'graph_indicator']
+        return ['{}_{}.txt'.format(self.name, name) for name in names]
+
+    @property
+    def processed_file_names(self):
+        return 'data.pt'
+
+    def download(self):
+        url = self.cleaned_url if self.cleaned else self.url
+        folder = osp.join(self.root, self.name)
+        path = download_url('{}/{}.zip'.format(url, self.name), folder)
+        extract_zip(path, folder)
+        os.unlink(path)
+        shutil.rmtree(self.raw_dir)
+        os.rename(osp.join(folder, self.name), self.raw_dir)
+
+    def process(self):
+        self.data, self.slices = read_tu_data(self.raw_dir, self.name)
+        
+        if self.pre_filter is not None:
+            data_list = [self.get(idx) for idx in range(len(self))]
+            filter_pool = ray.util.ActorPool([self.pre_filter for _ in range(self.pool_size)])
+            mask_list = list(filter_pool.map(lambda a, v: a.remote(v), data_list))
+            data_list = [data for i, data in enumerate(data_list) if mask_list[i]]
+            self.data, self.slices = self.collate(data_list)
+
+        if self.pre_transform is not None:
+            data_list = [self.get(idx) for idx in range(len(self))]
+            transform_pool = ray.util.ActorPool([self.pre_transform for _ in range(self.pool_size)])
+            transformed_data = []
+            for i in range(0, len(data_list), self.pool_size*4):
+                last_idx = min(i+self.pool_size, len(data_list))
+                transformed_data += list(transform_pool.map(lambda a, v: a.remote(v), data_list[i:last_idx]))
+            self.data, self.slices = self.collate(transformed_data)
+
+        torch.save((self.data, self.slices), self.processed_paths[0])
+
+    def __repr__(self):
+        return '{}({})'.format(self.name, len(self))
+
+
+def pre_transform(max_depth):
+    
+    def func(data):
+        data['trees'] = bfs_transform(data.x, data.edge_index, max_depth)
+        return data
+
+    return func 
+
+def transform(dataset):
+    
+    def func(data):
+        data.x = data.x.argmax(1)
+        data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
+        return data
+
+    return func
 
 class TreeDecomposedData(Data):
 
@@ -23,9 +147,10 @@ class TreeDecomposedData(Data):
             if k != 'dim':
                 self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
 
+
+
 class TreeCollater(object):
-    def __init__(self, max_depth, follow_batch):
-        self.follow_batch = follow_batch
+    def __init__(self, max_depth):
         self.max_depth = max_depth
 
     def collate(self, batch):
@@ -127,11 +252,11 @@ def bfs_transform(x, edge_index, max_depth):
         n_trees += 1
     
     trees = {'roots': torch.LongTensor(roots),
-            'levels': [torch.stack(level, 1) for level in edges if level],
-            'leaves': torch.LongTensor(leaves),
-            'inv_map': torch.LongTensor(inverse_mappings),
-            'trees_ind': torch.LongTensor(trees_ind),
-            'dim': n
+             'levels': [torch.stack(level, 1) for level in edges if level],
+             'leaves': torch.LongTensor(leaves),
+             'inv_map': torch.LongTensor(inverse_mappings),
+             'trees_ind': torch.LongTensor(trees_ind),
+             'dim': n
             }
 
     return trees

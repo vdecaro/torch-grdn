@@ -1,21 +1,16 @@
 import torch
 import torch.nn as nn
 
-from contrastive import contrastive_matrix
-
 from cgmn.cgmm import CGMM
 from torch_geometric.nn import GlobalAttention
 from torch_scatter.scatter import scatter
 
-import time
-
 class CGMN(nn.Module):
 
-    def __init__(self, out_features, n_gen, C, L=None, M=None, gate_units=None, device='cpu:0'):
+    def __init__(self, out_features, n_gen, C, L=None, M=None, gate_units=None):
         super(CGMN, self).__init__()
-        self.device = torch.device(device)
-        self.cgmm = CGMM(n_gen, C, L, M, device=device)
-        self.contrastive = contrastive_matrix(self.cgmm.n_gen, self.device)
+        self.cgmm = CGMM(n_gen, C, L, M)
+        self.contrastive = nn.Parameter(_contrastive_matrix(self.cgmm.n_gen), requires_grad=False)
         self.node_features = self.contrastive.size(1)
         self.gate_units = gate_units
         
@@ -23,7 +18,6 @@ class CGMN(nn.Module):
             self.pooling = nn.ModuleList([GlobalAttention(_GateNN(self.node_features, gate_units))])
         self.output = nn.ModuleList([nn.Linear(self.node_features, out_features)])
 
-        self.to(device=self.device)
     
     def forward(self, x, edge_index, batch, pos=None):
         if self.gate_units > 0:
@@ -59,7 +53,7 @@ class CGMN(nn.Module):
         
         if self.gate_units > 0:
             self.pooling.append(GlobalAttention(_GateNN(self.node_features, self.gate_units)))
-            self.pooling[-1].to(device=self.device)
+            self.pooling[-1].to(device=self.pooling[-2])
         
         self.output.append(nn.Linear(self.node_features*len(self.cgmm.layers), self.output[-1].out_features))
         self.output[-1].to(device=self.device)
@@ -81,3 +75,20 @@ class _GateNN(nn.Module):
 
     def forward(self, x):
         return self.out(self.h(x).sigmoid())
+
+
+def _contrastive_matrix(N_GEN):
+    contrastive_units = (N_GEN * (N_GEN-1)) / 2
+    contrastive_matrix = torch.zeros((N_GEN, contrastive_units))
+
+    p = 0
+    s = 1
+    for i in range(contrastive_units):
+        contrastive_matrix[p, i] = 1
+        contrastive_matrix[s, i] = -1
+        if s == N_GEN - 1:
+            p = p + 1
+            s = p
+        s = s + 1
+
+    return contrastive_matrix
