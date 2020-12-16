@@ -58,26 +58,6 @@ if __name__ == '__main__':
     ray.init(num_gpus=2)
     config = get_config(DATASET)
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
-    
-    experiments = []
-    for i in range(10):
-        tr_idx, vl_idx, ts_idx = get_split(exp_dir, i)
-        fold_dir = os.path.join(exp_dir, f'fold_{i}')
-        config['tr_idx'], config['vl_idx'] = tr_idx, vl_idx
-        fold_exp = tune.Experiment(
-            f'fold_{i}',
-            GHTMNTrainable,
-            stop=early_stopping,
-            local_dir=exp_dir,
-            config=config,
-            resources_per_trial= {'cpu': 1, 'gpu': 0.5},
-            keep_checkpoints_num=3,
-            checkpoint_score_attr='min-vl_loss',
-            checkpoint_freq=1,
-            max_failures=3
-        )
-        experiments.append(fold_exp)
-
     scheduler = tune.schedulers.HyperBandForBOHB(
         time_attr="training_iteration",
         metric="vl_loss",
@@ -86,16 +66,31 @@ if __name__ == '__main__':
         reduction_factor=2
     )
 
-    search_alg = tune.suggest.bohb.TuneBOHB(
+    search_alg = TuneBOHB(
         max_concurrent=4, 
         metric='vl_loss', 
-        mode="min",
-        seed=get_seed()
+        mode="min"
     )
 
-    tune.run(experiments,
-             search_alg=search_alg,
-             scheduler=scheduler,
-             reuse_actors=True)
+    for i in range(10):
+        tr_idx, vl_idx, ts_idx = get_split(exp_dir, i)
+        fold_dir = os.path.join(exp_dir, f'fold_{i}')
+        config['tr_idx'], config['vl_idx'] = tr_idx, vl_idx
+        fold_exp = tune.run(
+            GHTMNTrainable,
+            name=f'fold_{i}',
+            stop=early_stopping,
+            local_dir=exp_dir,
+            config=config,
+            resources_per_trial= {'cpu': 1, 'gpu': 0.5},
+            keep_checkpoints_num=3,
+            checkpoint_score_attr='min-vl_loss',
+            checkpoint_freq=1,
+            max_failures=3,
+            search_alg=search_alg,
+            scheduler=scheduler,
+            reuse_actors=True
+        )
+
 
 
