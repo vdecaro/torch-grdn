@@ -78,7 +78,7 @@ class _GateNN(nn.Module):
 
 
 def _contrastive_matrix(N_GEN):
-    contrastive_units = (N_GEN * (N_GEN-1)) / 2
+    contrastive_units = (N_GEN * (N_GEN-1)) // 2
     contrastive_matrix = torch.zeros((N_GEN, contrastive_units))
 
     p = 0

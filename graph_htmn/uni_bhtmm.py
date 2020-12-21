@@ -7,7 +7,7 @@ from torch_scatter.scatter import scatter
 
 class UniformBottomUpHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, M):
+    def __init__(self, n_gen, C, M, tree_dropout):
         super(UniformBottomUpHTMM, self).__init__()
         self.n_gen = n_gen
         self.C = C
@@ -16,15 +16,16 @@ class UniformBottomUpHTMM(nn.Module):
         self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, n_gen)), std=2.5))
         self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
         self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
+        
+        self.tree_dropout = tree_dropout
 
-
-    def forward(self, x, trees, batch, tree_dropout):
+    def forward(self, x, trees, batch):
         sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.A, self.B, self.Pi)
 
         log_likelihood, beta, t_beta = self._reversed_upward(x, trees, sm_A, sm_B, sm_Pi)
         if self.training:
             eps, t_eps = self._reversed_downward(trees, sm_A, sm_Pi, beta, t_beta)
-            self._compute_gradient(x, trees, batch, sm_A, sm_B, sm_Pi, eps, t_eps, tree_dropout)
+            self._compute_gradient(x, trees, batch, sm_A, sm_B, sm_Pi, eps, t_eps)
 
         return log_likelihood
 
@@ -85,7 +86,7 @@ class UniformBottomUpHTMM(nn.Module):
 
         return eps.detach(), t_eps.detach()
 
-    def _compute_gradient(self, x, tree, batch, A, B, Pi, eps, t_eps, tree_dropout):
+    def _compute_gradient(self, x, tree, batch, A, B, Pi, eps, t_eps):
         internal = torch.cat([l[0].unique(sorted=False) for l in tree['levels']])
         
         # Likelihood B
@@ -97,7 +98,7 @@ class UniformBottomUpHTMM(nn.Module):
 
         # Likelihood Pi
         exp_likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
-        bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > tree_dropout).to(self.A.device)
+        bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > self.tree_dropout).to(self.A.device)
         exp_likelihood *= bitmask
         exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
         exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='mean')

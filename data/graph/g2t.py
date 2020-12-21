@@ -110,7 +110,7 @@ class ParallelTUDataset(InMemoryDataset):
             transform_pool = ray.util.ActorPool([self.pre_transform for _ in range(self.pool_size)])
             transformed_data = []
             for i in range(0, len(data_list), self.pool_size*4):
-                last_idx = min(i+self.pool_size, len(data_list))
+                last_idx = min(i+(self.pool_size*4), len(data_list))
                 transformed_data += list(transform_pool.map(lambda a, v: a.remote(v), data_list[i:last_idx]))
             self.data, self.slices = self.collate(transformed_data)
 
@@ -132,7 +132,6 @@ def pre_transform(max_depth):
 def transform(dataset):
     
     def func(data):
-        data.x = data.x.argmax(1)
         data.y = data.y.unsqueeze(1).type(torch.FloatTensor)
         return data
 
@@ -147,7 +146,7 @@ class TreeDecomposedData(Data):
         for k in self.trees:
             if k != 'dim':
                 self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
-
+        return self
 
 
 class TreeCollater(object):

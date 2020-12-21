@@ -9,26 +9,24 @@ from torch_scatter.scatter import scatter
 
 class GraphHTMN(nn.Module):
 
-    def __init__(self, out_features: int, n_bu: int, n_td: int, C: int, M: int, set2set_steps: int = 10):
+    def __init__(self, out_features: int, n_bu: int, n_td: int, C: int, M: int, tree_dropout: float = 0):
         super(GraphHTMN, self).__init__()
-        self.bu = UniformBottomUpHTMM(n_bu, C, M) if n_bu > 0 else None
-        self.td = TopDownHTMM(n_td, C, M) if n_td > 0 else None
+        self.bu = UniformBottomUpHTMM(n_bu, C, M, tree_dropout) if n_bu > 0 else None
+        self.td = TopDownHTMM(n_td, C, M, tree_dropout) if n_td > 0 else None
 
         self.b_norm = BatchNorm(n_bu + n_td, affine=False)
 
         self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
-        self.set2set = Set2Set(self.contrastive.size(1), set2set_steps, 1)
+        self.set2set = Set2Set(self.contrastive.size(1), 10, 1)
         self.output = nn.Linear(2*self.contrastive.size(1), out_features)
     
     def forward(self, x, trees, batch):
         to_contrastive = []
         if self.bu is not None:
-            g_bu_likelihood = self.bu(x, trees, batch)
-            to_contrastive.append(self.bu_norm(g_bu_likelihood))
+            to_contrastive += [self.bu(x, trees, batch)]
 
         if self.td is not None:
-            g_td_likelihood = self.td(x, trees)
-            to_contrastive.append(self.td_norm(g_td_likelihood))
+            to_contrastive += [self.td(x, trees)]
 
         if len(to_contrastive) == 2:
             to_contrastive = torch.cat(to_contrastive, dim=1)
@@ -45,7 +43,7 @@ class GraphHTMN(nn.Module):
 
 
 def _contrastive_matrix(N_GEN):
-    contrastive_units = (N_GEN*(N_GEN-1)) / 2
+    contrastive_units = (N_GEN*(N_GEN-1)) // 2
     contrastive_matrix = torch.zeros(N_GEN, contrastive_units)
 
     p = 0

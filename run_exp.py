@@ -1,10 +1,10 @@
 import sys
 import os
+from random import randint
 
 import ray
 from ray import tune
-from ray.tune.suggest.bohb import TuneBOHB
-from ray.tune.schedulers import HyperBandForBOHB
+from ray.tune.schedulers import ASHAScheduler
 
 from exp.ghtmn_trainable import GHTMNTrainable
 from exp.utils import prepare_dir_tree_experiments, get_split, get_seed, prepare_tree_datasets
@@ -17,11 +17,11 @@ def get_config(name):
             'dataset': 'NCI1',
             'out': 1,
             'symbols': 37,
-            'depth': tune.randint(2, 9),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * tune.randint(6, 9)),
+            'depth': tune.randint(2, 8),
+            'n_gen': tune.randint(6, 9),
             'lr': tune.uniform(1e-5, 1e-2),
             'batch_size': tune.choice([64, 100, 128]),
-            'tree_dropout': tune.uniform(0, 1)
+            'tree_dropout': tune.uniform(0, 0.8)
         }
 
     if name == 'PROTEINS':
@@ -29,11 +29,12 @@ def get_config(name):
             'dataset': 'PROTEINS',
             'out': 1,
             'symbols': 3,
-            'depth': tune.randint(2, 9),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * tune.randint(6, 9)),
-            'lr': tune.uniform(1e-5, 1e-2),
-            'batch_size': tune.choice([64, 100, 128]),
-            'tree_dropout': tune.uniform(0, 1)
+            'depth': tune.randint(2, 8),
+            'C': tune.randint(2, 8),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
+            'lr': tune.uniform(1e-5, 1e-3),
+            'batch_size': 100,
+            'tree_dropout': tune.uniform(0, 0.8)
         }
 
     if name == 'DD':
@@ -41,12 +42,12 @@ def get_config(name):
             'dataset': 'DD',
             'out': 1,
             'symbols': 89,
-            'depth': tune.randint(2, 16),
+            'depth': tune.randint(2, 12),
             'C': tune.randint(2, 11),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * tune.randint(6, 9)),
+            'n_gen': tune.randint(6, 9),
             'lr': tune.uniform(1e-4, 1e-2),
             'batch_size': tune.choice([32, 64, 100]),
-            'tree_dropout': tune.uniform(0, 1)
+            'tree_dropout': tune.uniform(0, 0.8)
         }
     
     
@@ -54,45 +55,39 @@ if __name__ == '__main__':
     DATASET = sys.argv[1]
     exp_dir = f'GHTMN_{DATASET}'
     
-    ray.init(num_gpus=2)
+    ray.init(num_cpus=72)
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
         depths = range(2, 9)
-    prepare_tree_datasets(DATASET, depths, 64)
+    prepare_tree_datasets(DATASET, depths)
 
     config = get_config(DATASET)
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
-    scheduler = tune.schedulers.HyperBandForBOHB(
-        time_attr="training_iteration",
+    scheduler = ASHAScheduler(
         metric="vl_loss",
         mode="min",
-        max_t=200,
+        max_t=400,
+        grace_period=20,
         reduction_factor=2
     )
 
-    search_alg = TuneBOHB(
-        max_concurrent=4, 
-        metric='vl_loss', 
-        mode="min"
-    )
-
     for i in range(10):
-        tr_idx, vl_idx, ts_idx = get_split(exp_dir, i)
-        fold_dir = os.path.join(exp_dir, f'fold_{i}')
-        config['tr_idx'], config['vl_idx'] = tr_idx, vl_idx
+        config['fold'] = i
         fold_exp = tune.run(
             GHTMNTrainable,
             name=f'fold_{i}',
             stop=early_stopping,
             local_dir=exp_dir,
             config=config,
-            resources_per_trial= {'cpu': 1, 'gpu': 0.5},
-            keep_checkpoints_num=3,
+            num_samples=200,
+            resources_per_trial= {'cpu': 4, 'gpu': 0.1},
+            keep_checkpoints_num=1,
             checkpoint_score_attr='min-vl_loss',
             checkpoint_freq=1,
             max_failures=3,
-            search_alg=search_alg,
+            reuse_actors=True,
             scheduler=scheduler,
-            reuse_actors=True
+            verbose=1,
+            resume=True
         )
