@@ -2,17 +2,16 @@ import time
 import random
 import torch
 
-from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo
+from nvgpu import gpu_info
 
 CPU = 'cpu'
 GPU = 'cuda:0'
 
 class DeviceHandler(object):
-
-    def __init__(self, id):
-        nvmlInit()
+    
+    def __init__(self, gpu_id):
         self.device = CPU
-        self.gpu_id = id
+        self.gpu_id = gpu_id
 
         self.t = time.time()
         self.threshold = random.uniform(30, 60)
@@ -21,14 +20,12 @@ class DeviceHandler(object):
     def step(self, model, opt):
         now = time.time()
         switch_to = GPU if self.device == CPU else CPU
-        
         if now - self.t >= self.threshold:
             switch = True
             if switch_to == GPU:
-                gpu_info = nvmlDeviceGetMemoryInfo(self.gpu_id)
-                used = gpu_info.used / gpu_info.total
+                used = gpu_info()[0]['mem_used_percent']/100
                 switch = used < 0.80 and random.random() > used
-
+                
             if switch:
                 model, opt = self.switch_device(model, opt)
 
@@ -46,7 +43,7 @@ class DeviceHandler(object):
                 torch.cuda.empty_cache()
             print(f"Switched to {'CPU' if switch_to == CPU else f'GPU {self.gpu_id}'}.")
         except RuntimeError:
-            if self.device == GPU:
+            if switch_to == GPU:
                 print(f"Failed to switch to GPU {self.gpu_id}. Going back to CPU.")
                 switch_to = CPU
                 model.to(switch_to)

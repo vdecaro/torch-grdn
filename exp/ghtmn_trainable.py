@@ -15,7 +15,7 @@ class GHTMNTrainable(tune.Trainable):
 
     def setup(self, config):
         if torch.cuda.is_available():
-            self.device_handler = DeviceHandler(os.environ['CUDA_VISIBLE_DEVICES'])
+            self.device_handler = DeviceHandler(int(os.environ['CUDA_VISIBLE_DEVICES']))
 
         # Dataset info
         self.dataset_name = config['dataset']
@@ -43,12 +43,12 @@ class GHTMNTrainable(tune.Trainable):
                 break
             except RuntimeError:
                 if self.device_handler.device == 'cuda:0':
-                    self.device_handler.switch_device(self.model, self.opt)
+                    self.model, self.opt = self.device_handler.switch_device(self.model, self.opt)
                 else:
                     raise
         
         if torch.cuda.is_available():
-            self.device_handler.step()
+            self.model, self.opt = self.device_handler.step(self.model, self.opt)
 
         return {
             'tr_loss': tr_loss,

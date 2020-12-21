@@ -74,14 +74,15 @@ if __name__ == '__main__':
 
     for i in range(10):
         config['fold'] = i
+        name = f'fold_{i}'
         fold_exp = tune.run(
             GHTMNTrainable,
-            name=f'fold_{i}',
+            name=name,
             stop=early_stopping,
             local_dir=exp_dir,
             config=config,
             num_samples=200,
-            resources_per_trial= {'cpu': 4, 'gpu': 0.1},
+            resources_per_trial= {'cpu': 4, 'gpu': 0.01},
             keep_checkpoints_num=1,
             checkpoint_score_attr='min-vl_loss',
             checkpoint_freq=1,
@@ -89,5 +90,5 @@ if __name__ == '__main__':
             reuse_actors=True,
             scheduler=scheduler,
             verbose=1,
-            resume=True
+            resume=len(os.listdir(os.path.join(exp_dir, name))) > 3
         )
