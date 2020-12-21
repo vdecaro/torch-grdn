@@ -1,6 +1,3 @@
-import time
-import random
-
 import torch
 from ray import tune
 import os
@@ -12,11 +9,13 @@ from torch_geometric.utils.metric import accuracy
 
 from graph_htmn.graph_htmn import GraphHTMN
 from exp.utils import get_cores, get_split
+from exp.device_handler import DeviceHandler
 
 class GHTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device = 'cpu'
+        if torch.cuda.is_available():
+            self.device_handler = DeviceHandler(os.environ['CUDA_VISIBLE_DEVICES'])
 
         # Dataset info
         self.dataset_name = config['dataset']
@@ -33,13 +32,8 @@ class GHTMNTrainable(tune.Trainable):
         self._data_setup('all')
 
         self.model = GraphHTMN(self.out_features, config['n_gen'], 0, config['C'], self.symbols, config['tree_dropout'])
-        self.model.to(self.device)
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.BCEWithLogitsLoss()
-        
-        self.t0 = time.time()
-        self.t_threshold = random.uniform(30, 60)
-
 
     def step(self):
         while True:
@@ -48,15 +42,14 @@ class GHTMNTrainable(tune.Trainable):
                 vl_loss, vl_acc = self._test_fn()
                 break
             except RuntimeError:
-                if self.device == 'cuda:0':
-                    print("Switch to CPUs")
-                    self.device = 'cpu'
-                    self.model.to(self.device)
-                    self.opt.state = self._optim_to(self.opt.state)
-                    torch.cuda.empty_cache()
-
-        self._device_handling()
+                if self.device_handler.device == 'cuda:0':
+                    self.device_handler.switch_device(self.model, self.opt)
+                else:
+                    raise
         
+        if torch.cuda.is_available():
+            self.device_handler.step()
+
         return {
             'tr_loss': tr_loss,
             'tr_acc': tr_acc,
@@ -68,8 +61,9 @@ class GHTMNTrainable(tune.Trainable):
         self.model.train()
         l_avg = 0
         a_avg = 0
-        for i, b in enumerate(self.tr_ld):
-            b = b.to(self.device)
+        for _, b in enumerate(self.tr_ld):
+            if self.device_handler.device == 'cuda:0':
+                b = b.to('cuda:0', non_blocking=True)
             self.opt.zero_grad()
 
             out = self.model(b.x, b.trees, b.batch)
@@ -90,8 +84,9 @@ class GHTMNTrainable(tune.Trainable):
         l_avg = 0
         a_avg = 0
         
-        for i, b in enumerate(self.vl_ld):
-            b = b.to(self.device)
+        for _, b in enumerate(self.vl_ld):
+            if self.device_handler.device == 'cuda:0':
+                b = b.to('cuda:0', non_blocking=True)
             out = self.model(b.x, b.trees, b.batch)
 
             loss_v = self.loss(out, b.y).item()
@@ -110,16 +105,15 @@ class GHTMNTrainable(tune.Trainable):
         return tmp_checkpoint_dir
 
     def load_checkpoint(self, tmp_checkpoint_dir):
-        self.device = 'cpu'
         mod_state_dict = torch.load(os.path.join(tmp_checkpoint_dir, "model.pth"), map_location='cpu')
         opt_state_dict = torch.load(os.path.join(tmp_checkpoint_dir, "opt.pth"), map_location='cpu')
         self.model.load_state_dict(mod_state_dict)
         self.opt.load_state_dict(opt_state_dict)
-        self.t0 = time.time()
-        self.t_threshold = random.uniform(30, 60)
+
+        if torch.cuda.is_available():   
+            self.device_handler.reset()
 
     def reset_config(self, new_config):
-        self.device = 'cpu'
         load_mode = None
         if new_config['depth'] != self.depth:
             load_mode = 'all'
@@ -128,10 +122,9 @@ class GHTMNTrainable(tune.Trainable):
         self._data_setup(load_mode)
         self.model = GraphHTMN(self.out_features, new_config['n_gen'], 0, new_config['C'], self.symbols, new_config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=new_config['lr'])
-        self.t0 = time.time()
-        self.t_threshold = random.uniform(30, 60)
-        torch.cuda.empty_cache()
-        
+        if torch.cuda.is_available():   
+            self.device_handler.reset()
+
         return True
 
     def _data_setup(self, mode):
@@ -153,29 +146,3 @@ class GHTMNTrainable(tune.Trainable):
                                     collate_fn=TreeCollater(self.depth), 
                                     batch_size=self.batch_size, 
                                     shuffle=False)
-        
-    def _device_handling(self):
-        if torch.cuda.is_available():
-            t1 = time.time()
-            if t1 - self.t0 >= self.t_threshold:
-                self.t0 = t1
-                self.t_threshold = random.uniform(30, 60)
-                self.device = 'cuda:0' if self.device == 'cpu' else 'cpu'
-                try:
-                    self.model.to(self.device)
-                    self.opt.state = self._optim_to(self.opt.state)
-                except RuntimeError as err:
-                    print("Attempted Switch to GPU and failed. Returning to CPU.")
-                    self.device = 'cpu'
-                    self.model.to(self.device)
-                    self.opt.state = self._optim_to(self.opt.state)
-                    torch.cuda.empty_cache()
-    
-    def _optim_to(self, var):
-        for key in var:
-            if isinstance(var[key], dict):
-                var[key] = self._optim_to(var[key])
-            elif torch.is_tensor(var[key]):
-                var[key] = var[key].to(self.device)
-        
-        return var

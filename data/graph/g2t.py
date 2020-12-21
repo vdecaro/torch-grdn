@@ -209,13 +209,7 @@ class TreeCollater(object):
 
 
 def bfs_transform(x, edge_index, max_depth):
-    '''
-    Breadth-first visit on a torch-geometric Data object. 
-    Args:
-        g (torch_geometric.Data object): graph on which the visit is performed
-        root (int): index of the root node
-    Returns: torch.tensor with size [2, #tree_edges] of the tree's edges.
-    '''
+    
     roots = []
     edges = [[] for _ in range(max_depth-1)]
     leaves = []
