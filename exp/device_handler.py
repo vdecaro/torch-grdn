@@ -23,8 +23,8 @@ class DeviceHandler(object):
         if now - self.t >= self.threshold:
             switch = True
             if switch_to == GPU:
-                used = gpu_info()[0]['mem_used_percent']/100
-                switch = used < 0.80 and random.random() > used
+                used = gpu_info()[self.gpu_id]['mem_used_percent']/100
+                switch = used < 0.70 and random.random() > used
                 
             if switch:
                 model, opt = self.switch_device(model, opt)

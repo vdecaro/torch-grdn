@@ -49,13 +49,15 @@ def get_config(name):
             'batch_size': tune.choice([32, 64, 100]),
             'tree_dropout': tune.uniform(0, 0.8)
         }
-    
+
     
 if __name__ == '__main__':
     DATASET = sys.argv[1]
     exp_dir = f'GHTMN_{DATASET}'
     
-    ray.init(num_cpus=72)
+    num_cpus = 72
+    cpus_per_task = 4
+    ray.init(num_cpus=num_cpus)
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
@@ -71,24 +73,28 @@ if __name__ == '__main__':
         grace_period=20,
         reduction_factor=2
     )
-
+    
+    n_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+    gpus_per_task = n_gpus / (num_cpus / cpus_per_task)
     for i in range(10):
         config['fold'] = i
         name = f'fold_{i}'
-        fold_exp = tune.run(
-            GHTMNTrainable,
-            name=name,
-            stop=early_stopping,
-            local_dir=exp_dir,
-            config=config,
-            num_samples=200,
-            resources_per_trial= {'cpu': 4, 'gpu': 0.01},
-            keep_checkpoints_num=1,
-            checkpoint_score_attr='min-vl_loss',
-            checkpoint_freq=1,
-            max_failures=3,
-            reuse_actors=True,
-            scheduler=scheduler,
-            verbose=1,
-            resume=len(os.listdir(os.path.join(exp_dir, name))) > 3
-        )
+        size_dir = len(os.listdir(os.path.join(exp_dir, name)))
+        if size_dir < 204:
+            fold_exp = tune.run(
+                GHTMNTrainable,
+                name=name,
+                stop=early_stopping,
+                local_dir=exp_dir,
+                config=config,
+                num_samples=200,
+                resources_per_trial= {'cpu': cpus_per_task, 'gpu': gpus_per_task},
+                keep_checkpoints_num=1,
+                checkpoint_score_attr='min-vl_loss',
+                checkpoint_freq=1,
+                max_failures=3,
+                reuse_actors=True,
+                scheduler=scheduler,
+                verbose=1,
+                resume=size_dir > 3
+            )
