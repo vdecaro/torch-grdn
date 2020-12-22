@@ -9,13 +9,13 @@ INEX2006 = './data/graph/inex/2006/inex06'
 
 def load_and_preproc_inex(file):
     if file == 'inex2005train':
-        f = f'{INEX2005}.train.elastic.tree'
+        f = '{}.train.elastic.tree'.format(INEX2005)
     if file == 'inex2005test':
-        f = f'{INEX2005}.test.elastic.tree'
+        f = '{}.test.elastic.tree'.format(INEX2005)
     if file == 'inex2006train':
-        f = f'{INEX2006}.train.elastic.tree'
+        f = '{}.train.elastic.tree'.format(INEX2006)
     if file == 'inex2006test':
-        f = f'{INEX2006}.test.elastic.tree'
+        f = '{}.test.elastic.tree'.format(INEX2006)
     with open(f, "r") as ins:
         line_tree = []
         for line in ins:

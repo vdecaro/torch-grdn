@@ -13,7 +13,7 @@ def get_seed():
 
 def prepare_dir_tree_experiments(name):
     dataset = TUDataset('.', name)
-    exp_dir = f'GHTMN_{name}'
+    exp_dir = 'GHTMN_{}'.format(name)
     os.makedirs(exp_dir)
     ext_kfold = StratifiedKFold(10, shuffle=True, random_state=get_seed())
     ext_split = list(ext_kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
@@ -25,7 +25,7 @@ def prepare_dir_tree_experiments(name):
                                       shuffle=True, 
                                       random_state=get_seed())
         
-        fold_dir = os.path.join(exp_dir, f'fold_{str(n)}')
+        fold_dir = os.path.join(exp_dir, 'fold_{}'.format(n))
         os.makedirs(fold_dir)
         np.save(os.path.join(fold_dir, 'tr_i.npy'), tr_i)
         np.save(os.path.join(fold_dir, 'vl_i.npy'), vl_i)
@@ -35,13 +35,13 @@ def prepare_dir_tree_experiments(name):
 
 def prepare_tree_datasets(name, depths):
     for d in depths:
-        if not os.path.exists(f'{name}/D{d}'):
-            _ = ParallelTUDataset(f'{name}/D{d}', name, pre_transform=pre_transform(d), pool_size=get_cores())
+        if not os.path.exists('{}/D{}'.format(name, d)):
+            _ = ParallelTUDataset('{}/D{}'.format(name, d), name, pre_transform=pre_transform(d), pool_size=get_cores())
 
 
 def get_split(name, fold):
-    tr_i = np.load(os.path.join('/code/torch-grdn', name, f'fold_{fold}', 'tr_i.npy'))
-    vl_i = np.load(os.path.join('/code/torch-grdn', name, f'fold_{fold}', 'vl_i.npy'))
-    ts_i = np.load(os.path.join('/code/torch-grdn', name, f'fold_{fold}', 'ts_i.npy'))
+    tr_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'tr_i.npy'))
+    vl_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'vl_i.npy'))
+    ts_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'ts_i.npy'))
     
     return tr_i.tolist(), vl_i.tolist(), ts_i.tolist()

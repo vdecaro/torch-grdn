@@ -54,7 +54,7 @@ def get_config(name):
 if __name__ == '__main__':
     DATASET = sys.argv[1]
     N_CPUS = int(sys.argv[2])
-    exp_dir = f'GHTMN_{DATASET}'
+    exp_dir = 'GHTMN_{}'.format(DATASET)
     
     ray.init(num_cpus=N_CPUS)
     if not os.path.exists(exp_dir):
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     
     for i in range(10):
         config['fold'] = i
-        name = f'fold_{i}'
+        name = 'fold_{}'.format(i)
         size_dir = len(os.listdir(os.path.join(exp_dir, name)))
         if size_dir < 204:
             fold_exp = tune.run(

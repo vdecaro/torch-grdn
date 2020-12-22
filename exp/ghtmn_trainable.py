@@ -23,7 +23,7 @@ class GHTMNTrainable(tune.Trainable):
         self.depth = config['depth']
         self.symbols = config['symbols']
         self.batch_size = config['batch_size']
-        self.tr_idx, self.vl_idx, _ = get_split(f'GHTMN_{self.dataset_name}', config['fold'])
+        self.tr_idx, self.vl_idx, _ = get_split('GHTMN_{}'.format(self.dataset_name), config['fold'])
 
         # Dataset and Loaders setup
         self.dataset = None
@@ -130,7 +130,7 @@ class GHTMNTrainable(tune.Trainable):
     def _data_setup(self, mode):
         if mode == 'all':
             self.dataset = ParallelTUDataset(
-                f'/code/torch-grdn/{self.dataset_name}/D{self.depth}', 
+                '/code/torch-grdn/{}/D{}'.format(self.dataset_name, self.depth), 
                 self.dataset_name, 
                 pre_transform=pre_transform(self.depth),
                 transform=transform(self.dataset_name),

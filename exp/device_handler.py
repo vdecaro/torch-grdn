@@ -41,10 +41,10 @@ class DeviceHandler(object):
             opt.state = self._recursive_opt_to(switch_to, opt.state)
             if switch_to == CPU:
                 torch.cuda.empty_cache()
-            print(f"Switched to {'CPU' if switch_to == CPU else f'GPU {self.gpu_id}'}.")
+            print("Switched to {}.".format('CPU' if switch_to == CPU else 'GPU {}'.format(self.gpu_id)))
         except RuntimeError:
             if switch_to == GPU:
-                print(f"Failed to switch to GPU {self.gpu_id}. Going back to CPU.")
+                print("Failed to switch to GPU {}. Going back to CPU.".format(self.gpu_id))
                 switch_to = CPU
                 model.to(switch_to)
                 opt.state = self._recursive_opt_to(switch_to, opt.state)
