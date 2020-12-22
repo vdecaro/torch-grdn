@@ -53,11 +53,10 @@ def get_config(name):
     
 if __name__ == '__main__':
     DATASET = sys.argv[1]
+    N_CPUS = int(sys.argv[2])
     exp_dir = f'GHTMN_{DATASET}'
     
-    num_cpus = 72
-    cpus_per_task = 4
-    ray.init(num_cpus=num_cpus)
+    ray.init(num_cpus=N_CPUS)
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
@@ -74,8 +73,14 @@ if __name__ == '__main__':
         reduction_factor=2
     )
     
-    n_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
-    gpus_per_task = n_gpus / (num_cpus / cpus_per_task)
+    cpus_per_task = 2
+    if torch.cuda.is_available():
+        n_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+        gpus_per_task = n_gpus / (N_CPUS / cpus_per_task)
+        resources = {'cpu': cpus_per_task, 'gpu': gpus_per_task}
+    else:
+        resources = {'cpu': cpus_per_task, 'gpu': 0}
+    
     for i in range(10):
         config['fold'] = i
         name = f'fold_{i}'
@@ -88,7 +93,7 @@ if __name__ == '__main__':
                 local_dir=exp_dir,
                 config=config,
                 num_samples=200,
-                resources_per_trial= {'cpu': cpus_per_task, 'gpu': gpus_per_task},
+                resources_per_trial= resources,
                 keep_checkpoints_num=1,
                 checkpoint_score_attr='min-vl_loss',
                 checkpoint_freq=1,
