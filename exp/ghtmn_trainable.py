@@ -130,7 +130,7 @@ class GHTMNTrainable(tune.Trainable):
     def _data_setup(self, mode):
         if mode == 'all':
             self.dataset = ParallelTUDataset(
-                '/code/torch-grdn/{}/D{}'.format(self.dataset_name, self.depth), 
+                '~/torch-grdn/{}/D{}'.format(self.dataset_name, self.depth), 
                 self.dataset_name, 
                 pre_transform=pre_transform(self.depth),
                 transform=transform(self.dataset_name),
