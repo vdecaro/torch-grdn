@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch_geometric.utils.metric import accuracy
 
 from graph_htmn.graph_htmn import GraphHTMN
-from exp.utils import get_cores, get_split
+from exp.utils import get_split
 from exp.device_handler import DeviceHandler
 
 class GHTMNTrainable(tune.Trainable):
@@ -42,7 +42,7 @@ class GHTMNTrainable(tune.Trainable):
                 vl_loss, vl_acc = self._test_fn()
                 break
             except RuntimeError:
-                if self.device_handler.device == 'cuda:0':
+                if torch.cuda.is_available() and self.device_handler.device == 'cuda:0':
                     self.model, self.opt = self.device_handler.switch_device(self.model, self.opt)
                 else:
                     raise
@@ -62,7 +62,7 @@ class GHTMNTrainable(tune.Trainable):
         l_avg = 0
         a_avg = 0
         for _, b in enumerate(self.tr_ld):
-            if self.device_handler.device == 'cuda:0':
+            if torch.cuda.is_available() and self.device_handler.device == 'cuda:0':
                 b = b.to('cuda:0', non_blocking=True)
             self.opt.zero_grad()
 
@@ -85,7 +85,7 @@ class GHTMNTrainable(tune.Trainable):
         a_avg = 0
         
         for _, b in enumerate(self.vl_ld):
-            if self.device_handler.device == 'cuda:0':
+            if torch.cuda.is_available() and self.device_handler.device == 'cuda:0':
                 b = b.to('cuda:0', non_blocking=True)
             out = self.model(b.x, b.trees, b.batch)
 
@@ -133,8 +133,7 @@ class GHTMNTrainable(tune.Trainable):
                 '~/torch-grdn/{}/D{}'.format(self.dataset_name, self.depth), 
                 self.dataset_name, 
                 pre_transform=pre_transform(self.depth),
-                transform=transform(self.dataset_name),
-                pool_size=get_cores()
+                transform=transform(self.dataset_name)
             )
             self.dataset.data.x = self.dataset.data.x.argmax(1).detach()
         if mode in ['all', 'loaders']:

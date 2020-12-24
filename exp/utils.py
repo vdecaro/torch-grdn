@@ -5,9 +5,6 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch_geometric.datasets import TUDataset
 from data.graph.g2t import ParallelTUDataset, pre_transform
 
-def get_cores():
-    return 64
-
 def get_seed():
     return 95
 
@@ -33,15 +30,15 @@ def prepare_dir_tree_experiments(name):
 
 
 
-def prepare_tree_datasets(name, depths):
+def prepare_tree_datasets(name, depths, num_cpus):
     for d in depths:
         if not os.path.exists('{}/D{}'.format(name, d)):
-            _ = ParallelTUDataset('{}/D{}'.format(name, d), name, pre_transform=pre_transform(d), pool_size=get_cores())
+            _ = ParallelTUDataset('{}/D{}'.format(name, d), name, pre_transform=pre_transform(d), pool_size=num_cpus*2)
 
 
 def get_split(name, fold):
-    tr_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'tr_i.npy'))
-    vl_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'vl_i.npy'))
-    ts_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'ts_i.npy'))
+    tr_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'tr_i.npy'))
+    vl_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'vl_i.npy'))
+    ts_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'ts_i.npy'))
     
     return tr_i.tolist(), vl_i.tolist(), ts_i.tolist()

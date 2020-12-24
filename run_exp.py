@@ -2,6 +2,7 @@ import sys
 import os
 from random import randint
 
+import torch
 import ray
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
@@ -17,11 +18,12 @@ def get_config(name):
             'dataset': 'NCI1',
             'out': 1,
             'symbols': 37,
-            'depth': tune.randint(2, 8),
-            'n_gen': tune.randint(6, 9),
-            'lr': tune.uniform(1e-5, 1e-2),
-            'batch_size': tune.choice([64, 100, 128]),
-            'tree_dropout': tune.uniform(0, 0.8)
+            'depth': tune.randint(2, 10),
+            'C': tune.randint(2, 10),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
+            'lr': tune.uniform(1e-5, 1e-3),
+            'batch_size': 100,
+            'tree_dropout': tune.uniform(0, 0.9)
         }
 
     if name == 'PROTEINS':
@@ -34,7 +36,7 @@ def get_config(name):
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(1e-5, 1e-3),
             'batch_size': 100,
-            'tree_dropout': tune.uniform(0, 0.8)
+            'tree_dropout': tune.uniform(0, 0.9)
         }
 
     if name == 'DD':
@@ -43,11 +45,11 @@ def get_config(name):
             'out': 1,
             'symbols': 89,
             'depth': tune.randint(2, 12),
-            'C': tune.randint(2, 11),
-            'n_gen': tune.randint(6, 9),
-            'lr': tune.uniform(1e-4, 1e-2),
-            'batch_size': tune.choice([32, 64, 100]),
-            'tree_dropout': tune.uniform(0, 0.8)
+            'C': tune.randint(2, 12),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
+            'lr': tune.uniform(1e-5, 1e-3),
+            'batch_size': 100,
+            'tree_dropout': tune.uniform(0, 0.9)
         }
 
     
@@ -61,7 +63,11 @@ if __name__ == '__main__':
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
         depths = range(2, 9)
-    prepare_tree_datasets(DATASET, depths)
+    if DATASET == 'DD':
+        depths = range(2, 13)
+    if DATASET == 'NCI1':
+        depths = range(2, 11)
+    prepare_tree_datasets(DATASET, depths, N_CPUS)
 
     config = get_config(DATASET)
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
