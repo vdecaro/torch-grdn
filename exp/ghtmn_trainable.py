@@ -15,7 +15,7 @@ from exp.device_handler import DeviceHandler
 class GHTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device_handler = DeviceHandler(int(os.environ['CUDA_VISIBLE_DEVICES']) if torch.cuda.is_available else None)
+        self.device_handler = DeviceHandler(self)
 
         # Dataset info
         self.dataset_name = config['dataset']
@@ -38,49 +38,53 @@ class GHTMNTrainable(tune.Trainable):
     def step(self):
         self.model.train()
         for _, b in enumerate(self.tr_ld):
-            tr_loss, tr_acc = self._train_step(b)
+            b_loss_v, b_acc_v = self._train_step(b)
         
         
         self.model.eval()
         vl_loss = 0
         vl_acc = 0
         for _, b in enumerate(self.vl_ld):
-            b_vl_loss, b_vl_acc = self._test_fn(b)
+            b_loss_v, b_acc_v = self._test_step(b)
             w = (torch.max(b.batch)+1).item() /len(self.vl_idx)
-            acc_v = accuracy(b.y, out.sigmoid().round())
-            l_avg += w*loss_v
-            a_avg += w*acc_v
+            vl_loss += w*b_loss_v
+            vl_acc += w*b_acc_v
         
-        if torch.cuda.is_available():
-            self.model, self.opt = self.device_handler.step(self.model, self.opt)
+        self.device_handler.step()
 
         return {
             'vl_loss': vl_loss,
             'vl_acc': vl_acc
         }
     
-    @self.device_handler.forward_manage
-    def _train_step(self, b):
-        self.opt.zero_grad()
-        out = self.model(b.x, b.trees, b.batch)
-        loss_v = self.loss(out, b.y)
-        loss_v.backward()
-        self.opt.step()
-        loss_v = loss_v.item()
-        acc_v = accuracy(b.y, out.sigmoid().round())
+    def _train_step(self, batch):
+
+        @self.device_handler.forward_manage
+        def _func(b):
+            self.opt.zero_grad()
+            out = self.model(b.x, b.trees, b.batch)
+            loss_v = self.loss(out, b.y)
+            loss_v.backward()
+            self.opt.step()
+            loss_v = loss_v.item()
+            acc_v = accuracy(b.y, out.sigmoid().round())
         
-        return loss_v, acc_v
+            return loss_v, acc_v
+        
+        return _func(batch)
                     
-    @self.device_handler.forward_manage
     @torch.no_grad()
-    def _test_step(self, b):
+    def _test_step(self, batch):
         
-        out = self.model(b.x, b.trees, b.batch)
+        @self.device_handler.forward_manage
+        def _func(b):
+            out = self.model(b.x, b.trees, b.batch)
+            loss_v = self.loss(out, b.y).item()
+            acc_v = accuracy(b.y, out.sigmoid().round())
 
-        loss_v = self.loss(out, b.y).item()
-        acc_v = accuracy(b.y, out.sigmoid().round())
+            return loss_v, acc_v
 
-        return loss_v, a_avg
+        return _func(batch)
     
     def save_checkpoint(self, tmp_checkpoint_dir):
         torch.save(self.model.state_dict(), os.path.join(tmp_checkpoint_dir, "model.pth"))
@@ -104,9 +108,8 @@ class GHTMNTrainable(tune.Trainable):
             load_mode = 'loaders'
         self._data_setup(load_mode)
         
-        del self.model, self.opt
-        if torch.cuda.is_available():   
-            self.device_handler.reset()
+        del self.model, self.opt 
+        self.device_handler.reset()
         
         self.model = GraphHTMN(self.out_features, new_config['n_gen'], 0, new_config['C'], self.symbols, new_config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=new_config['lr'])
