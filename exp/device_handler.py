@@ -11,7 +11,7 @@ GPU = 'cuda:0'
 
 class DeviceHandler(object):
     
-    def __init__(self, trainable, gpu_id):
+    def __init__(self, trainable):
         self.device = CPU
         self.gpu_id = int(os.environ['CUDA_VISIBLE_DEVICES']) if torch.cuda.is_available else None
         self.trainable = trainable
