@@ -37,8 +37,8 @@ def prepare_tree_datasets(name, depths, num_cpus):
 
 
 def get_split(name, fold):
-    tr_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'tr_i.npy'))
-    vl_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'vl_i.npy'))
-    ts_i = np.load(os.path.join('/home/vdecaro/torch-grdn', name, 'fold_{}'.format(fold), 'ts_i.npy'))
+    tr_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'tr_i.npy'))
+    vl_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'vl_i.npy'))
+    ts_i = np.load(os.path.join('/code/torch-grdn', name, 'fold_{}'.format(fold), 'ts_i.npy'))
     
     return tr_i.tolist(), vl_i.tolist(), ts_i.tolist()

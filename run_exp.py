@@ -103,7 +103,7 @@ if __name__ == '__main__':
                 keep_checkpoints_num=1,
                 checkpoint_score_attr='min-vl_loss',
                 checkpoint_freq=1,
-                max_failures=3,
+                max_failures=5,
                 reuse_actors=True,
                 scheduler=scheduler,
                 verbose=1,

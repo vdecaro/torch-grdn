@@ -98,7 +98,7 @@ class UniformBottomUpHTMM(nn.Module):
 
         # Likelihood Pi
         exp_likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
-        bitmask = (torch.FloatTensor(exp_likelihood.size(0), exp_likelihood.size(-1)).uniform_() > self.tree_dropout).to(self.A.device)
+        bitmask = torch.rand(exp_likelihood.size(0), exp_likelihood.size(-1), device=self.A.device) > self.tree_dropout
         exp_likelihood *= bitmask
         exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
         exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='mean')
