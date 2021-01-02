@@ -109,8 +109,8 @@ class ParallelTUDataset(InMemoryDataset):
             data_list = [self.get(idx) for idx in range(len(self))]
             transform_pool = ray.util.ActorPool([self.pre_transform for _ in range(self.pool_size)])
             transformed_data = []
-            for i in range(0, len(data_list), self.pool_size*4):
-                last_idx = min(i+(self.pool_size*4), len(data_list))
+            for i in range(0, len(data_list), self.pool_size):
+                last_idx = min(i+(self.pool_size), len(data_list))
                 transformed_data += list(transform_pool.map(lambda a, v: a.remote(v), data_list[i:last_idx]))
             self.data, self.slices = self.collate(transformed_data)
 

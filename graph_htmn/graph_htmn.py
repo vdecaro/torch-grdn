@@ -34,7 +34,7 @@ class GraphHTMN(nn.Module):
             to_contrastive = to_contrastive[0]
 
         to_contrastive = self.b_norm(to_contrastive)
-        c_neurons = (to_contrastive @ self.contrastive).tanh().detach_()
+        c_neurons = (to_contrastive @ self.contrastive).tanh().detach()
         g_pooling = self.set2set(c_neurons, batch)
         output = self.output(g_pooling)
         

@@ -33,7 +33,7 @@ def prepare_dir_tree_experiments(name):
 def prepare_tree_datasets(name, depths, num_cpus):
     for d in depths:
         if not os.path.exists('{}/D{}'.format(name, d)):
-            _ = ParallelTUDataset('{}/D{}'.format(name, d), name, pre_transform=pre_transform(d), pool_size=num_cpus*2)
+            _ = ParallelTUDataset('{}/D{}'.format(name, d), name, pre_transform=pre_transform(d), pool_size=num_cpus)
 
 
 def get_split(name, fold):
