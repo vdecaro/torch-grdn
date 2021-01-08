@@ -4,6 +4,16 @@ from torch.utils.data import Dataset, DataLoader
 from data.tree.inex.preproc import load_and_preproc_inex
 import random
 
+def tree_to(b, device):
+    b['x'] = b['x'].to(device)
+    b['levels'] = [l.to(device) for l in b['levels']]
+    b['leaves'] = b['leaves'].to(device)
+    b['pos'] = b['pos'].to(device)
+    b['y'] = b['y'].to(device)
+    b['batch'] = b['batch'].to(device)
+
+    return b
+
 class TreeDataset(Dataset):
     def __init__(self, name=None, data=None):
         if name in ['inex2005train', 'inex2005test', 'inex2006train', 'inex2006test']:
@@ -19,11 +29,6 @@ class TreeDataset(Dataset):
     
     def shuffle(self):
         random.shuffle(self.data)
-
-class TreesLoader(DataLoader):
-
-    def __init__(self, dataset, batch_size=1, shuffle=False, **kwargs):
-        super(TreesLoader, self).__init__(dataset, batch_size, shuffle, collate_fn=trees_collate_fn, num_workers=0, **kwargs)
 
 
 def trees_collate_fn(batch):
@@ -52,7 +57,7 @@ def trees_collate_fn(batch):
         levels=[torch.cat(l, 1) for l in levels],
         leaves=torch.cat(leaves),
         pos=torch.cat(pos),
-        y=torch.stack(y),
+        y=torch.LongTensor(y),
         dim=dim,
         batch=torch.LongTensor(batch_idx)
     )

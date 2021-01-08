@@ -65,5 +65,5 @@ def _build_tree(line):
     leaves = torch.LongTensor(leaves)
     pos = torch.LongTensor([0]+pos)
     dim = torch.LongTensor([labels.size(0)])
-    y = torch.LongTensor([int(t_class)-1])
+    y = torch.LongTensor(int(t_class)-1)
     return Data(levels=edges, leaves=leaves, x=labels, pos=pos, y=y, dim=dim)

@@ -136,5 +136,5 @@ class PositionalTopDownHTMM(nn.Module):
         b_nodes = B[:, tree['x']].permute(1, 0, 2)
         exp_likelihood += (eps * b_nodes.log()).sum()
 
-        mean_neg_exp_likelihood = - exp_likelihood / tree['batch'][-1]
+        mean_neg_exp_likelihood = - exp_likelihood / (tree['batch'].argmax()+1)
         mean_neg_exp_likelihood.backward()

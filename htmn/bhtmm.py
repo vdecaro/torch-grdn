@@ -116,5 +116,5 @@ class BottomUpHTMM(nn.Module):
             exp_likelihood += (eps_joint * A[:, :, pos_ch].permute(2, 0, 1, 3).log()).sum()
             exp_likelihood += (eps_joint.sum([1, 2]) * SP[pos_ch].log()).sum()
             
-        mean_neg_exp_likelihood = - exp_likelihood / tree['batch'][-1]
+        mean_neg_exp_likelihood = - exp_likelihood / (tree['batch'].argmax()+1)
         mean_neg_exp_likelihood.backward()
