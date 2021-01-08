@@ -30,15 +30,19 @@ class GHTMNTrainable(tune.Trainable):
         self.tr_ld = None
         self.vl_ld = None
         self._data_setup('all')
-
         self.model = GraphHTMN(self.out_features, config['n_gen'], 0, config['C'], self.symbols, config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.BCEWithLogitsLoss()
 
     def step(self):
         self.model.train()
+        tr_loss = 0
+        tr_acc = 0
         for _, b in enumerate(self.tr_ld):
             b_loss_v, b_acc_v = self._train_step(b)
+            w = (torch.max(b.batch)+1).item() /len(self.tr_idx)
+            tr_loss += w*b_loss_v
+            tr_acc += w*b_acc_v
         
         
         self.model.eval()
@@ -53,6 +57,8 @@ class GHTMNTrainable(tune.Trainable):
         self.device_handler.step()
 
         return {
+            'tr_loss': tr_loss,
+            #'tr_acc': tr_acc,
             'vl_loss': vl_loss,
             'vl_acc': vl_acc
         }
@@ -108,14 +114,17 @@ class GHTMNTrainable(tune.Trainable):
             load_mode = 'loaders'
         self._data_setup(load_mode)
         
-        del self.model, self.opt 
-        self.device_handler.reset()
+        self.cleanup()
         
         self.model = GraphHTMN(self.out_features, new_config['n_gen'], 0, new_config['C'], self.symbols, new_config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=new_config['lr'])
 
         return True
-
+    
+    def cleanup(self):
+        del self.model, self.opt 
+        self.device_handler.reset()
+        
     def _data_setup(self, mode):
         if mode == 'all':
             self.dataset = ParallelTUDataset(

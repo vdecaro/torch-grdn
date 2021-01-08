@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from graph_htmn.uni_bhtmm import UniformBottomUpHTMM
 from graph_htmn.thtmm import TopDownHTMM
-from torch_geometric.nn import Set2Set, BatchNorm
+from torch_geometric.nn import Set2Set, BatchNorm, GlobalAttention
 from torch_scatter.scatter import scatter
 
 
@@ -17,8 +17,9 @@ class GraphHTMN(nn.Module):
         self.b_norm = BatchNorm(n_bu + n_td, affine=False)
 
         self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
-        self.set2set = Set2Set(self.contrastive.size(1), 10, 1)
+        self.pooling = Set2Set(self.contrastive.size(1), 2, 1)
         self.output = nn.Linear(2*self.contrastive.size(1), out_features)
+        
     
     def forward(self, x, trees, batch):
         to_contrastive = []
@@ -35,12 +36,10 @@ class GraphHTMN(nn.Module):
 
         to_contrastive = self.b_norm(to_contrastive)
         c_neurons = (to_contrastive @ self.contrastive).tanh().detach()
-        g_pooling = self.set2set(c_neurons, batch)
+        g_pooling = self.pooling(c_neurons, batch)
         output = self.output(g_pooling)
         
         return output
-
-
 
 def _contrastive_matrix(N_GEN):
     contrastive_units = (N_GEN*(N_GEN-1)) // 2

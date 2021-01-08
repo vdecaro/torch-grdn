@@ -74,7 +74,7 @@ class _GateNN(nn.Module):
         self.out = nn.Linear(gate_units, 1)
 
     def forward(self, x):
-        return self.out(self.h(x).sigmoid())
+        return self.out(self.h(x).tanh())
 
 
 def _contrastive_matrix(N_GEN):

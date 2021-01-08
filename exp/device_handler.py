@@ -17,22 +17,20 @@ class DeviceHandler(object):
         self.trainable = trainable
 
         self.t = time.time()
-        self.threshold = random.uniform(30, 60)
+        self.threshold = random.uniform(0, 30)
 
     
     def step(self):
-        now = time.time()
-        switch_flag = now - self.t >= self.threshold
-        switch_to = CPU if self.device == GPU else GPU
-        if self.gpu_id is not None:
+        if self.gpu_id is not None and self.device != GPU:
             # Switching to GPU
             gpu_failed = False
-            if switch_flag and switch_to == GPU:
+            now = time.time()
+            used = gpu_info()[self.gpu_id]['mem_used_percent']/100
+            switch_flag = now - self.t >= self.threshold and used < 0.65 and random.random() > (1 - used/0.65)
+            if switch_flag:
                 try:
-                    used = gpu_info()[self.gpu_id]['mem_used_percent']/100
-                    if used < 0.65 and random.random() > used:
-                        self._switch(GPU)
-                        print("Switched to GPU {}.".format(self.gpu_id))
+                    self._switch(GPU)
+                    print("Switched to GPU {}.".format(self.gpu_id))
                 except RuntimeError as e:
                     str_e = str(e).lower()
                     if 'cuda' in str_e or 'cudnn' in str_e: 
@@ -40,17 +38,18 @@ class DeviceHandler(object):
                     else:
                         raise
             
-            # Switching to CPU
-            if (switch_flag and switch_to == CPU) or gpu_failed:
-                self._switch(CPU)
-                if not gpu_failed:
-                    print("Switched from GPU {} to CPU.".format(self.gpu_id))
+                # Switching to CPU
+                if gpu_failed:
+                    self._switch(CPU)
+                    if not gpu_failed:
+                        print("Switched from GPU {} to CPU.".format(self.gpu_id))
+                    else:
+                        print("Failed to move models to GPU {}. Moved back to CPU.".format(self.gpu_id))
+                    self.t_threshold = random.uniform(30, 90)
                 else:
-                    print("Failed to move models to GPU {}. Moved back to CPU.".format(self.gpu_id))
-                
-        self.t = time.time()
-        self.t_threshold = random.uniform(30, 60)
-
+                    self.t_threshold = random.uniform(10, 30)
+                    
+                self.t = time.time()
 
     def forward_manage(self, func):
 
@@ -71,7 +70,8 @@ class DeviceHandler(object):
                 if forward_failed:
                     self._switch(CPU)
                     b = b.to(CPU)
-                    print(torch.cuda.memory_summary())
+                    self.t = time.time()
+                    self.t_threshold = random.uniform(30, 90)
                     print("Failed to forward in GPU {}. Moved back to CPU.".format(self.gpu_id))
             return v1, v2
 

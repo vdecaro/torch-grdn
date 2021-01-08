@@ -1,6 +1,6 @@
 import sys
 import os
-from random import randint
+from random import randint, randrange
 
 import torch
 import ray
@@ -19,11 +19,11 @@ def get_config(name):
             'out': 1,
             'symbols': 37,
             'depth': tune.randint(2, 10),
-            'C': tune.randint(2, 10),
+            'C': tune.randint(2, 8),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(1e-5, 1e-3),
+            'lr': tune.uniform(5e-4, 2e-3),
             'batch_size': 100,
-            'tree_dropout': tune.uniform(0, 0.9)
+            'tree_dropout': tune.uniform(0.4, 0.9)
         }
 
     if name == 'PROTEINS':
@@ -34,9 +34,9 @@ def get_config(name):
             'depth': tune.randint(2, 8),
             'C': tune.randint(2, 8),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(1e-5, 1e-3),
+            'lr': tune.uniform(5e-5, 2e-4),
             'batch_size': 100,
-            'tree_dropout': tune.uniform(0, 0.9)
+            'tree_dropout': tune.uniform(0.15, 0.9)
         }
 
     if name == 'DD':
@@ -44,12 +44,12 @@ def get_config(name):
             'dataset': 'DD',
             'out': 1,
             'symbols': 89,
-            'depth': tune.randint(2, 12),
+            'depth': tune.randint(2, 10),
             'C': tune.randint(2, 12),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(1e-5, 1e-3),
             'batch_size': 100,
-            'tree_dropout': tune.uniform(0, 0.9)
+            'tree_dropout': tune.uniform(0.5, 0.9)
         }
 
     
@@ -68,12 +68,12 @@ if __name__ == '__main__':
     if DATASET == 'NCI1':
         depths = range(2, 11)
     prepare_tree_datasets(DATASET, depths, N_CPUS)
-
+    
     config = get_config(DATASET)
-    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
+    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
-        metric="vl_loss",
-        mode="min",
+        metric='vl_loss',
+        mode='min',
         max_t=400,
         grace_period=20,
         reduction_factor=2
@@ -98,13 +98,13 @@ if __name__ == '__main__':
                 stop=early_stopping,
                 local_dir=exp_dir,
                 config=config,
-                num_samples=200,
+                num_samples=250,
                 resources_per_trial= resources,
                 keep_checkpoints_num=1,
-                checkpoint_score_attr='min-vl_loss',
+                checkpoint_score_attr='vl_acc',
                 checkpoint_freq=1,
                 max_failures=5,
-                reuse_actors=True,
+                reuse_actors=False,
                 scheduler=scheduler,
                 verbose=1,
                 resume=size_dir > 3
