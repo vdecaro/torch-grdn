@@ -1,13 +1,11 @@
-import torch
-from ray import tune
 import os
+from ray import tune
 import gc
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+import torch
 from data.graph.g2t import ParallelTUDataset, TreeCollater, pre_transform, transform
 from torch.utils.data import DataLoader
-
 from torch_geometric.utils.metric import accuracy
-
 from graph_htmn.graph_htmn import GraphHTMN
 from exp.utils import get_split
 from exp.device_handler import DeviceHandler
@@ -15,8 +13,8 @@ from exp.device_handler import DeviceHandler
 class GHTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device_handler = DeviceHandler(self)
-
+        self.device_handler = DeviceHandler(self, config['gpu_ids'])
+        
         # Dataset info
         self.dataset_name = config['dataset']
         self.out_features = config['out']

@@ -147,6 +147,24 @@ class TreeDecomposedData(Data):
             if k != 'dim':
                 self.trees[k] = self.trees[k].to(device=device) if k != 'levels' else [l.to(device=device) for l in self.trees[k]]
         return self
+    
+    def cpu(self):
+        self.x = self.x.cpu()
+        self.y = self.y.cpu()
+        self.batch = self.batch.cpu()
+        for k in self.trees:
+            if k != 'dim':
+                self.trees[k] = self.trees[k].cpu() if k != 'levels' else [l.cpu() for l in self.trees[k]]
+        return self
+    
+    def cuda(self):
+        self.x = self.x.cuda()
+        self.y = self.y.cuda()
+        self.batch = self.batch.cuda()
+        for k in self.trees:
+            if k != 'dim':
+                self.trees[k] = self.trees[k].cuda() if k != 'levels' else [l.cuda() for l in self.trees[k]]
+        return self
 
 
 class TreeCollater(object):

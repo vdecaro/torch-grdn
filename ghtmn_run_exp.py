@@ -70,6 +70,7 @@ if __name__ == '__main__':
     prepare_tree_datasets(DATASET, depths, N_CPUS)
     
     config = get_config(DATASET)
+    config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
         metric='vl_loss',
@@ -98,7 +99,7 @@ if __name__ == '__main__':
                 stop=early_stopping,
                 local_dir=exp_dir,
                 config=config,
-                num_samples=250,
+                num_samples=200,
                 resources_per_trial= resources,
                 keep_checkpoints_num=1,
                 checkpoint_score_attr='vl_acc',

@@ -21,7 +21,7 @@ def get_config(name):
             'L': 32,
             'C': tune.randint(6, 11),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(5e-3, 2e-2),
+            'lr': tune.uniform(5e-4, 2e-2),
             'batch_size': tune.choice([32, 64, 128])
         }
 
@@ -33,7 +33,7 @@ def get_config(name):
             'L': 66,
             'C': tune.randint(6, 11),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(5e-3, 2e-2),
+            'lr': tune.uniform(5e-4, 2e-2),
             'batch_size': tune.choice([32, 64, 128])
         }
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         reduction_factor=2
     )
     
-    cpus_per_task = 2
+    cpus_per_task = 1
     if torch.cuda.is_available():
         n_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
         gpus_per_task = n_gpus / (N_CPUS / cpus_per_task)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         stop=early_stopping,
         local_dir=exp_dir,
         config=config,
-        num_samples=40,
+        num_samples=50,
         resources_per_trial= resources,
         keep_checkpoints_num=1,
         checkpoint_score_attr='vl_acc',

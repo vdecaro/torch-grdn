@@ -2,8 +2,8 @@ import torch
 from torch_geometric.data import Data
 
 
-INEX2005 = './data/tree/inex/2005/inex05'
-INEX2006 = './data/tree/inex/2006/inex06'
+INEX2005 = '/code/torch-grdn/data/tree/inex/2005/inex05'
+INEX2006 = '/code/torch-grdn/data/tree/inex/2006/inex06'
 
 
 def load_and_preproc_inex(file):

@@ -17,7 +17,7 @@ def prepare_dir_tree_experiments(name):
     for n, (ds_i, ts_i) in enumerate(ext_split):
         ds_data = dataset[ds_i.tolist()]
         tr_i, vl_i = train_test_split(ds_i, 
-                                      test_size=0.1,  
+                                      test_size=0.175,  
                                       stratify=np.array([g.y for g in ds_data]), 
                                       shuffle=True, 
                                       random_state=get_seed())
