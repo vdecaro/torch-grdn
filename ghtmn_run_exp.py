@@ -58,7 +58,7 @@ if __name__ == '__main__':
     N_CPUS = int(sys.argv[2])
     exp_dir = 'GHTMN_{}'.format(DATASET)
     
-    ray.init(num_cpus=N_CPUS)
+    ray.init(num_cpus=N_CPUS, dashboard_host='0.0.0.0')
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
