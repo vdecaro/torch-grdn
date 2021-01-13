@@ -56,7 +56,6 @@ class TopDownHTMM(nn.Module):
 
     def _upward(self, x, tree, A, B, prior):
         beta = prior * B[:, x[tree['inv_map']]].permute(1, 0, 2)
-        beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
         t_beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
         log_likelihood = torch.zeros((tree['dim'], self.n_gen), device=self.A.device)
 
