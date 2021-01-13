@@ -69,7 +69,7 @@ class GHTMNTrainable(tune.Trainable):
 
         return {
             'tr_loss': tr_loss,
-            #'tr_acc': tr_acc,
+            'tr_acc': tr_acc,
             'vl_loss': vl_loss,
             'vl_acc': vl_acc
         }

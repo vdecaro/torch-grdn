@@ -98,6 +98,10 @@ if __name__ == '__main__':
         name = 'fold_{}'.format(i)
         size_dir = len(os.listdir(os.path.join(exp_dir, name)))
         if size_dir < n_samples + 4:
+            reporter = tune.CLIReporter(parameter_columns=['gen_mode', 'n_gen', 'C', 'depth', 'lr', 'tree_dropout'], 
+                                        infer_limit=4,
+                                        metric='vl_acc',
+                                        mode='max')
             fold_exp = tune.run(
                 GHTMNTrainable,
                 name=name,
