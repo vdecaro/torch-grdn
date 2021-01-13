@@ -27,7 +27,7 @@ class GraphHTMN(nn.Module):
             to_contrastive += [self.bu(x, trees, batch)]
 
         if self.td is not None:
-            to_contrastive += [self.td(x, trees)]
+            to_contrastive += [self.td(x, trees, batch)]
 
         if len(to_contrastive) == 2:
             to_contrastive = torch.cat(to_contrastive, dim=1)
