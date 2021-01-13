@@ -1,20 +1,22 @@
+import os
 import torch
 from torch_geometric.data import Data
 
 
-INEX2005 = '/code/torch-grdn/data/tree/inex/2005/inex05'
-INEX2006 = '/code/torch-grdn/data/tree/inex/2006/inex06'
+INEX2005 = '/data/tree/inex/2005/inex05'
+INEX2006 = '/data/inex/2006/inex06'
 
 
-def load_and_preproc_inex(file):
-    if file == 'inex2005train':
-        f = '{}.train.elastic.tree'.format(INEX2005)
-    if file == 'inex2005test':
-        f = '{}.test.elastic.tree'.format(INEX2005)
-    if file == 'inex2006train':
-        f = '{}.train.elastic.tree'.format(INEX2006)
-    if file == 'inex2006test':
-        f = '{}.test.elastic.tree'.format(INEX2006)
+def load_and_preproc_inex(work_dir, name):
+    if name == 'inex2005train':
+        f = '{}.train.elastic.tree'.format(os.path.join(work_dir, INEX2005))
+    if name == 'inex2005test':
+        f = '{}.test.elastic.tree'.format(os.path.join(work_dir, INEX2005))
+    if name == 'inex2006train':
+        f = '{}.train.elastic.tree'.format(os.path.join(work_dir, INEX2006))
+    if name == 'inex2006test':
+        f = '{}.test.elastic.tree'.format(os.path.join(work_dir, INEX2006))
+
     with open(f, "r") as ins:
         line_tree = []
         for line in ins:

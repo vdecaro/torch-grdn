@@ -7,17 +7,15 @@ from htmn.pos_thtmm import PositionalTopDownHTMM
 
 class HTMN(nn.Module):
 
-    def __init__(self, out, n_bu, n_td, C, L, M, device='cpu:0'):
+    def __init__(self, out, n_bu, n_td, C, L, M):
         super(HTMN, self).__init__()
-        self.device = torch.device(device)
-        self.bu = BottomUpHTMM(n_bu, C, L, M, device) if n_bu is not None and n_bu > 0 else None
-        self.td = PositionalTopDownHTMM(n_td, C, L, M, device) if n_td is not None and n_td > 0 else None
+        self.bu = BottomUpHTMM(n_bu, C, L, M) if n_bu is not None and n_bu > 0 else None
+        self.td = PositionalTopDownHTMM(n_td, C, L, M) if n_td is not None and n_td > 0 else None
         
         self.b_norm = nn.BatchNorm1d(n_bu + n_td, affine=False)
 
         self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
         self.output = nn.Linear(self.contrastive.size(1), out)
-        self.to(device=self.device)
     
     def forward(self, tree):
         log_likelihood = []

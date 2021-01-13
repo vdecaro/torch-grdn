@@ -1,4 +1,5 @@
 import os
+import math
 from ray import tune
 import gc
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
@@ -16,19 +17,31 @@ class GHTMNTrainable(tune.Trainable):
         self.device_handler = DeviceHandler(self, config['gpu_ids'])
         
         # Dataset info
-        self.dataset_name = config['dataset']
-        self.out_features = config['out']
-        self.depth = config['depth']
-        self.symbols = config['symbols']
-        self.batch_size = config['batch_size']
-        self.tr_idx, self.vl_idx, _ = get_split('GHTMN_{}'.format(self.dataset_name), config['fold'])
+        self.tr_idx, self.vl_idx, _ = get_split(os.path.join(config['wdir'], 'GHTMN_{}'.format(config['dataset'])), config['fold'])
+        dataset = ParallelTUDataset(
+            os.path.join(config['wdir'], config['dataset'], 'D{}'.format(config['depth'])),
+            config['dataset'], 
+            pre_transform=pre_transform(config['depth']),
+            transform=transform(config['dataset'])
+        )
+        dataset.data.x = dataset.data.x.argmax(1).detach()
 
-        # Dataset and Loaders setup
-        self.dataset = None
-        self.tr_ld = None
-        self.vl_ld = None
-        self._data_setup('all')
-        self.model = GraphHTMN(self.out_features, config['n_gen'], 0, config['C'], self.symbols, config['tree_dropout'])
+        self.tr_ld = DataLoader(dataset[self.tr_idx], 
+                                collate_fn=TreeCollater(config['depth']), 
+                                batch_size=config['batch_size'], 
+                                shuffle=True)
+        self.vl_ld = DataLoader(dataset[self.vl_idx], 
+                                collate_fn=TreeCollater(config['depth']), 
+                                batch_size=config['batch_size'], 
+                                shuffle=False)
+        if config['gen_mode'] == 'bu':
+            n_bu, n_td = config['n_gen'], 0
+        elif config['gen_mode'] == 'td':
+            n_bu, n_td = 0, config['n_gen']
+        elif config['gen_mode'] == 'both':
+            n_bu, n_td = math.ceil(config['n_gen']/2), math.floor(config['n_gen']/2)
+
+        self.model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'], config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.BCEWithLogitsLoss()
 
@@ -101,45 +114,5 @@ class GHTMNTrainable(tune.Trainable):
         self.model.load_state_dict(mod_state_dict)
         self.opt.load_state_dict(opt_state_dict)
 
-        if torch.cuda.is_available():   
-            self.device_handler.reset()
-
-    def reset_config(self, new_config):
-        load_mode = None
-        if new_config['depth'] != self.depth:
-            load_mode = 'all'
-        elif new_config['batch_size'] != self.batch_size:
-            load_mode = 'loaders'
-        self._data_setup(load_mode)
-        
-        self.cleanup()
-        
-        self.model = GraphHTMN(self.out_features, new_config['n_gen'], 0, new_config['C'], self.symbols, new_config['tree_dropout'])
-        self.opt = torch.optim.Adam(self.model.parameters(), lr=new_config['lr'])
-
-        return True
-    
     def cleanup(self):
-        del self.model, self.opt 
-        self.device_handler.reset()
-        
-    def _data_setup(self, mode):
-        if mode == 'all':
-            self.dataset = ParallelTUDataset(
-                '/code/torch-grdn/{}/D{}'.format(self.dataset_name, self.depth), 
-                self.dataset_name, 
-                pre_transform=pre_transform(self.depth),
-                transform=transform(self.dataset_name)
-            )
-            self.dataset.data.x = self.dataset.data.x.argmax(1).detach()
-        if mode in ['all', 'loaders']:
-            self.tr_ld = DataLoader(self.dataset[self.tr_idx], 
-                                    collate_fn=TreeCollater(self.depth), 
-                                    batch_size=self.batch_size, 
-                                    shuffle=True)
-            self.vl_ld = DataLoader(self.dataset[self.vl_idx], 
-                                    collate_fn=TreeCollater(self.depth), 
-                                    batch_size=self.batch_size, 
-                                    shuffle=False)
-
-             
+        self.device_handler.cleanup()

@@ -4,21 +4,43 @@ from torch.utils.data import Dataset, DataLoader
 from data.tree.inex.preproc import load_and_preproc_inex
 import random
 
-def tree_to(b, device):
-    b['x'] = b['x'].to(device)
-    b['levels'] = [l.to(device) for l in b['levels']]
-    b['leaves'] = b['leaves'].to(device)
-    b['pos'] = b['pos'].to(device)
-    b['y'] = b['y'].to(device)
-    b['batch'] = b['batch'].to(device)
+class TreeData(Data):
 
-    return b
+    def to(self, device):
+        self.x = self.x.to(device)
+        self.levels = [l.to(device) for l in self.levels]
+        self.leaves = self.leaves.to(device)
+        self.pos = self.pos.to(device)
+        self.y = self.y.to(device)
+        self.batch = self.batch.to(device)
+
+        return self
+    
+    def cpu(self):
+        self.x = self.x.cpu()
+        self.levels = [l.cpu() for l in self.levels]
+        self.leaves = self.leaves.cpu()
+        self.pos = self.pos.cpu()
+        self.y = self.y.cpu()
+        self.batch = self.batch.cpu()
+
+        return self
+    
+    def cuda(self):
+        self.x = self.x.cuda()
+        self.levels = [l.cuda() for l in self.levels]
+        self.leaves = self.leaves.cuda()
+        self.pos = self.pos.cuda()
+        self.y = self.y.cuda()
+        self.batch = self.batch.cuda()
+
+        return self
 
 class TreeDataset(Dataset):
-    def __init__(self, name=None, data=None):
-        if name in ['inex2005train', 'inex2005test', 'inex2006train', 'inex2006test']:
-            self.data = load_and_preproc_inex(name)
-        if data is not None:
+    def __init__(self, work_dir=None, name=None, data=None):
+        if work_dir is not None and name in ['inex2005train', 'inex2005test', 'inex2006train', 'inex2006test']:
+            self.data = load_and_preproc_inex(work_dir, name)
+        elif data is not None:
             self.data=data
               
     def __getitem__(self, index):
@@ -52,7 +74,7 @@ def trees_collate_fn(batch):
         batch_idx += [b_idx for _ in range(t.dim)]
         dim += t.dim
 
-    return Data(
+    return TreeData(
         x=torch.cat(x),
         levels=[torch.cat(l, 1) for l in levels],
         leaves=torch.cat(leaves),

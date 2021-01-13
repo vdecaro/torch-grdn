@@ -20,6 +20,7 @@ def get_config(name):
             'symbols': 37,
             'depth': tune.randint(2, 10),
             'C': tune.randint(2, 8),
+            'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(5e-4, 2e-3),
             'batch_size': 100,
@@ -33,6 +34,7 @@ def get_config(name):
             'symbols': 3,
             'depth': tune.randint(2, 8),
             'C': tune.randint(2, 8),
+            'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(5e-5, 2e-4),
             'batch_size': 100,
@@ -46,6 +48,7 @@ def get_config(name):
             'symbols': 89,
             'depth': tune.randint(2, 10),
             'C': tune.randint(2, 12),
+            'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(1e-5, 1e-3),
             'batch_size': 100,
@@ -58,7 +61,7 @@ if __name__ == '__main__':
     N_CPUS = int(sys.argv[2])
     exp_dir = 'GHTMN_{}'.format(DATASET)
     
-    ray.init(num_cpus=N_CPUS, dashboard_host='0.0.0.0')
+    ray.init(num_cpus=N_CPUS)
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
     if DATASET == 'PROTEINS':
@@ -70,13 +73,14 @@ if __name__ == '__main__':
     prepare_tree_datasets(DATASET, depths, N_CPUS)
     
     config = get_config(DATASET)
+    config['wdir'] = os.getcwd()
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
-        metric='vl_loss',
-        mode='min',
+        metric='vl_acc',
+        mode='max',
         max_t=400,
-        grace_period=20,
+        grace_period=40,
         reduction_factor=2
     )
     
@@ -88,24 +92,24 @@ if __name__ == '__main__':
     else:
         resources = {'cpu': cpus_per_task, 'gpu': 0}
     
+    n_samples = 400
     for i in range(10):
         config['fold'] = i
         name = 'fold_{}'.format(i)
         size_dir = len(os.listdir(os.path.join(exp_dir, name)))
-        if size_dir < 204:
+        if size_dir < n_samples + 4:
             fold_exp = tune.run(
                 GHTMNTrainable,
                 name=name,
                 stop=early_stopping,
                 local_dir=exp_dir,
                 config=config,
-                num_samples=200,
+                num_samples=n_samples,
                 resources_per_trial= resources,
                 keep_checkpoints_num=1,
                 checkpoint_score_attr='vl_acc',
                 checkpoint_freq=1,
                 max_failures=5,
-                reuse_actors=False,
                 scheduler=scheduler,
                 verbose=1,
                 resume=size_dir > 3

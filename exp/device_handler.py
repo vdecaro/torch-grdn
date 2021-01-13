@@ -24,7 +24,7 @@ class DeviceHandler(object):
 
     
     def step(self):
-        if self.curr_gpu is not None and self.device != GPU:
+        if self.gpu_ids and self.device != GPU:
             
             now = time.time()
             if now - self.t >= self.threshold:
@@ -95,25 +95,21 @@ class DeviceHandler(object):
 
         return wrapper
 
-    def reset(self):
+    def cleanup(self):
+        del self.trainable.model, self.trainable.opt
         gc.collect()
-        if self.curr_gpu is not None:
+        if self.gpu_ids:
             torch.cuda.ipc_collect()
             torch.cuda.empty_cache()
-        self.curr_gpu = random.choice(self.gpu_ids)
-        torch.cuda.set_device(self.curr_gpu)
-        self.device = CPU
-        self.t0 = time.time()
-        self.t_threshold = random.uniform(30, 60)
         
-    def _switch(self, switch_to):
-        self.trainable.model = self.trainable.model.cpu() if switch_to == CPU else self.trainable.model.cuda()
-        self.trainable.opt.state = _recursive_opt_to(switch_to, self.trainable.opt.state)
+    def _switch(self, device):
+        self.trainable.model = self.trainable.model.cpu() if device == CPU else self.trainable.model.cuda()
+        self.trainable.opt.state = _recursive_opt_to(device, self.trainable.opt.state)
         gc.collect()
-        if switch_to == CPU:
+        if device == CPU:
             torch.cuda.ipc_collect()
             torch.cuda.empty_cache()
-        self.device = switch_to
+        self.device = device
 
 
 def _recursive_opt_to(device, var):

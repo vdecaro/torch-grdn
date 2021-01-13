@@ -5,9 +5,8 @@ from torch_scatter.scatter import scatter
 
 class PositionalTopDownHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, L, M, device='cpu:0'):
+    def __init__(self, n_gen, C, L, M):
         super(PositionalTopDownHTMM, self).__init__()
-        self.device = torch.device(device)
         self.n_gen = n_gen
         self.C = C
         self.L = L
@@ -16,24 +15,23 @@ class PositionalTopDownHTMM(nn.Module):
         self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, L, n_gen)), std=2.5))
         self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
         self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
-        self.to(device=self.device)
 
     def forward(self, tree):
-        sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
+        sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.A, self.B, self.Pi)
         
-        prior = self._preliminary_downward(tree, self.n_gen, sm_A, sm_Pi, self.C, self.device)
-        log_likelihood, beta, t_beta = self._upward(tree, self.n_gen, sm_A, sm_B, prior, self.C, self.device)
+        prior = self._preliminary_downward(tree, sm_A, sm_Pi)
+        log_likelihood, beta, t_beta = self._upward(tree, sm_A, sm_B, prior)
 
         if self.training:
-            eps, t_eps = self._downward(tree, self.n_gen, sm_A, sm_Pi, prior, beta, t_beta, self.C, self.device)
+            eps, t_eps = self._downward(tree, sm_A, sm_Pi, prior, beta, t_beta)
             self._compute_gradient(tree, sm_A, sm_B, sm_Pi, eps, t_eps)
 
         return log_likelihood
 
 
-    def _softmax_reparameterization(self, n_gen, A, B, Pi):
+    def _softmax_reparameterization(self, A, B, Pi):
         sm_A, sm_B, sm_Pi = [], [], []
-        for i in range(n_gen):
+        for i in range(self.n_gen):
             sm_A.append(torch.cat([F.softmax(A[:, :, j, i], dim=0).unsqueeze(2) for j in range(A.size(2))], dim=2))
             sm_B.append(F.softmax(B[:, :, i], dim=1))
             sm_Pi.append(F.softmax(Pi[:, i], dim=0))
@@ -41,9 +39,9 @@ class PositionalTopDownHTMM(nn.Module):
         return torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1)
 
 
-    def _preliminary_downward(self, tree, n_gen, A, Pi, C, device):
+    def _preliminary_downward(self, tree, A, Pi):
         roots = tree['levels'][0][0].unique(sorted=False)
-        prior = torch.zeros((tree['dim'], C, n_gen), device=device)
+        prior = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
         prior[roots] = Pi
 
         for l in tree['levels']:
@@ -56,13 +54,14 @@ class PositionalTopDownHTMM(nn.Module):
         return prior
             
 
-    def _upward(self, tree, n_gen, A, B, prior, C, device):
+    def _upward(self, tree, A, B, prior):
         beta = prior * B[:, tree['x']].permute(1, 0, 2)
-        t_beta = torch.zeros((tree['dim'], C, n_gen), device=device)
-        log_likelihood = torch.zeros((tree['dim'], n_gen), device=device)
+        t_beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
+        log_likelihood = torch.zeros((tree['dim'], self.n_gen), device=self.A.device)
 
         beta_leaves = beta[tree['leaves']]
         nu = beta_leaves.sum(1)
+
         beta[tree['leaves']] = beta_leaves / nu.unsqueeze(1)
         log_likelihood[tree['leaves']] = nu.log()
 
@@ -76,25 +75,21 @@ class PositionalTopDownHTMM(nn.Module):
             t_beta[l[1]] = beta_uv
             
             # Computing beta on level = (\prod_ch beta_uv_ch) * prior_u *
-            beta_l = []
             pa_idx = l[0].unique(sorted=False)
-            for u in pa_idx:
-                ch_idx = (l[0] == u).nonzero().squeeze()
-                beta_u = beta[u] * beta_uv[ch_idx].prod(0)
-                beta_l.append(beta_u)
+            prev_beta = beta[pa_idx]
+            beta = scatter(src=beta_uv, index=l[0], dim=0, out=beta, reduce='mul')
+            beta_l_unnorm = prev_beta * beta[pa_idx]
+            nu = beta_l_unnorm.sum(1)
 
-            beta_l = torch.stack(beta_l)
-            nu = beta_l.sum(1)
-
-            beta[pa_idx] = beta_l / nu.unsqueeze(1)
+            beta[pa_idx] = beta_l_unnorm / nu.unsqueeze(1)
             log_likelihood[pa_idx] = nu.log()
-        
+
         return scatter(log_likelihood, tree['batch'], dim=0), beta, t_beta
 
 
-    def _downward(self, tree, n_gen, A, Pi, prior, beta, t_beta, C, device):
-        eps = torch.zeros((tree['dim'], C, n_gen), device=device)
-        t_eps = torch.zeros((tree['dim'], C, C, n_gen), device=device)
+    def _downward(self, tree, A, Pi, prior, beta, t_beta):
+        eps = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
+        t_eps = torch.zeros((tree['dim'], self.C, self.C, self.n_gen), device=self.A.device)
 
         roots = tree['levels'][0][0].unique(sorted=False)
         eps[roots] = beta[roots]
@@ -136,5 +131,5 @@ class PositionalTopDownHTMM(nn.Module):
         b_nodes = B[:, tree['x']].permute(1, 0, 2)
         exp_likelihood += (eps * b_nodes.log()).sum()
 
-        mean_neg_exp_likelihood = - exp_likelihood / (tree['batch'].argmax()+1)
+        mean_neg_exp_likelihood = - exp_likelihood / (tree['batch'].max()+1)
         mean_neg_exp_likelihood.backward()

@@ -62,7 +62,7 @@ class UniformBottomUpHTMM(nn.Module):
 
             u_idx = l[0].unique(sorted=False)
             B_l = B[:, x[tree['inv_map'][u_idx]]].permute(1, 0, 2)
-            beta_l = t_beta[u_idx] * B_l
+            beta_l = B_l * t_beta[u_idx]
             nu = beta_l.sum(dim=1)
 
             beta[u_idx] = beta_l / nu.unsqueeze(1)
@@ -82,6 +82,7 @@ class UniformBottomUpHTMM(nn.Module):
             beta_ch = beta[l[1]].unsqueeze(1)
             eps_joint = (eps_pa * A.unsqueeze(0) * beta_ch) / t_beta_pa
             t_eps = scatter(src=eps_joint, index=l[0], dim=0, out=t_eps, reduce='mean')
+
             eps[l[1]] = eps_joint.sum(1)
 
         return eps.detach(), t_eps.detach()
@@ -98,9 +99,13 @@ class UniformBottomUpHTMM(nn.Module):
 
         # Likelihood Pi
         exp_likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
-        bitmask = torch.rand(exp_likelihood.size(0), exp_likelihood.size(-1), device=self.A.device) > self.tree_dropout
+
+        bitmask = torch.rand_like(exp_likelihood, device=self.A.device) > self.tree_dropout
         exp_likelihood *= bitmask
+        '''
         exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
-        exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='mean')
+        exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='sum')
         neg_exp_likelihood = -exp_likelihood.mean(0).sum()
+        '''
+        neg_exp_likelihood = - exp_likelihood.sum() / (batch.max() + 1)
         neg_exp_likelihood.backward()

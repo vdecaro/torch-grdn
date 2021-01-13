@@ -21,7 +21,7 @@ class HTMNTrainable(tune.Trainable):
         self.device_handler = DeviceHandler(self)
 
         # Dataset and Loaders setup
-        self.dataset = TreeDataset(config['dataset'] + 'train')
+        self.dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
         self.tr_idx, self.vl_idx = train_test_split(np.arange(len(self.dataset)), 
                                                     test_size=0.15,  
                                                     stratify=np.array([t.y for t in self.dataset]), 
@@ -106,9 +106,5 @@ class HTMNTrainable(tune.Trainable):
         self.model.load_state_dict(mod_state_dict)
         self.opt.load_state_dict(opt_state_dict)
 
-        if torch.cuda.is_available():   
-            self.device_handler.reset()
-
     def cleanup(self):
-        del self.model, self.opt 
         self.device_handler.reset()
