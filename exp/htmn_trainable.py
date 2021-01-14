@@ -1,8 +1,10 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+import gc
+
 import torch
 import numpy as np
 from ray import tune
-import os
-import gc
 
 from math import floor, ceil
 from data.tree.utils import TreeDataset, trees_collate_fn
@@ -18,7 +20,7 @@ from exp.utils import get_seed
 class HTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device_handler = DeviceHandler(self)
+        self.device_handler = DeviceHandler(self, config['gpu_ids'])
 
         # Dataset and Loaders setup
         self.dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')

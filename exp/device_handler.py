@@ -32,14 +32,16 @@ class DeviceHandler(object):
                 # Selecting the GPU with minimum memory usage
                 if len(self.gpu_ids) > 1 and random.random() > 0.5:
                     gpus_usage = gpu_info()
-                    min_idx, min_usage = None, 1000
+                    min_idx, min_usage = [], 1000
                     for i in self.gpu_ids:
                         i_usage = gpus_usage[i]['mem_used_percent']
                         if i_usage < min_usage:
-                            min_idx, min_usage = i, i_usage
+                            min_idx, min_usage = [i], i_usage
+                        elif i_usage == min_usage:
+                            min_idx.append(i)
                             
-                    if self.curr_gpu != min_idx:
-                        self.curr_gpu = min_idx
+                    if self.curr_gpu not in min_idx:
+                        self.curr_gpu = random.choice(min_idx)
                         torch.cuda.set_device(self.curr_gpu)
 
                 # Switching to GPU

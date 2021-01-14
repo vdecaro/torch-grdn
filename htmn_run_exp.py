@@ -20,7 +20,7 @@ def get_config(name):
             'M': 366,
             'L': 32,
             'C': tune.randint(6, 11),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
             'lr': tune.uniform(5e-4, 2e-2),
             'batch_size': tune.choice([32, 64, 128])
         }
@@ -32,7 +32,7 @@ def get_config(name):
             'M': 65,
             'L': 66,
             'C': tune.randint(6, 11),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
             'lr': tune.uniform(5e-4, 2e-2),
             'batch_size': tune.choice([32, 64, 128])
         }
@@ -47,13 +47,15 @@ if __name__ == '__main__':
         os.makedirs(exp_dir)
     
     config = get_config(DATASET)
+    config['wdir'] = os.getcwd()
+    config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=15)
     scheduler = ASHAScheduler(
         metric='vl_loss',
         mode='min',
         max_t=400,
-        grace_period=15,
-        reduction_factor=2
+        grace_period=20,
+        reduction_factor=4
     )
     
     cpus_per_task = 1
@@ -63,19 +65,34 @@ if __name__ == '__main__':
         resources = {'cpu': cpus_per_task, 'gpu': gpus_per_task}
     else:
         resources = {'cpu': cpus_per_task, 'gpu': 0}
-    
+    n_samples = 200
+    reporter = tune.CLIReporter(metric_columns={
+                                    'training_iteration': 'Iter', 
+                                    'vl_loss': 'Loss', 
+                                    'vl_acc': 'Acc.', 
+                                    'best_acc': 'Best Acc.',
+                                },
+                                parameter_columns={
+                                    'gen_mode': 'Mode', 
+                                    'n_gen': '#gen', 
+                                    'C': 'C', 
+                                    'depth': 'Depth', 
+                                    'lr': 'Lrate',
+                                    'tree_dropout': 'Drop.'
+                                }, 
+                                infer_limit=3)
     tune.run(
         HTMNTrainable,
         stop=early_stopping,
         local_dir=exp_dir,
         config=config,
-        num_samples=50,
+        num_samples=n_samples,
         resources_per_trial= resources,
         keep_checkpoints_num=1,
         checkpoint_score_attr='vl_acc',
         checkpoint_freq=1,
         max_failures=5,
-        reuse_actors=False,
+        progress_reporter=reporter,
         scheduler=scheduler,
         verbose=1
     )

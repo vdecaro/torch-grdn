@@ -41,7 +41,7 @@ class GHTMNTrainable(tune.Trainable):
         elif config['gen_mode'] == 'both':
             n_bu, n_td = math.ceil(config['n_gen']/2), math.floor(config['n_gen']/2)
 
-        self.model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'])
+        self.model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'], config['tree_dropout'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.BCEWithLogitsLoss()
         

@@ -36,9 +36,9 @@ def get_config(name):
             'C': tune.randint(2, 8),
             'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(5e-5, 2e-4),
+            'lr': tune.uniform(1e-5, 2e-4),
             'batch_size': 100,
-            #'tree_dropout': tune.uniform(0.15, 0.9)
+            'tree_dropout': tune.uniform(0.15, 0.9)
         }
 
     if name == 'DD':
@@ -77,11 +77,11 @@ if __name__ == '__main__':
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
-        metric='vl_acc',
-        mode='max',
+        metric='vl_loss',
+        mode='min',
         max_t=400,
         grace_period=40,
-        reduction_factor=2
+        reduction_factor=4
     )
     
     cpus_per_task = 2
@@ -92,14 +92,26 @@ if __name__ == '__main__':
     else:
         resources = {'cpu': cpus_per_task, 'gpu': 0}
     
-    n_samples = 400
+    n_samples = 800
     for i in range(10):
         config['fold'] = i
         name = 'fold_{}'.format(i)
         size_dir = len(os.listdir(os.path.join(exp_dir, name)))
         if size_dir < n_samples + 4:
-            reporter = tune.CLIReporter(metric_columns=['training_iteration', 'vl_loss', 'vl_acc', 'best_acc'],
-                                        parameter_columns=['gen_mode', 'n_gen', 'C', 'depth', 'lr'], 
+            reporter = tune.CLIReporter(metric_columns={
+                                            'training_iteration': 'Iter', 
+                                            'vl_loss': 'Loss', 
+                                            'vl_acc': 'Acc.', 
+                                            'best_acc': 'Best Acc.',
+                                        },
+                                        parameter_columns={
+                                            'gen_mode': 'Mode', 
+                                            'n_gen': '#gen', 
+                                            'C': 'C', 
+                                            'depth': 'Depth', 
+                                            'lr': 'Lrate',
+                                            'tree_dropout': 'Drop.'
+                                        }, 
                                         infer_limit=3)
             fold_exp = tune.run(
                 GHTMNTrainable,
