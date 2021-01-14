@@ -38,7 +38,7 @@ def get_config(name):
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
             'lr': tune.uniform(5e-5, 2e-4),
             'batch_size': 100,
-            'tree_dropout': tune.uniform(0.15, 0.9)
+            #'tree_dropout': tune.uniform(0.15, 0.9)
         }
 
     if name == 'DD':
@@ -98,10 +98,9 @@ if __name__ == '__main__':
         name = 'fold_{}'.format(i)
         size_dir = len(os.listdir(os.path.join(exp_dir, name)))
         if size_dir < n_samples + 4:
-            reporter = tune.CLIReporter(parameter_columns=['gen_mode', 'n_gen', 'C', 'depth', 'lr', 'tree_dropout'], 
-                                        infer_limit=4,
-                                        metric='vl_acc',
-                                        mode='max')
+            reporter = tune.CLIReporter(metric_columns=['training_iteration', 'vl_loss', 'vl_acc', 'best_acc'],
+                                        parameter_columns=['gen_mode', 'n_gen', 'C', 'depth', 'lr'], 
+                                        infer_limit=3)
             fold_exp = tune.run(
                 GHTMNTrainable,
                 name=name,
@@ -116,5 +115,6 @@ if __name__ == '__main__':
                 max_failures=5,
                 scheduler=scheduler,
                 verbose=1,
+                progress_reporter=reporter,
                 resume=size_dir > 3
             )

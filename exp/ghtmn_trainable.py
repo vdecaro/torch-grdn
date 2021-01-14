@@ -41,9 +41,11 @@ class GHTMNTrainable(tune.Trainable):
         elif config['gen_mode'] == 'both':
             n_bu, n_td = math.ceil(config['n_gen']/2), math.floor(config['n_gen']/2)
 
-        self.model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'], config['tree_dropout'])
+        self.model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.BCEWithLogitsLoss()
+        
+        self.best_vl_acc = 0
 
     def step(self):
         self.model.train()
@@ -64,14 +66,16 @@ class GHTMNTrainable(tune.Trainable):
             w = (torch.max(b.batch)+1).item() /len(self.vl_idx)
             vl_loss += w*b_loss_v
             vl_acc += w*b_acc_v
-        
+        if vl_acc > self.best_vl_acc:
+            self.best_vl_acc = vl_acc
         self.device_handler.step()
 
         return {
-            'tr_loss': tr_loss,
+            #'tr_loss': tr_loss,
             'tr_acc': tr_acc,
             'vl_loss': vl_loss,
-            'vl_acc': vl_acc
+            'vl_acc': vl_acc,
+            'best_acc': self.best_vl_acc
         }
     
     def _train_step(self, batch):

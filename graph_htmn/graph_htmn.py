@@ -9,7 +9,7 @@ from torch_scatter.scatter import scatter
 
 class GraphHTMN(nn.Module):
 
-    def __init__(self, out_features: int, n_bu: int, n_td: int, C: int, M: int, tree_dropout: float = 0):
+    def __init__(self, out_features: int, n_bu: int, n_td: int, C: int, M: int, tree_dropout: float = 0.75):
         super(GraphHTMN, self).__init__()
         self.bu = UniformBottomUpHTMM(n_bu, C, M, tree_dropout) if n_bu > 0 else None
         self.td = TopDownHTMM(n_td, C, M, tree_dropout) if n_td > 0 else None

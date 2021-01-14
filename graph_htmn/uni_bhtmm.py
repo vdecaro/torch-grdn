@@ -99,13 +99,10 @@ class UniformBottomUpHTMM(nn.Module):
 
         # Likelihood Pi
         exp_likelihood[tree['leaves']] += (eps[tree['leaves']] * Pi.unsqueeze(0).log()).sum(1)
-
+        
+        exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
         bitmask = torch.rand_like(exp_likelihood, device=self.A.device) > self.tree_dropout
         exp_likelihood *= bitmask
-        '''
-        exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
-        exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='sum')
-        neg_exp_likelihood = -exp_likelihood.mean(0).sum()
-        '''
+        exp_likelihood = scatter(src=exp_likelihood, index=batch, dim=0, reduce='mean')
         neg_exp_likelihood = - exp_likelihood.sum() / (batch.max() + 1)
         neg_exp_likelihood.backward()
