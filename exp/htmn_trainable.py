@@ -23,21 +23,23 @@ class HTMNTrainable(tune.Trainable):
         self.device_handler = DeviceHandler(self, config['gpu_ids'])
 
         # Dataset and Loaders setup
-        self.dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
-        self.tr_idx, self.vl_idx = train_test_split(np.arange(len(self.dataset)), 
+        dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
+        self.tr_idx, self.vl_idx = train_test_split(np.arange(len(dataset)), 
                                                     test_size=0.15,  
-                                                    stratify=np.array([t.y for t in self.dataset]), 
+                                                    stratify=np.array([t.y for t in dataset]), 
                                                     shuffle=True, 
                                                     random_state=get_seed())
         self.tr_idx, self.vl_idx = self.tr_idx.tolist(), self.vl_idx.tolist()
-        tr_data = TreeDataset(data=[self.dataset[i] for i in self.tr_idx])
-        vl_data = TreeDataset(data=[self.dataset[i] for i in self.vl_idx])
-        self.tr_ld = DataLoader(tr_data, batch_size=config['batch_size'], shuffle=True, collate_fn=trees_collate_fn)
-        self.vl_ld = DataLoader(vl_data, batch_size=config['batch_size'], shuffle=False, collate_fn=trees_collate_fn)
+        tr_data = TreeDataset(data=[dataset[i] for i in self.tr_idx])
+        vl_data = TreeDataset(data=[dataset[i] for i in self.vl_idx])
+        self.tr_ld = DataLoader(tr_data, batch_size=config['batch_size'], shuffle=True, collate_fn=trees_collate_fn, drop_last=len(self.tr_idx) % config['batch_size'] == 1)
+        self.vl_ld = DataLoader(vl_data, batch_size=config['batch_size'], shuffle=False, collate_fn=trees_collate_fn, drop_last=len(self.vl_idx) % config['batch_size'] == 1)
 
         self.model = HTMN(config['out'], ceil(config['n_gen']/2), floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.CrossEntropyLoss()
+        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt, 'max', factor=0.5)
+        self.best_vl_acc = 0
 
     def step(self):
         self.model.train()
@@ -60,12 +62,17 @@ class HTMNTrainable(tune.Trainable):
             vl_acc += w*b_acc_v
         
         self.device_handler.step()
+        self.lr_scheduler.step(vl_acc)
+        
+        if vl_acc > self.best_vl_acc:
+            self.best_vl_acc = vl_acc
 
         return {
             'tr_loss': tr_loss,
             'tr_acc': tr_acc,
             'vl_loss': vl_loss,
-            'vl_acc': vl_acc
+            'vl_acc': vl_acc,
+            'best_acc': self.best_vl_acc
         }
     
     def _train_step(self, batch):
@@ -109,4 +116,4 @@ class HTMNTrainable(tune.Trainable):
         self.opt.load_state_dict(opt_state_dict)
 
     def cleanup(self):
-        self.device_handler.reset()
+        self.device_handler.cleanup()

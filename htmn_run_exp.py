@@ -19,10 +19,10 @@ def get_config(name):
             'out': 11,
             'M': 366,
             'L': 32,
-            'C': tune.randint(6, 11),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
-            'lr': tune.uniform(5e-4, 2e-2),
-            'batch_size': tune.choice([32, 64, 128])
+            'C': tune.randint(6, 13),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
+            'lr': tune.uniform(5e-5, 2e-2),
+            'batch_size': tune.choice([64, 128, 192, 256])
         }
 
     if name == 'inex2006':
@@ -31,10 +31,10 @@ def get_config(name):
             'out': 18,
             'M': 65,
             'L': 66,
-            'C': tune.randint(6, 11),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
-            'lr': tune.uniform(5e-4, 2e-2),
-            'batch_size': tune.choice([32, 64, 128])
+            'C': tune.randint(6, 18),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
+            'lr': tune.uniform(5e-5, 2e-2),
+            'batch_size': tune.choice([64, 128, 192, 256])
         }
 
 if __name__ == '__main__':
@@ -49,12 +49,12 @@ if __name__ == '__main__':
     config = get_config(DATASET)
     config['wdir'] = os.getcwd()
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
-    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=15)
+    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
         metric='vl_loss',
         mode='min',
         max_t=400,
-        grace_period=20,
+        grace_period=40,
         reduction_factor=4
     )
     
@@ -65,22 +65,22 @@ if __name__ == '__main__':
         resources = {'cpu': cpus_per_task, 'gpu': gpus_per_task}
     else:
         resources = {'cpu': cpus_per_task, 'gpu': 0}
-    n_samples = 200
+    n_samples = 400
     reporter = tune.CLIReporter(metric_columns={
-                                    'training_iteration': 'Iter', 
+                                    'training_iteration': '#Iter', 
                                     'vl_loss': 'Loss', 
                                     'vl_acc': 'Acc.', 
                                     'best_acc': 'Best Acc.',
                                 },
                                 parameter_columns={
-                                    'gen_mode': 'Mode', 
                                     'n_gen': '#gen', 
                                     'C': 'C', 
-                                    'depth': 'Depth', 
-                                    'lr': 'Lrate',
-                                    'tree_dropout': 'Drop.'
+                                    'lr': 'LRate',
+                                    'batch_size': 'Batch'
                                 }, 
-                                infer_limit=3)
+                                infer_limit=3,
+                                metric='best_acc',
+                                mode='max')
     tune.run(
         HTMNTrainable,
         stop=early_stopping,

@@ -3,8 +3,8 @@ import torch
 from torch_geometric.data import Data
 
 
-INEX2005 = '/data/tree/inex/2005/inex05'
-INEX2006 = '/data/inex/2006/inex06'
+INEX2005 = 'data/tree/inex/2005/inex05'
+INEX2006 = 'data/tree/inex/2006/inex06'
 
 
 def load_and_preproc_inex(work_dir, name):
@@ -66,6 +66,5 @@ def _build_tree(line):
     labels = torch.LongTensor(labels)
     leaves = torch.LongTensor(leaves)
     pos = torch.LongTensor([0]+pos)
-    dim = torch.LongTensor([labels.size(0)])
-    y = torch.LongTensor(int(t_class)-1)
-    return Data(levels=edges, leaves=leaves, x=labels, pos=pos, y=y, dim=dim)
+    
+    return Data(levels=edges, leaves=leaves, x=labels, pos=pos, y=(int(t_class)-1), dim=labels.size(0))
