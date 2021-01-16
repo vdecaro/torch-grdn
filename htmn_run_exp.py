@@ -19,10 +19,10 @@ def get_config(name):
             'out': 11,
             'M': 366,
             'L': 32,
-            'C': tune.randint(6, 13),
+            'C': tune.randint(6, 14),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
             'lr': tune.uniform(5e-5, 2e-2),
-            'batch_size': tune.choice([64, 128, 192, 256])
+            'batch_size': tune.choice([32, 64, 128, 192])
         }
 
     if name == 'inex2006':
@@ -31,7 +31,7 @@ def get_config(name):
             'out': 18,
             'M': 65,
             'L': 66,
-            'C': tune.randint(6, 18),
+            'C': tune.randint(6, 14),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
             'lr': tune.uniform(5e-5, 2e-2),
             'batch_size': tune.choice([64, 128, 192, 256])
@@ -49,6 +49,7 @@ if __name__ == '__main__':
     config = get_config(DATASET)
     config['wdir'] = os.getcwd()
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
+    config['holdout'] = 0.2
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
     scheduler = ASHAScheduler(
         metric='vl_loss',

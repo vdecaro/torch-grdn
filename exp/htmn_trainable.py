@@ -25,7 +25,7 @@ class HTMNTrainable(tune.Trainable):
         # Dataset and Loaders setup
         dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
         self.tr_idx, self.vl_idx = train_test_split(np.arange(len(dataset)), 
-                                                    test_size=0.15,  
+                                                    test_size=config['holdout'],  
                                                     stratify=np.array([t.y for t in dataset]), 
                                                     shuffle=True, 
                                                     random_state=get_seed())
@@ -38,7 +38,7 @@ class HTMNTrainable(tune.Trainable):
         self.model = HTMN(config['out'], ceil(config['n_gen']/2), floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.CrossEntropyLoss()
-        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt, 'max', factor=0.5)
+        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt, 'max', factor=0.25)
         self.best_vl_acc = 0
 
     def step(self):
