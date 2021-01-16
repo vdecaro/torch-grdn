@@ -38,7 +38,7 @@ class HTMNTrainable(tune.Trainable):
         self.model = HTMN(config['out'], ceil(config['n_gen']/2), floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.CrossEntropyLoss()
-        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt, 'max', factor=0.25)
+        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.opt, 10, 0.8)
         self.best_vl_acc = 0
 
     def step(self):
@@ -62,7 +62,7 @@ class HTMNTrainable(tune.Trainable):
             vl_acc += w*b_acc_v
         
         self.device_handler.step()
-        self.lr_scheduler.step(vl_acc)
+        self.lr_scheduler.step()
         
         if vl_acc > self.best_vl_acc:
             self.best_vl_acc = vl_acc
