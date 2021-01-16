@@ -1,9 +1,11 @@
 import os
+import json
 import numpy as np
 
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch_geometric.datasets import TUDataset
 from data.graph.g2t import ParallelTUDataset, pre_transform
+from ray.tune import Analysis
 
 def get_seed():
     return 95
@@ -43,3 +45,32 @@ def get_split(exp_dir, fold):
     ts_i = np.load(os.path.join(fold_dir, 'ts_i.npy'))
     
     return tr_i.tolist(), vl_i.tolist(), ts_i.tolist()
+
+
+def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True]):
+    analysis = Analysis(exp_dir, 'vl_acc', 'max')
+    df = analysis.dataframe()
+    df = df.sort_values(metrics, ascending=ascending)
+    trial_dir = df.iloc[0][-1]
+
+    min_ = 10000
+    for f in os.listdir(trial_dir):
+        if 'checkpoint' in f:
+            idx = int(f.split('_')[1])
+            min_ = min(min_, idx)
+    chk_file = os.path.join(trial_dir, f'checkpoint_{min_}', 'model.pth')
+    with open(os.path.join(trial_dir, 'params.json')) as f:
+        config = json.load(f)
+    with open(os.path.join(trial_dir, 'result.json')) as f:
+        res = [json.loads(i) for i in f]
+        best_res = res[min_-1]
+        
+    return {
+        'trial_dir': trial_dir, 
+        'chk_file': chk_file, 
+        'config': config, 
+        'tr_loss': best_res['tr_loss'], 
+        'tr_acc': best_res['tr_acc'], 
+        'vl_loss': best_res['vl_loss'], 
+        'vl_acc': best_res['vl_acc']
+    }

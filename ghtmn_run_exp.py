@@ -1,16 +1,21 @@
 import sys
 import os
-from random import randint, randrange
+import math
+from random import randint, randrange, choice
 
 import torch
+
 import ray
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
-
 from exp.ghtmn_trainable import GHTMNTrainable
-from exp.utils import prepare_dir_tree_experiments, get_split, get_seed, prepare_tree_datasets
+from exp.utils import prepare_dir_tree_experiments, get_split, get_seed, prepare_tree_datasets, get_best_info
 from exp.early_stopper import TrialNoImprovementStopper
 
+from graph_htmn.graph_htmn import GraphHTMN
+from data.graph.g2t import ParallelTUDataset, TreeCollater, pre_transform, transform
+from torch.utils.data import DataLoader
+from torch_geometric.utils.metric import accuracy
 
 def get_config(name):
     if name == 'NCI1':
@@ -60,10 +65,11 @@ if __name__ == '__main__':
     DATASET = sys.argv[1]
     N_CPUS = int(sys.argv[2])
     exp_dir = 'GHTMN_{}'.format(DATASET)
-    
+
     ray.init(num_cpus=N_CPUS)
     if not os.path.exists(exp_dir):
         prepare_dir_tree_experiments(DATASET)
+    
     if DATASET == 'PROTEINS':
         depths = range(2, 9)
     if DATASET == 'DD':
@@ -84,20 +90,17 @@ if __name__ == '__main__':
         reduction_factor=4
     )
     
-    cpus_per_task = 2
-    if torch.cuda.is_available():
-        n_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
-        gpus_per_task = n_gpus / (N_CPUS / cpus_per_task)
-        resources = {'cpu': cpus_per_task, 'gpu': gpus_per_task}
-    else:
-        resources = {'cpu': cpus_per_task, 'gpu': 0}
+    resources = {'cpu': 2, 'gpu': 0.001}
     
     n_samples = 800
     for i in range(10):
         config['fold'] = i
         name = 'fold_{}'.format(i)
-        size_dir = len(os.listdir(os.path.join(exp_dir, name)))
+        fold_dir = os.path.join(exp_dir, name)
+        size_dir = len(os.listdir(fold_dir))
         if size_dir < n_samples + 4:
+            
+            # Hyperparameter Tuning Phase
             reporter = tune.CLIReporter(metric_columns={
                                             'training_iteration': 'Iter', 
                                             'vl_loss': 'Loss', 
@@ -130,3 +133,53 @@ if __name__ == '__main__':
                 progress_reporter=reporter,
                 resume=size_dir > 3
             )
+
+        if not os.path.exists(os.path.join(fold_dir, 'test_res.pkl')):
+            best_dict = get_best_info(fold_dir)
+            t_config = best_dict['config']
+            _, _, ts_idx = get_split(exp_dir, i)
+            ts_data = ParallelTUDataset(
+                            f'{DATASET}/D{t_config["depth"]}', 
+                            DATASET, 
+                            pre_transform=pre_transform(t_config["depth"]),
+                            transform=transform(DATASET),
+                            pool_size=72
+                        )
+            ts_data.data.x = ts_data.data.x.argmax(1).detach()
+            ts_ld = DataLoader(ts_data[ts_idx], 
+                               collate_fn=TreeCollater(t_config['depth']), 
+                               batch_size=len(ts_idx), 
+                               shuffle=False)
+                               
+            if config['gen_mode'] == 'bu':
+                n_bu, n_td = t_config['n_gen'], 0
+            elif config['gen_mode'] == 'td':
+                n_bu, n_td = 0, t_config['n_gen']
+            elif config['gen_mode'] == 'both':
+                n_bu, n_td = math.ceil(t_config['n_gen']/2), math.floor(t_config['n_gen']/2)
+
+            model = GraphHTMN(config['out'], n_bu, n_td, t_config['C'], t_config['symbols'], t_config['tree_dropout'])
+            m_state = torch.load(best_dict['chk_file'], map_location='cpu')
+            model.load_state_dict(m_state)
+            device = f'cuda:{choice([config["gpu_ids"]])}' if config['gpu_ids'] else 'cpu'
+            model.to(device)
+            loss = torch.nn.BCEWithLogitsLoss()
+
+            model.eval()
+            with torch.no_grad():
+                ts_loss = 0
+                ts_acc = 0
+                for _, b in enumerate(ts_ld):
+                    b = b.to(device)
+                    out = model(b.x, b.trees, b.batch)
+                    loss_v = loss(out, b.y).item()
+                    acc_v = accuracy(b.y, out.sigmoid().round())
+                    w = (torch.max(b.batch)+1).item() /len(ts_idx)
+                    ts_loss += w*loss_v
+                    ts_acc += w*acc_v
+
+            best_dict['ts_loss'] = ts_loss
+            best_dict['ts_acc'] = ts_acc
+
+            torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))
+            print(f'Test results for fold {i}: Loss = {ts_loss} ---- Accuracy = {ts_acc}')
