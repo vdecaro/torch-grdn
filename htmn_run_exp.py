@@ -21,7 +21,6 @@ def get_config(name):
     if name == 'inex2005':
         return {
             'dataset': 'inex2005',
-            'phase': 'eval',
             'out': 11,
             'M': 366,
             'L': 32,
@@ -34,7 +33,6 @@ def get_config(name):
     if name == 'inex2006':
         return {
             'dataset': 'inex2006',
-            'phase': 'eval',
             'out': 18,
             'M': 65,
             'L': 66,
@@ -105,8 +103,9 @@ if __name__ == '__main__':
     t_config = best_dict['config']
     t_config['wdir'] = os.getcwd()
     t_config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
-    t_config['phase'] = 'test'
-    #t_config['out'] = tune.choice([t_config['out']])
+    t_config['holdout'] = 0
+    out_features = t_config['out']
+    t_config['out'] = tune.choice([t_config['out']])
     early_stopping = TrialNoImprovementStopper('tr_loss', mode='min', patience_threshold=40)
     
     resources = {'cpu': 2, 'gpu': 0.0001}
@@ -123,8 +122,8 @@ if __name__ == '__main__':
                                     'lr': 'LRate',
                                     'batch_size': 'Batch'
                                 }, 
-                                infer_limit=3,)
-    '''
+                                infer_limit=3)
+    
     tune.run(
         HTMNTrainable,
         name='test',
@@ -140,9 +139,9 @@ if __name__ == '__main__':
         progress_reporter=reporter,
         verbose=1
     )
-    '''
     
-    #t_config['out'] = 
+    
+    t_config['out'] = out_features
     ts_data = TreeDataset('.', f'{DATASET}test')
     ts_ld = DataLoader(ts_data, 
                        collate_fn=trees_collate_fn, 
@@ -184,5 +183,5 @@ if __name__ == '__main__':
             best_dict['ts_loss'].append(ts_loss)
             best_dict['ts_acc'].append(ts_acc)
 
-        torch.save(best_dict, os.path.join(exp_dir, 'test_res.pkl'))
+    torch.save(best_dict, os.path.join(exp_dir, 'test_res.pkl'))
     
