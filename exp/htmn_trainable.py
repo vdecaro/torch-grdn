@@ -20,24 +20,21 @@ from exp.utils import get_seed
 class HTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device_handler = DeviceHandler(self, config['gpu_ids'])
+        self.device_handler = DeviceHandler(self, config['gpu_ids'], 1)
 
         # Dataset and Loaders setup
+        self.phase = config['phase']
         dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
-        if phase == 'eval':
-            self.tr_idx, self.vl_idx = train_test_split(np.arange(len(dataset)), 
-                                                        test_size=config['holdout'],  
-                                                        stratify=np.array([t.y for t in dataset]), 
-                                                        shuffle=True, 
-                                                        random_state=get_seed())
-            self.tr_idx, self.vl_idx = self.tr_idx.tolist(), self.vl_idx.tolist()
-            tr_data = TreeDataset(data=[dataset[i] for i in self.tr_idx])
-            vl_data = TreeDataset(data=[dataset[i] for i in self.vl_idx])
-            self.tr_ld = DataLoader(tr_data, batch_size=config['batch_size'], shuffle=True, collate_fn=trees_collate_fn, drop_last=len(self.tr_idx) % config['batch_size'] == 1)
-            self.vl_ld = DataLoader(vl_data, batch_size=config['batch_size'], shuffle=False, collate_fn=trees_collate_fn, drop_last=len(self.vl_idx) % config['batch_size'] == 1)
-        else:
-            self.tr_ld = DataLoader(dataset, batch_size=config['batch_size'], shuffle=True, collate_fn=trees_collate_fn, drop_last=len(dataset) % config['batch_size'] == 1)
-
+        self.tr_idx, self.vl_idx = train_test_split(np.arange(len(dataset)), 
+                                                    test_size=config['holdout'],  
+                                                    stratify=np.array([t.y for t in dataset]), 
+                                                    shuffle=True, 
+                                                    random_state=get_seed())
+        self.tr_idx, self.vl_idx = self.tr_idx.tolist(), self.vl_idx.tolist()
+        tr_data = TreeDataset(data=[dataset[i] for i in self.tr_idx])
+        vl_data = TreeDataset(data=[dataset[i] for i in self.vl_idx])
+        self.tr_ld = DataLoader(tr_data, batch_size=config['batch_size'], shuffle=True, collate_fn=trees_collate_fn, drop_last=len(self.tr_idx) % config['batch_size'] == 1)
+        self.vl_ld = DataLoader(vl_data, batch_size=config['batch_size'], shuffle=False, collate_fn=trees_collate_fn, drop_last=len(self.vl_idx) % config['batch_size'] == 1)
 
         self.model = HTMN(config['out'], ceil(config['n_gen']/2), floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
@@ -46,6 +43,7 @@ class HTMNTrainable(tune.Trainable):
         self.best_acc = 0
 
     def step(self):
+        self.device_handler.step()
         self.model.train()
         tr_loss = 0
         tr_acc = 0
@@ -55,34 +53,28 @@ class HTMNTrainable(tune.Trainable):
             tr_loss += w*b_loss_v
             tr_acc += w*b_acc_v
         
-        if phase == 'eval':
-            self.model.eval()
-            vl_loss = 0
-            vl_acc = 0
-            for _, b in enumerate(self.vl_ld):
-                b_loss_v, b_acc_v = self._test_step(b)
-                w = (torch.max(b.batch)+1).item() /len(self.vl_idx)
-                vl_loss += w*b_loss_v
-                vl_acc += w*b_acc_v
-            
-            if vl_acc > self.best_acc:
-                self.best_acc = vl_acc
-            
-             return {
-                'tr_loss': tr_loss,
-                'tr_acc': tr_acc,
-                'vl_loss': vl_loss,
-                'vl_acc': vl_acc,
-                'best_acc': self.best_acc
-            }
-        else:
-            if tr_acc > self.best_acc:
-                self.best_acc = tr_acc
-             return {
-                'tr_loss': tr_loss,
-                'tr_acc': tr_acc,
-                'best_acc': self.best_acc
-            }
+        self.model.eval()
+        vl_loss = 0
+        vl_acc = 0
+        for _, b in enumerate(self.vl_ld):
+            b_loss_v, b_acc_v = self._test_step(b)
+            w = (torch.max(b.batch)+1).item() /len(self.vl_idx)
+            vl_loss += w*b_loss_v
+            vl_acc += w*b_acc_v
+
+        if vl_acc > self.best_acc:
+            self.best_acc = vl_acc
+        
+        self.device_handler.step()
+        self.lr_scheduler.step()
+        
+        return {
+            'tr_loss': tr_loss,
+            'tr_acc': tr_acc,
+            'vl_loss': vl_loss,
+            'vl_acc': vl_acc,
+            'best_acc': self.best_acc
+        }
 
        
     

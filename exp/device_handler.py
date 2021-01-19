@@ -11,16 +11,17 @@ GPU = 'cuda'
 
 class DeviceHandler(object):
     
-    def __init__(self, trainable, gpu_ids):
+    def __init__(self, trainable, gpu_ids, usage_threshold):
         self.trainable = trainable
         self.device = CPU
+        self.usage_threshold = usage_threshold
         
         self.gpu_ids = gpu_ids
         self.curr_gpu = random.choice(gpu_ids) if gpu_ids else None
         torch.cuda.set_device(self.curr_gpu)
         
         self.t = time.time()
-        self.threshold = random.uniform(0, 30)
+        self.threshold = 0
 
     
     def step(self):
@@ -47,7 +48,7 @@ class DeviceHandler(object):
                 # Switching to GPU
                 gpu_failed = False
                 used = gpu_info()[self.curr_gpu]['mem_used_percent']/100
-                switch_flag = used < 0.65 and random.random() > used/0.65
+                switch_flag = used < self.usage_threshold #and random.random() > used/self.usage_threshold
                 if switch_flag:
                     try:
                         self._switch(GPU)
