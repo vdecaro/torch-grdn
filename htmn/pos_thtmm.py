@@ -12,9 +12,9 @@ class PositionalTopDownHTMM(nn.Module):
         self.L = L
         self.M = M
 
-        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, L, n_gen)), std=2.5))
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
-        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
+        self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, L, n_gen))))
+        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
+        self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
 
     def forward(self, tree):
         log_likelihood = UpwardDownward.apply(tree, self.A, self.B, self.Pi)
@@ -143,4 +143,4 @@ class UpwardDownward(torch.autograd.Function):
         B_grad -= eps.sum(0).unsqueeze(1) * B
         Pi_grad = eps_roots.sum(0) - roots.size(0) * Pi
 
-        return None, A_grad, B_grad, Pi_grad
+        return None, -A_grad, -B_grad, -Pi_grad

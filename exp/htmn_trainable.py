@@ -20,7 +20,7 @@ from exp.utils import get_seed
 class HTMNTrainable(tune.Trainable):
 
     def setup(self, config):
-        self.device_handler = DeviceHandler(self, config['gpu_ids'], 1)
+        self.device_handler = DeviceHandler(self, config['gpu_ids'], 0.75)
 
         # Dataset and Loaders setup
         dataset = TreeDataset(work_dir=config['wdir'], name=config['dataset'] + 'train')
@@ -43,11 +43,10 @@ class HTMNTrainable(tune.Trainable):
         self.model = HTMN(config['out'], ceil(config['n_gen']/2), floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         self.opt = torch.optim.Adam(self.model.parameters(), lr=config['lr'])
         self.loss = torch.nn.CrossEntropyLoss()
-        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt, 'min', 0.35)
+        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.opt, 10, 0.95)
         self.best_acc = 0
 
     def step(self):
-        self.device_handler.step()
         self.model.train()
         tr_loss = 0
         tr_acc = 0
@@ -85,7 +84,7 @@ class HTMNTrainable(tune.Trainable):
                 'best_acc': self.best_acc
             }
         self.device_handler.step()
-        self.lr_scheduler.step(tr_loss)
+        self.lr_scheduler.step()
         
         return to_return
 

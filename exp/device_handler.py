@@ -48,7 +48,7 @@ class DeviceHandler(object):
                 # Switching to GPU
                 gpu_failed = False
                 used = gpu_info()[self.curr_gpu]['mem_used_percent']/100
-                switch_flag = used < self.usage_threshold #and random.random() > used/self.usage_threshold
+                switch_flag = used < self.usage_threshold and random.random() > used/self.usage_threshold
                 if switch_flag:
                     try:
                         self._switch(GPU)

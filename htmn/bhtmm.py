@@ -12,10 +12,10 @@ class BottomUpHTMM(nn.Module):
         self.L = L
         self.M = M
 
-        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, L, n_gen)), std=2.5))
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
-        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, L, n_gen)), std=2.5))
-        self.SP = nn.Parameter(nn.init.normal_(torch.empty((L, n_gen)), std=2.5))
+        self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, L, n_gen))))
+        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
+        self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, L, n_gen))))
+        self.SP = nn.Parameter(nn.init.uniform_(torch.empty((L, n_gen))))
     
     def forward(self, tree):
 
@@ -136,4 +136,4 @@ class ReversedUpwardDownward(torch.autograd.Function):
                          out=B_grad)
         B_grad -= eps.sum(0).unsqueeze(1) * B
 
-        return None, A_grad, B_grad, Pi_grad, SP_grad
+        return None, -A_grad, -B_grad, -Pi_grad, -SP_grad

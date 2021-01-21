@@ -23,11 +23,11 @@ def get_config(name):
             'dataset': 'inex2005',
             'out': 11,
             'M': 366,
-            'L': 32,
-            'C': tune.randint(6, 14),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
-            'lr': tune.uniform(5e-5, 2e-2),
-            'batch_size': tune.choice([32, 64, 128, 192])
+            'L': 31,
+            'C': tune.randint(8, 13),
+            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
+            'lr': tune.choice([1e-3, 2.5e-3, 5e-3, 7.5e-3,  1e-2]),
+            'batch_size': tune.choice([128, 192, 256, 512])
         }
 
     if name == 'inex2006':
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     exp_dir = 'HTMN_{}'.format(DATASET)
     
     ray.init(num_cpus=N_CPUS)
-    '''
+    
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
     
@@ -56,19 +56,20 @@ if __name__ == '__main__':
     config['wdir'] = os.getcwd()
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
     config['holdout'] = 0.2
-    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=40)
+    early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
     scheduler = ASHAScheduler(
         metric='vl_loss',
         mode='min',
         max_t=400,
-        grace_period=40,
+        grace_period=50,
         reduction_factor=4
     )
     
     resources = {'cpu': 2, 'gpu': 0.0001}
-    n_samples = 400
+    n_samples = 300
     reporter = tune.CLIReporter(metric_columns={
                                     'training_iteration': '#Iter', 
+                                    'tr_acc': 'Tr. Acc.',
                                     'vl_loss': 'Loss', 
                                     'vl_acc': 'Acc.', 
                                     'best_acc': 'Best Acc.',
@@ -98,7 +99,7 @@ if __name__ == '__main__':
         scheduler=scheduler,
         verbose=1
     )
-    '''
+    
     best_dict = get_best_info(os.path.join(exp_dir, 'design'))
     t_config = best_dict['config']
     t_config['wdir'] = os.getcwd()
@@ -112,8 +113,8 @@ if __name__ == '__main__':
     n_samples = 5
     reporter = tune.CLIReporter(metric_columns={
                                     'training_iteration': '#Iter', 
-                                    'vl_loss': 'Loss', 
-                                    'vl_acc': 'Acc.', 
+                                    'tr_loss': 'Loss', 
+                                    'tr_acc': 'Acc.', 
                                     'best_acc': 'Best Acc.'
                                 },
                                 parameter_columns={
@@ -133,7 +134,7 @@ if __name__ == '__main__':
         num_samples=n_samples,
         resources_per_trial= resources,
         keep_checkpoints_num=1,
-        checkpoint_score_attr='vl_acc',
+        checkpoint_score_attr='tr_acc',
         checkpoint_freq=1,
         max_failures=5,
         progress_reporter=reporter,
