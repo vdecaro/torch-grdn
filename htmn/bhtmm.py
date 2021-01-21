@@ -18,33 +18,35 @@ class BottomUpHTMM(nn.Module):
         self.SP = nn.Parameter(nn.init.normal_(torch.empty((L, n_gen)), std=2.5))
     
     def forward(self, tree):
-        sm_A, sm_B, sm_Pi, sm_SP = self._softmax_reparameterization(self.A, self.B, self.Pi, self.SP)
 
-        log_likelihood, beta, t_beta = self._reversed_upward(tree, sm_A, sm_B, sm_Pi, sm_SP)
-        if self.training:
-            eps, t_eps = self._reversed_downward(tree, sm_A, sm_Pi, sm_SP, beta, t_beta)
-            self._compute_gradient(tree, sm_A, sm_B, sm_Pi, sm_SP, eps, t_eps)
+        log_likelihood = ReversedUpwardDownward.apply(tree, self.A, self.B, self.Pi, self.SP)
 
         return log_likelihood
 
-    
-    def _softmax_reparameterization(self, A, B, Pi, SP):
+
+class ReversedUpwardDownward(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, tree, lambda_A, lambda_B, lambda_Pi, lambda_SP):
+        # Softmax reparameterization
         sm_A, sm_B, sm_Pi, sm_SP = [], [], [], []
-        for i in range(self.n_gen):
-            sm_A.append(torch.cat([F.softmax(A[:, :, j, i], dim=0).unsqueeze(2) for j in range(A.size(2))], dim=2))
-            sm_B.append(F.softmax(B[:, :, i], dim=1))
-            sm_Pi.append(F.softmax(Pi[:, :, i], dim=0))
-            sm_SP.append(F.softmax(SP[:, i], dim=0))
+        for i in range(lambda_A.size(-1)):
+            sm_A.append(torch.cat([F.softmax(lambda_A[:, :, j, i], dim=0).unsqueeze(2) for j in range(lambda_A.size(2))], dim=2))
+            sm_B.append(F.softmax(lambda_B[:, :, i], dim=1))
+            sm_Pi.append(F.softmax(lambda_Pi[:, :, i], dim=0))
+            sm_SP.append(F.softmax(lambda_SP[:, i], dim=0))
 
-        return torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1), torch.stack(sm_SP, dim=-1)
+        A, B, Pi, SP = torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1), torch.stack(sm_SP, dim=-1)
 
-
-    def _reversed_upward(self, tree, A, B, Pi, SP):
+        # Getting model info
+        C, n_gen, device = A.size(0), A.size(-1), A.device
         
-        beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
-        t_beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
-        log_likelihood = torch.zeros((tree['dim'], self.n_gen), device=self.A.device)
+        # Upward recursion: init
+        beta = torch.zeros((tree['dim'], C, n_gen), device=device)
+        t_beta = torch.zeros((tree['dim'], C, n_gen), device=device)
+        log_likelihood = torch.zeros((tree['dim'], n_gen), device=device)
 
+        # Upward recursion: base case
         pos_leaves = tree['pos'][tree['leaves']]
         Pi_leaves = Pi[:, pos_leaves]
         B_leaves = B[:, tree['x'][tree['leaves']]]
@@ -54,6 +56,7 @@ class BottomUpHTMM(nn.Module):
         beta[tree['leaves']] = beta_leaves / nu.unsqueeze(1)
         log_likelihood[tree['leaves']] = nu.log()
 
+        # Upward recursion
         for l in reversed(tree['levels']):
             # Computing beta_uv children = (A_ch @ beta_ch) / prior_pa
             pos_ch = tree['pos'][l[1]]
@@ -72,46 +75,65 @@ class BottomUpHTMM(nn.Module):
             beta[u_idx] = beta_l / nu.unsqueeze(1)
             log_likelihood[u_idx] = nu.log()
 
-        return scatter(log_likelihood, tree['batch'], dim=0), beta, t_beta
+        ctx.saved_input = tree
+        ctx.save_for_backward(beta, t_beta, A, B, Pi, SP)
 
+        return scatter(log_likelihood, tree['batch'], dim=0)
 
-    def _reversed_downward(self, tree, A, Pi, SP, beta, t_beta):
-        eps = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
-        t_eps = []
-        
+    @staticmethod
+    def backward(ctx, log_likelihood):
+        # Recovering saved tensors from forward
+        tree = ctx.saved_input
+        beta, t_beta, A, B, Pi, SP = ctx.saved_tensors
+
+        # Getting model info
+        C, n_gen, device = A.size(0), A.size(-1), A.device
+
+        # Creating parameter gradient tensors
+        A_grad, B_grad, Pi_grad, SP_grad = torch.zeros_like(A), torch.zeros_like(B), torch.zeros_like(Pi), torch.zeros_like(SP)
+
+        eps = torch.zeros((tree['dim'], C, n_gen), device=device)
+
         roots = tree['levels'][0][0].unique(sorted=False)
         eps[roots] = beta[roots]
         for l in tree['levels']:
-            # Computing eps_{u, pa(u)}(i, j) = (eps_{pa(u)}(j)* A_ij * beta_u(i)) / (prior_u(i) * t_beta_{pa(u), u}(j))
+            # Computing eps_{u, ch(u)}(i, j)
             pos_ch = tree['pos'][l[1]]
             SP_ch = SP[pos_ch]
-            A_ch = A[:, :, pos_ch]
+            A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
 
-            trans_ch = (SP_ch.unsqueeze(0).unsqueeze(0) * A_ch).permute(2, 0, 1, 3)
+            trans_ch = SP_ch.unsqueeze(1).unsqueeze(1) * A_ch
             eps_pa = eps[l[0]].unsqueeze(2)
             beta_ch = beta[l[1]].unsqueeze(1)
             t_beta_pa = t_beta[l[0]].unsqueeze(2)
 
+            # Computing eps_{ch(u)}
             eps_joint = (eps_pa * trans_ch * beta_ch) / t_beta_pa
-            t_eps.append(eps_joint)
-            eps[l[1]] = eps_joint.sum(1)
+            eps_ch = eps_joint.sum(1)
+            eps[l[1]] = eps_ch
 
-        return eps.detach(), [t_eps_l.detach() for t_eps_l in t_eps]
+            # Accumulating gradient in grad_A and grad_SP
+            SP_grad = scatter(eps_ch.sum(1) - SP_ch, 
+                              index=pos_ch, 
+                              dim=0, 
+                              out=SP_grad)
+            A_grad = scatter((eps_joint - A_ch*eps_ch.unsqueeze(1)).permute(1, 2, 0, 3), 
+                             index=pos_ch, 
+                             dim=2, 
+                             out=A_grad)
+        
+        pos_leaves = tree['pos'][tree['leaves']]
+        eps_leaves = eps[tree['leaves']]
+        pi_leaves = Pi[:, pos_leaves]
+        Pi_grad = scatter(eps_leaves.permute(1, 0, 2) - pi_leaves,
+                          index=pos_leaves,
+                          dim=1,
+                          out=Pi_grad)
+        
+        B_grad = scatter(eps.permute(1, 0, 2),
+                         index=tree['x'],
+                         dim=1,
+                         out=B_grad)
+        B_grad -= eps.sum(0).unsqueeze(1) * B
 
-    def _compute_gradient(self, tree, A, B, Pi, SP, eps, t_eps):
-        # Likelihood B
-        B_nodes = B[:, tree['x']].permute(1, 0, 2)
-        exp_likelihood = (eps * B_nodes.log()).sum()
-
-        # Likelihood Pi
-        leaves_pos = tree['pos'][tree['leaves']]
-        exp_likelihood += (eps[tree['leaves']] * Pi[:, leaves_pos].log().permute(1, 0, 2)).sum()
-
-        for l, eps_joint in zip(tree['levels'], t_eps):
-            # Likelihood A
-            pos_ch = tree['pos'][l[1]]
-            exp_likelihood += (eps_joint * A[:, :, pos_ch].permute(2, 0, 1, 3).log()).sum()
-            exp_likelihood += (eps_joint.sum([1, 2]) * SP[pos_ch].log()).sum()
-            
-        mean_neg_exp_likelihood = - exp_likelihood / (tree['batch'].max()+1)
-        mean_neg_exp_likelihood.backward()
+        return None, A_grad, B_grad, Pi_grad, SP_grad

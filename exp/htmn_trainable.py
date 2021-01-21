@@ -95,11 +95,13 @@ class HTMNTrainable(tune.Trainable):
 
         @self.device_handler.forward_manage
         def _func(b):
-            self.opt.zero_grad()
             out = self.model(b)
             loss_v = self.loss(out, b.y)
+
+            self.opt.zero_grad()
             loss_v.backward()
             self.opt.step()
+            
             loss_v = loss_v.item()
             acc_v = accuracy(b.y, out.argmax(-1))
         

@@ -27,7 +27,7 @@ class HTMN(nn.Module):
         to_contrastive = torch.cat(log_likelihood, 1)
         to_contrastive = self.b_norm(to_contrastive)
 
-        c_neurons = (to_contrastive @ self.contrastive).tanh().detach()
+        c_neurons = (to_contrastive @ self.contrastive).tanh()
         output = self.output(c_neurons)
 
         return output
