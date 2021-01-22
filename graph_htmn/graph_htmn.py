@@ -14,7 +14,7 @@ class GraphHTMN(nn.Module):
         self.bu = UniformBottomUpHTMM(n_bu, C, M, tree_dropout) if n_bu > 0 else None
         self.td = TopDownHTMM(n_td, C, M, tree_dropout) if n_td > 0 else None
 
-        self.b_norm = BatchNorm(n_bu + n_td, affine=False)
+        #self.b_norm = BatchNorm(n_bu + n_td, affine=False)
 
         self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
         self.pooling = Set2Set(self.contrastive.size(1), 2, 1)
@@ -34,8 +34,8 @@ class GraphHTMN(nn.Module):
         else:
             to_contrastive = to_contrastive[0]
 
-        to_contrastive = self.b_norm(to_contrastive)
-        c_neurons = (to_contrastive @ self.contrastive).tanh().detach()
+        #to_contrastive = self.b_norm(to_contrastive)
+        c_neurons = (to_contrastive @ self.contrastive).tanh()
         g_pooling = self.pooling(c_neurons, batch)
         output = self.output(g_pooling)
         
