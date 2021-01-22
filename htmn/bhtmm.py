@@ -130,10 +130,9 @@ class ReversedUpwardDownward(torch.autograd.Function):
                           dim=1,
                           out=Pi_grad)
         
-        B_grad = scatter(eps.permute(1, 0, 2),
+        B_grad = scatter(eps.permute(1, 0, 2) - eps.permute(1, 0, 2) * B[:, tree['x']],
                          index=tree['x'],
                          dim=1,
                          out=B_grad)
-        B_grad -= eps.sum(0).unsqueeze(1) * B
 
         return None, -A_grad, -B_grad, -Pi_grad, -SP_grad

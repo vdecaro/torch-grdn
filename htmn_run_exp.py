@@ -23,11 +23,11 @@ def get_config(name):
             'dataset': 'inex2005',
             'out': 11,
             'M': 366,
-            'L': 31,
-            'C': tune.randint(8, 13),
+            'L': 32,
+            'C': tune.randint(7, 16),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
-            'lr': tune.choice([1e-3, 2.5e-3, 5e-3, 7.5e-3,  1e-2]),
-            'batch_size': tune.choice([128, 192, 256, 512])
+            'lr': tune.uniform(5e-5, 1.1e-2),
+            'batch_size': tune.choice([32, 64, 128, 192, 256])
         }
 
     if name == 'inex2006':
@@ -55,14 +55,14 @@ if __name__ == '__main__':
     config = get_config(DATASET)
     config['wdir'] = os.getcwd()
     config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
-    config['holdout'] = 0.2
+    config['holdout'] = 0.15
     early_stopping = TrialNoImprovementStopper('vl_loss', mode='min', patience_threshold=50)
     scheduler = ASHAScheduler(
         metric='vl_loss',
         mode='min',
         max_t=400,
         grace_period=50,
-        reduction_factor=4
+        reduction_factor=2
     )
     
     resources = {'cpu': 2, 'gpu': 0.0001}
@@ -149,6 +149,7 @@ if __name__ == '__main__':
                        batch_size=512, 
                        shuffle=False)
     device = f'cuda:{choice(t_config["gpu_ids"])}' if t_config['gpu_ids'] else 'cpu'
+
     loss = torch.nn.CrossEntropyLoss()
     best_dict['ts_loss'] = []
     best_dict['ts_acc'] = []
