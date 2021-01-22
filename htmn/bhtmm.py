@@ -19,9 +19,7 @@ class BottomUpHTMM(nn.Module):
     
     def forward(self, tree):
 
-        log_likelihood = ReversedUpwardDownward.apply(tree, self.A, self.B, self.Pi, self.SP)
-
-        return log_likelihood
+        return ReversedUpwardDownward.apply(tree, self.A, self.B, self.Pi, self.SP)
 
 
 class ReversedUpwardDownward(torch.autograd.Function):

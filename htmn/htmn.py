@@ -11,8 +11,6 @@ class HTMN(nn.Module):
         super(HTMN, self).__init__()
         self.bu = BottomUpHTMM(n_bu, C, L, M) if n_bu is not None and n_bu > 0 else None
         self.td = PositionalTopDownHTMM(n_td, C, L, M) if n_td is not None and n_td > 0 else None
-        
-        #self.b_norm = nn.BatchNorm1d(n_bu + n_td, affine=False)
 
         self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
         self.output = nn.Linear(self.contrastive.size(1), out)
@@ -25,7 +23,6 @@ class HTMN(nn.Module):
             log_likelihood.append(self.td(tree))
         
         to_contrastive = torch.cat(log_likelihood, 1)
-        #to_contrastive = self.b_norm(to_contrastive)
 
         c_neurons = (to_contrastive @ self.contrastive).tanh()
         output = self.output(c_neurons)

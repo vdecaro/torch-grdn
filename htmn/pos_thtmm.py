@@ -17,9 +17,8 @@ class PositionalTopDownHTMM(nn.Module):
         self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
 
     def forward(self, tree):
-        log_likelihood = UpwardDownward.apply(tree, self.A, self.B, self.Pi)
-
-        return log_likelihood
+        
+        return UpwardDownward.apply(tree, self.A, self.B, self.Pi)
 
 
 class UpwardDownward(torch.autograd.Function):
@@ -36,7 +35,7 @@ class UpwardDownward(torch.autograd.Function):
 
         A, B, Pi = torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1)
 
-         # Getting model info
+        # Getting model info
         C, n_gen, device = A.size(0), A.size(-1), A.device
 
         # Preliminary Downward Recursion: init
@@ -113,21 +112,16 @@ class UpwardDownward(torch.autograd.Function):
             eps_pa = eps[l[0]].unsqueeze(1)
             pos_ch = tree['pos'][l[1]]
             A_ch = A[:, :, pos_ch].permute(2, 0, 1, 3)
-            t_beta_ch = t_beta[l[1]].unsqueeze(1)
-            eps_trans_pa = eps_pa * A_ch
-            pa_factor = eps_trans_pa / t_beta_ch 
-
             beta_ch = beta[l[1]].unsqueeze(2)
-            prior_ch = prior[l[1]].unsqueeze(2)
-            ch_factor = beta_ch / prior_ch
+            eps_trans_pa = A_ch * eps_pa
 
-            eps_joint = ch_factor * pa_factor
+            t_beta_ch = t_beta[l[1]].unsqueeze(1)
+            prior_ch = prior[l[1]].unsqueeze(2)
+
+            eps_joint = (beta_ch * eps_trans_pa) / (prior_ch * t_beta_ch) 
 
             # Computing eps_u(i)
-            num_eps_ch = eps_joint.sum(2)
-            den_eps_ch = num_eps_ch.sum(1, keepdim=True)
-
-            eps_ch = num_eps_ch / den_eps_ch
+            eps_ch = eps_joint.sum(2)
             eps[l[1]] = eps_ch
 
             # Accumulating gradient in grad_A and grad_SP

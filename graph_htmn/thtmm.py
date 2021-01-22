@@ -6,73 +6,71 @@ from torch_scatter.scatter import scatter
 
 class TopDownHTMM(nn.Module):
 
-    def __init__(self, n_gen, C, M, tree_dropout):
+    def __init__(self, n_gen, C, M):
         super(TopDownHTMM, self).__init__()
         self.n_gen = n_gen
         self.C = C
         self.M = M
 
-        self.A = nn.Parameter(nn.init.normal_(torch.empty((C, C, n_gen)), std=2.5))
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
-        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
-
-        self.tree_dropout = tree_dropout
-    
-
-    def forward(self, x, trees, batch):
-        sm_A, sm_B, sm_Pi = self._softmax_reparameterization(self.n_gen, self.A, self.B, self.Pi)
-
-        prior = self._preliminary_downward(trees, sm_A, sm_Pi)
-        log_likelihood, beta, t_beta = self._upward(x, trees, sm_A, sm_B, prior)
-        if self.training:
-            eps, t_eps = self._downward(trees, sm_A, sm_Pi, prior, beta, t_beta)
-            self._compute_gradient(x, trees, batch, sm_A, sm_B, sm_Pi, eps, t_eps) 
-
-        return log_likelihood
+        self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen))))
+        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
+        self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
 
 
-    def _softmax_reparameterization(self, n_gen, A, B, Pi):
+    def forward(self, x, trees):
+
+        return UpwardDownward.apply(x, trees, self.A, self.B, self.Pi)
+
+
+class UpwardDownward(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, x, tree, lambda_A, lambda_B, lambda_Pi):
+        # Softmax Reparameterization
         sm_A, sm_B, sm_Pi = [], [], []
-        for i in range(n_gen):
-            sm_A.append(F.softmax(A[:, :, i], dim=0))
-            sm_B.append(F.softmax(B[:, :, i], dim=1))
-            sm_Pi.append(F.softmax(Pi[:, i], dim=0))
+        for i in range(lambda_A.size(-1)):
+            sm_A.append(F.softmax(lambda_A[:, :, i], dim=0))
+            sm_B.append(F.softmax(lambda_B[:, :, i], dim=1))
+            sm_Pi.append(F.softmax(lambda_Pi[:, i], dim=0))
 
-        return torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1)
+        A, B, Pi = torch.stack(sm_A, dim=-1), torch.stack(sm_B, dim=-1), torch.stack(sm_Pi, dim=-1)
 
+        # Getting model info
+        C, n_gen, device = A.size(0), A.size(-1), A.device
 
-    def _preliminary_downward(self, tree, A, Pi):
-        prior = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
+        # Preliminary Downward recursion: init
+        prior = torch.zeros((tree['dim'], C, n_gen), device=device)
 
+        # Preliminary Downward recursion: base case
         prior[tree['roots']] = Pi
 
+        # Preliminary Downward recursion
         for l in tree['levels']:
             prior_pa = prior[l[0]].unsqueeze(1)
             prior_l = (A.unsqueeze(0) * prior_pa).sum(2)
             prior[l[1]] = prior_l
         
-        return prior
-            
-
-    def _upward(self, x, tree, A, B, prior):
+        # Upward recursion: init
         beta = prior * B[:, x[tree['inv_map']]].permute(1, 0, 2)
-        t_beta = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
-        log_likelihood = torch.zeros((tree['dim'], self.n_gen), device=self.A.device)
+        t_beta = torch.zeros((tree['dim'], C, n_gen), device=device)
+        log_likelihood = torch.zeros((tree['dim'], n_gen), device=device)
 
+        # Upward Recursion: base case
         beta_leaves_unnorm = beta[tree['leaves']]
         nu = beta_leaves_unnorm.sum(dim=1)
 
         beta[tree['leaves']] = beta_leaves_unnorm / nu.unsqueeze(1)
         log_likelihood[tree['leaves']] = nu.log()
 
+        # Upward Recursion
         for l in reversed(tree['levels']):
-            # Computing beta_uv children = (A_ch @ beta_ch) / prior_pa
+            # Computing beta_uv children
             beta_ch = beta[l[1]].unsqueeze(2)
             prior_l = prior[l[1]].unsqueeze(2)
             beta_uv = (A.unsqueeze(0) * beta_ch / prior_l).sum(1)
             t_beta[l[1]] = beta_uv
             
-            # Computing beta on level = (\prod_ch beta_uv_ch) * prior_u * 
+            # Computing beta on level
             pa_idx = l[0].unique(sorted=False)
             prev_beta = beta[pa_idx]
             beta = scatter(src=beta_uv, index=l[0], dim=0, out=beta, reduce='mul')
@@ -82,49 +80,53 @@ class TopDownHTMM(nn.Module):
             beta[pa_idx] = beta_l_unnorm / nu.unsqueeze(1)
             log_likelihood[pa_idx] = nu.log()
 
-        return scatter(log_likelihood, tree['trees_ind'], dim=0), beta, t_beta
+        ctx.saved_input = x, tree
+        ctx.save_for_backward(prior, beta, t_beta, A, B, Pi)
 
+        return scatter(log_likelihood, tree['trees_ind'], dim=0)
 
-    def _downward(self, tree, A, Pi, prior, beta, t_beta):
-        eps = torch.zeros((tree['dim'], self.C, self.n_gen), device=self.A.device)
-        t_eps = torch.zeros((tree['dim'], self.C, self.C, self.n_gen), device=self.A.device)
+    @staticmethod
+    def backward(ctx, log_likelihood):
+        # Recovering saved tensors from forward
+        x, tree = ctx.saved_input
+        prior, beta, t_beta, A, B, Pi = ctx.saved_tensors
+
+        # Getting model info
+        C, n_gen, device = A.size(0), A.size(-1), A.device
+
+        # Creating parameter gradient tensors
+        A_grad, B_grad = torch.zeros_like(A), torch.zeros_like(B)
+
+        # Downward recursion: init
+        eps = torch.zeros((tree['dim'], C, n_gen), device=device)
+
+        # Downward recursion: base case
         eps[tree['roots']] = beta[tree['roots']]
 
         for l in tree['levels']:
             # Computing eps_{u, pa(u)}(i, j) = (beta_u(i) / (prior_u(i)) * \sum_{j} (eps_{pa(u)}(j)*A_ij t_beta_{pa(u), u}(j)))
             eps_pa = eps[l[0]].unsqueeze(1)
-            t_beta_ch = t_beta[l[1]].unsqueeze(1)
-            pa_factor = (eps_pa * A.unsqueeze(0)) / t_beta_ch 
-
             beta_ch = beta[l[1]].unsqueeze(2)
+            eps_trans_pa = A.unsqueeze(0) * eps_pa
+            
+            t_beta_ch = t_beta[l[1]].unsqueeze(1)
             prior_ch = prior[l[1]].unsqueeze(2)
-            ch_factor = beta_ch / prior_ch
 
-            t_eps_ch = ch_factor * pa_factor
-            t_eps[l[1]] = t_eps_ch
+            eps_joint = (beta_ch * eps_trans_pa) / (prior_ch * t_beta_ch) 
 
             # Computing eps_u(i)
-            eps_ch_unnorm = t_eps_ch.sum(2)
-            eps[l[1]] = eps_ch_unnorm / eps_ch_unnorm.sum(1, keepdim=True)
+            eps_ch = eps_joint.sum(2)
+            eps[l[1]] = eps_ch
 
-        return eps.detach(), t_eps.detach()
+            A_grad += (eps_joint - eps_trans_pa).sum(0)
 
-
-    def _compute_gradient(self, x, tree, batch, A, B, Pi, eps, t_eps):
-        internal = torch.cat([l[1].unique(sorted=False) for l in tree['levels']])
-
-        # Likelihood B
-        B_nodes = B[:, x[tree['inv_map']]].permute(1, 0, 2)
-        exp_likelihood = (eps * B_nodes.log()).sum(1)
-
-        # Likelihood A
-        exp_likelihood[internal] += (t_eps[internal] * A.log().unsqueeze(0)).sum([1, 2])
-
-        # Likelihood Pi
-        exp_likelihood[tree['roots']] += (eps[tree['roots']] * Pi.log()).sum(1)
+        eps_roots = eps[tree['roots']]
+        Pi_grad = eps_roots.sum(0) - tree['roots'].size(0)*Pi
         
-        exp_likelihood = scatter(src=exp_likelihood, index=tree['trees_ind'], dim=0, reduce='sum')
-        bitmask = torch.rand_like(exp_likelihood, device=self.A.device) > self.tree_dropout
-        exp_likelihood = scatter(src=exp_likelihood[bitmask], index=batch[bitmask], dim=0, reduce='mean')
-        neg_exp_likelihood = - exp_likelihood.sum() / (batch.max() + 1)
-        neg_exp_likelihood.backward()
+        eps_nodes = eps.permute(1, 0, 2)
+        B_grad = scatter(eps_nodes - eps_nodes * B[:, x[tree['inv_map']]],
+                         index=x,
+                         dim=1,
+                         out=B_grad)
+
+        return None, None, -A_grad, -B_grad, -Pi_grad
