@@ -1,0 +1,442 @@
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GalNAc.1a (Gal.1b3 (NeuAc.2a3 ($ -)))))	|ET|
+-1	|BT|	(AA. (GalNAc.1a (Gal.1b3 (NeuAc.2a3 ($ -)))(NeuAc.2a6 ($ -))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))(Fuc.1a4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -)))(Fuc.1a4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -))(Fuc.1a4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))(Fuc.1a4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GalNAc.1a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a6 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a6 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 ($ -))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (GalNAc.1a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (GalNAc.1b3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -))(NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 (Gal.1b3 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 (Gal.1b3 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -)))(GalNAc.1b4 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -)))(GalNAc.1b4 (Gal.1b3 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -)))(GalNAc.1b4 (Gal.1b3 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -)))(GalNAc.1b4 (Gal.1b3 (NeuAc.2a3 (NeuAc.2a8 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 (Gal.1b3 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (NeuAc.2a3 (NeuAc.2a8 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (Man.1a2 ($ -)))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (Fuc.1a3 ($ -))(Gal.1b4 (Fuc.1a2 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b3 (NeuAc.2a3 ($ -)))(Fuc.1a4 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b (Gal.1b4 (NeuGc.2a3 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b3 (Fuc.1a2 ($ -)))(Fuc.1a4 ($ -)))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -)))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (Man.1a2 (Man.1a2 ($ -))))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 (Man.1a2 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 ($ -))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (Man.1b4 (Man.1a3 ($ -))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (Man.1a2 (Man.1a2 ($ -))))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuGc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Fuc.1a3 ($ -))(Gal.1b4 (Fuc.1a2 ($ -))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -)))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 ($ -))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Man. (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (Man.1a2 (Man.1a2 ($ -))))(Man.1a6 (Man.1a3 (Man.1a2 ($ -)))(Man.1a6 (Man.1a2 ($ -)))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -)))))	|ET|
+-1	|BT|	(GlcN. (All.2 ($ -))(Hex.1a4 (All.2 ($ -)))(All.6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Gal.1a4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (Man.1a2 ($ -)))(Man.1a6 (Man.1a3 ($ -))(Man.1a6 (Man.1a2 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GalNAc.1b4 (Gal.1b3 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -))(Fuc.1a4 ($ -)))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))	|ET|
+-1	|BT|	(GlcN. (All.2 ($ -))(Hex.1a4 (All.2 ($ -))))	|ET|
+-1	|BT|	(GalNAc. (Hex.1a3 ($ -))(All.4 ($ -))(All.6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b (Gal.1b4 (NeuAc.2a3 ($ -)))))	|ET|
+-1	|BT|	(GalNAc. (Hex.1a3 (All.2 ($ -)))(All.4 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))))	|ET|
+-1	|BT|	(GlcN. (All.2 ($ -))(Hex.1a4 ($ -))(All.6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -))(Fuc.1a4 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(GlcNAc.1b4 ($ -))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(GlcNAc.1b4 ($ -))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(Gal. (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -))(GlcNAc.1b4 ($ -)))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 ($ -)))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GalNAc.1b3 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -)))(Fuc.1a4 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(Gal. (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 ($ -))(Fuc.1a4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Gal.1b3 ($ -)))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -))(GalNAc.1b4 ($ -)))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b4 (Gal.1b3 ($ -))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 ($ -))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Fuc.1a3 ($ -))(Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GalNAc.1b3 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(GlcNAc.1b4 ($ -))(Man.1a6 ($ -))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (Fuc.1a2 ($ -)))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 ($ -)))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (NeuAc.2a3 ($ -))(GalNAc.1b4 (Gal.1b3 (NeuAc.2a3 ($ -))))))	|ET|
+-1	|BT|	(Xyl. (Gal.1b4 (Gal.1b3 (GlcA.1b3 (GalNAc.1b4 (Hex.1a3 ($ -))(All.4 ($ -))))(All.4 ($ -)))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (Gal.1a4 (GalNAc.1b3 ($ -)))))	|ET|
+-1	|BT|	(GalNAc. (Hex.1a3 (All.2 ($ -)))(All.4 ($ -))(All.6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))(GalNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Fuc.1a3 ($ -))(Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -)))))))	|ET|
+1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a6 ($ -)))))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+1	|BT|	(Gal. (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 (NeuAc.2a8 ($ -))))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -)))(NeuAc.2a6 (NeuAc.2a8 ($ -))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b4 (Gal.1b3 (NeuAc.2a3 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (GlcNAc.1b3 (Gal.1b3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+1	|BT|	(Xyl. (Gal.1b4 (Gal.1b3 (GlcA.1b3 (GalNAc.1a4 ($ -))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a6 ($ -)))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -)))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1b3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b4 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))))(GlcNAc.1b6 (Gal.1b3 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b4 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 ($ -)))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b6 (Fuc.1a3 ($ -))(Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))))))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Fuc.1a3 ($ -))(Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1a2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GalNAc.1b6 (Glc.1a4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1a2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1a2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1a2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b6 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -))))))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GalNAc.1a3 (Gal.1b4 (Fuc.1a2 ($ -))))(GalNAc.1a6 (Gal.1b4 (Fuc.1a2 ($ -)))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (NeuAc.2a6 ($ -)))(NeuAc.2a6 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (NeuAc.2a3 ($ -)))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(AA. (GalNAc.1a (Gal.1b3 (GlcNAc.1b3 (Gal.1b3 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))(Fuc.1a4 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 ($ -))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 (GlcNAc.1b3 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GalNAc.1b3 (Gal.1b4 (GalNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a ($ -)))))(Man.1a6 (GlcNAc.1b2 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (GlcNAc.1b3 (Gal.1b3 ($ -)))(GlcNAc.1b6 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -)))(GlcNAc.1b6 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))(Fuc.1a4 ($ -)))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b6 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (NeuAc.2a3 ($ -)))(Fuc.1a4 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 (Gal.1b3 (Fuc.1a2 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -))))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1a3 (Gal.1b3 ($ -))(Fuc.1a4 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (Gal.1b4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GalNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (GalNAc.1a3 ($ -)))(Fuc.1a4 ($ -))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 ($ -))(GalNAc.1a4 ($ -)))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))))))	|ET|
+-1	|BT|	(Man. (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GalNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(AA. (GalNAc.1a (Gal.1b3 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 ($ -)))(GlcNAc.1b6 ($ -)))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -))))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -))(GlcNAc.1b6 (Gal.1b4 ($ -))))))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))(GlcNAc.1b6 (Gal.1b4 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Gal. (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 ($ -))(GlcNAc.1b6 ($ -)))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a ($ -))))(GlcNAc.1b6 (Fuc.1a3 ($ -))(Gal.1b4 (NeuAc.2a3 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (Gal.1b3 (Fuc.1a2 ($ -)))(NeuAc.2a6 ($ -)))	|ET|
+-1	|BT|	(GlcN. (Man.1 (Man.1 (Man.1 (All.6 ($ -)))(All.6 ($ -)))(All.6 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Hex.11 (Hex.1 (Hex.1 ($ -)))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Gal.1a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Gal.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 ($ -))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 ($ -))(Man.1a6 ($ -))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 ($ -)))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(AA. (GalNAc.1a (Gal.1b3 (NeuAc.2a3 ($ -))(GalNAc.1b4 ($ -)))(NeuAc.2a6 ($ -))))	|ET|
+-1	|BT|	(AA. (Fuc.1a (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a6 ($ -))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (NeuAc.2a3 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -))))(GlcNAc.1b4 (Gal.1b4 (NeuAc.2a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b4 (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))(GlcNAc.1b4 ($ -))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(AA. (Glc.1b1 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (NeuAc.2a3 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -)))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b4 (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 ($ -)))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 (NeuAc.2a6 ($ -)))))))(Fuc.1a6 ($ -))))	|ET|
+-1	|BT|	(GlcNAc. (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 (Fuc.1a2 ($ -)))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -))))))(Fuc.1a6 ($ -)))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))(GlcNAc.1b6 (Gal.1b4 (Fuc.1a2 ($ -))))))))	|ET|
+-1	|BT|	(AA. (GlcNAc.1b4 (GlcNAc.1b4 (Man.1b4 (Man.1a3 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b4 (Fuc.1a3 ($ -))(Gal.1b4 ($ -))))(Man.1a6 (GlcNAc.1b2 (Gal.1b4 ($ -)))(GlcNAc.1b6 (Gal.1b4 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))))	|ET|
+-1	|BT|	(AA. (Xyl.1b3 (Gal.1b3 (GlcA.1b3 (GalNAc.1b4 (GlcA.1b3 (GalNAc.1b4 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -)))(Fuc.1a4 ($ -)))))	|ET|
+-1	|BT|	(GlcN. (Man.1a4 (All.2 ($ -))(Man.1a6 (Man.1a2 (All.6 ($ -)))(All.6 ($ -)))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (Gal.1a4 (GalNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -)))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b3 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))	|ET|
+-1	|BT|	(GalNAc. (Gal.1b3 (NeuAc.2a3 (NeuAc.2a8 ($ -))))(NeuAc.2a6 (NeuAc.2a8 ($ -))))	|ET|
+-1	|BT|	(GlcN. (Man.1a4 (All.2 ($ -))(Man.1a6 (Man.1a2 (All.6 ($ -))))))	|ET|
+-1	|BT|	(GlcN. (Man.1a4 (All. ($ -))(Man.1a6 (Man.1a2 (All.6 ($ -))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(GalNAc.1a3 ($ -))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))(Gal.1a3 ($ -))))))	|ET|
+-1	|BT|	(Glc. (Gal.1b4 (GlcNAc.1b3 (Gal.1b4 (Fuc.1a2 ($ -))))))	|ET|
+1	|BT|	(Xyl. (Gal.1b4 (Gal.1b3 (GlcA.1b3 ($ -)))))	|ET|
+-1	|BT|	(GalNAc. (Hex.1a4 (All.2 ($ -)))(All.6 ($ -)))	|ET|

@@ -2,6 +2,7 @@ import torch
 from torch_geometric.data import Data
 from torch.utils.data import Dataset, DataLoader
 from data.tree.inex.preproc import load_and_preproc_inex
+from data.tree.glycans.preproc import load_and_preproc_glycans
 import random
 
 class TreeData(Data):
@@ -40,6 +41,8 @@ class TreeDataset(Dataset):
     def __init__(self, work_dir=None, name=None, data=None):
         if work_dir is not None and name in ['inex2005train', 'inex2005test', 'inex2006train', 'inex2006test']:
             self.data = load_and_preproc_inex(work_dir, name)
+        elif work_dir is not None and name in ['leukemia', 'cystic']:
+            self.data = load_and_preproc_glycans(work_dir, name)
         elif data is not None:
             self.data=data
               
