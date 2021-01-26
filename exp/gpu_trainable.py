@@ -72,6 +72,7 @@ class GPUTrainable(tune.Trainable):
 
     def _switch(self, device):
         if device == GPU:
+            gpu_failed = False
             try:
                 self.train_wrap.model = self.train_wrap.model.cuda()
                 self.train_wrap.opt.state = _recursive_opt_to(GPU, self.train_wrap.opt.state)

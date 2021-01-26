@@ -24,9 +24,10 @@ def get_config(name):
             'out': 11,
             'M': 366,
             'L': 32,
-            'C': tune.randint(7, 16),
+            'C': tune.randint(7, 14),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
-            'lr': tune.uniform(5e-5, 5e-3),
+            'lr': tune.uniform(5e-3, 2e-2),
+            'min_lr': 5e-4,
             'batch_size': tune.choice([32, 64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy'
@@ -40,7 +41,8 @@ def get_config(name):
             'L': 66,
             'C': tune.randint(6, 14),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
-            'lr': tune.uniform(5e-5, 2e-2),
+            'lr': tune.uniform(5e-3, 2e-2),
+            'min_lr': 5e-4,
             'batch_size': tune.choice([64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy'
@@ -56,7 +58,7 @@ if __name__ == '__main__':
         os.makedirs(exp_dir)
     
     # Design phase
-    config = get_config(dataset)
+    config = get_config(f'inex{dataset}')
     config['dataset'] = f'inex{dataset}train'
     dataset = TreeDataset('.', name=f'inex{dataset}train')
     tr_idx, vl_idx = train_test_split(np.arange(len(dataset)), 
@@ -74,7 +76,8 @@ if __name__ == '__main__':
         exp_dir=exp_dir,
         chk_score_attr='vl_score',
         log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-        gpus=[int(i) for i in sys.argv[3].split(',')] if len(sys.argv) == 4 else []
+        gpus=[int(i) for i in sys.argv[3].split(',')] if len(sys.argv) == 4 else [],
+        gpu_threshold=0.8
     )
     
     # Retraining phase
@@ -91,7 +94,8 @@ if __name__ == '__main__':
         exp_dir=exp_dir,
         chk_score_attr='tr_score',
         log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-        gpus=gpus
+        gpus=gpus,
+        gpu_threshold=0.8
     )
     
     # Test phase

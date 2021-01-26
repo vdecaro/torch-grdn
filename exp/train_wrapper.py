@@ -19,8 +19,11 @@ class TrainWrapper(object):
         self.model, self.opt, self.tr_ld, self.vl_ld = _wrapper_init_fn(config)
 
         self.loss_fn = get_loss_fn(config['loss'])
-        self.score_fn = get_score_fn(config['score'])
-
+        self.score_fn = get_score_fn(config['score'], config['out'])
+        
+        e_min = 80*(len(config['tr_idx']) //config['batch_size'])
+        lr_lambda = lambda e: (config['lr']*(e_min-e)/e_min + config['min_lr']*e/e_min)/config['lr'] if e <= e_min else config['min_lr']
+        self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.opt, lr_lambda=lr_lambda)
         self.best_score = 0
 
     def step(self, device):
@@ -34,11 +37,12 @@ class TrainWrapper(object):
             self.opt.zero_grad()
             loss_v.backward()
             self.opt.step()
+            self.lr_scheduler.step()
             tr_y.append(b.y)
             tr_pred.append(out)
         
         tr_y, tr_pred = torch.cat(tr_y, 0), torch.cat(tr_pred, 0)
-        res_dict['tr_loss'], res_dict['tr_score'] = self.loss_fn(tr_y).item(), self.score_fn(tr_y, tr_pred)
+        res_dict['tr_loss'], res_dict['tr_score'] = self.loss_fn(tr_pred, tr_y).item(), self.score_fn(tr_y, tr_pred)
 
         if self.vl_ld is not None:
             self.model.eval()
@@ -50,7 +54,7 @@ class TrainWrapper(object):
                 vl_pred.append(out)
 
             vl_y, vl_pred = torch.cat(vl_y, 0), torch.cat(vl_pred, 0)
-            res_dict['vl_loss'], res_dict['vl_score'] = self.loss_fn(vl_y).item(), self.score_fn(vl_y, vl_pred)
+            res_dict['vl_loss'], res_dict['vl_score'] = self.loss_fn(vl_pred, vl_y).item(), self.score_fn(vl_y, vl_pred)
             if res_dict['vl_score'] > self.best_score:
                 self.best_score = res_dict['vl_score']
         else:
@@ -58,7 +62,6 @@ class TrainWrapper(object):
                 self.best_acc = res_dict['tr_score']
         
         res_dict['best_score'] =  self.best_score
-        
         return res_dict
 
 

@@ -8,7 +8,8 @@ from torch_geometric.datasets import TUDataset
 from data.graph.g2t import ParallelTUDataset, pre_transform
 from ray.tune import Analysis
 
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import roc_auc_score
+from torch_geometric.utils import accuracy
 
 def get_seed():
     return 95
@@ -20,12 +21,16 @@ def get_loss_fn(loss_type):
         return torch.nn.CrossEntropyLoss()
 
 
-def get_score_fn(score_type):
+def get_score_fn(score_type, outs):
     
     if score_type == 'accuracy':
-        def _score_fn(y, pred):
-            return accuracy_score(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
-
+        if outs == 1:
+            def _score_fn(y, pred):
+                return accuracy(y, pred.sigmoid().round())
+        else:
+            def _score_fn(y, pred):
+                return accuracy(y, pred.argmax(-1))
+            
     if score_type == 'roc-auc':
         def _score_fn(y, pred):
             return roc_auc_score(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
