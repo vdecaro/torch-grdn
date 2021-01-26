@@ -18,13 +18,15 @@ def run_exp(design_or_test,
             exp_dir,
             chk_score_attr,
             log_params,
-            gpus):
+            gpus=[],
+            gpu_threshold=None):
     
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
     
     config['wdir'] = os.getcwd()
     config['gpu_ids'] = gpus
+    config['gpu_threshold'] = None
     early_stopping = TrialNoImprovementStopper(metric=p_early['metric'], 
                                                mode=p_early['mode'], 
                                                patience_threshold=p_early['patience'])

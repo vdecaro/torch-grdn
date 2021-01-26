@@ -88,7 +88,8 @@ if __name__ == '__main__':
             exp_dir=fold_dir,
             chk_score_attr='vl_score',
             log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-            gpus=gpus
+            gpus=gpus,
+            gpu_threshold=0.9
         )
 
         best_dict = get_best_info(fold_dir)
