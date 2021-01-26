@@ -133,4 +133,4 @@ class ReversedUpwardDownward(torch.autograd.Function):
                          dim=1,
                          out=B_grad)
 
-        return None, -A_grad, -B_grad, -Pi_grad, -SP_grad
+        return None, A_grad, B_grad, Pi_grad, SP_grad

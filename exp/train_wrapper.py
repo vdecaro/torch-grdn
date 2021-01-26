@@ -21,7 +21,7 @@ class TrainWrapper(object):
         self.loss_fn = get_loss_fn(config['loss'])
         self.score_fn = get_score_fn(config['score'], config['out'])
         
-        e_min = 80*(len(config['tr_idx']) //config['batch_size'])
+        e_min = config['epochs_decay']*(len(config['tr_idx']) //config['batch_size'])
         lr_lambda = lambda e: (config['lr']*(e_min-e)/e_min + config['min_lr']*e/e_min)/config['lr'] if e <= e_min else config['min_lr']
         self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.opt, lr_lambda=lr_lambda)
         self.best_score = 0

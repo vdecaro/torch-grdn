@@ -20,7 +20,8 @@ class GPUTrainable(tune.Trainable):
         
         self.gpu_ids = config['gpu_ids']
         self.curr_gpu = random.choice(config['gpu_ids']) if config['gpu_ids'] else None
-        torch.cuda.set_device(self.curr_gpu)
+        if self.gpu_ids:
+            torch.cuda.set_device(self.curr_gpu)
         
         self.t = time.time()
         self.threshold = 0

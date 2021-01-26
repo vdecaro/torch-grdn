@@ -136,4 +136,4 @@ class UpwardDownward(torch.autograd.Function):
                          out=B_grad)
         Pi_grad = eps_roots.sum(0) - roots.size(0) * Pi
 
-        return None, -A_grad, -B_grad, -Pi_grad
+        return None, A_grad, B_grad, Pi_grad

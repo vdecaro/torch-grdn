@@ -28,6 +28,7 @@ def get_config(name):
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
             'lr': tune.uniform(5e-3, 2e-2),
             'min_lr': 5e-4,
+            'epochs_decay': 80,
             'batch_size': tune.choice([32, 64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy'
@@ -43,6 +44,7 @@ def get_config(name):
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
             'lr': tune.uniform(5e-3, 2e-2),
             'min_lr': 5e-4,
+            'epochs_decay': 80,
             'batch_size': tune.choice([64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy'

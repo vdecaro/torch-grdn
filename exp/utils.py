@@ -15,11 +15,21 @@ def get_seed():
     return 95
 
 def get_loss_fn(loss_type):
-    if loss_type == 'bce':
-        return torch.nn.BCEWithLogitsLoss()
-    if loss_type == 'ce':
-        return torch.nn.CrossEntropyLoss()
+    return Loss_fn(loss_type)
 
+class Loss_fn(object):
+    def __init__(self, loss_type):
+        self.loss_type = loss_type
+        if loss_type == 'bce':
+            self.loss = torch.nn.BCEWithLogitsLoss()
+        if loss_type == 'ce':
+            self.loss =  torch.nn.CrossEntropyLoss()
+    
+    def __call__(self, pred, y):
+        if self.loss_type == 'ce':
+            return self.loss(pred, y)
+        if self.loss_type == 'bce':
+            return self.loss(pred, y.type(pred.dtype))
 
 def get_score_fn(score_type, outs):
     
