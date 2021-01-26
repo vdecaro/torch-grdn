@@ -38,20 +38,21 @@ def _build_trees(t_lines):
         curr_label = ''
         for c in t_line:
             if c == '(':
-                level = len(stack)-1
-                if len(edges) == level:
-                    edges.append([])
-                if stack:
-                    edges[level].append([stack[-1][0], len(labels)])
-                    pos.append(stack[-1][1])
-                    stack[-1][1] += 1
-                    
-                stack.append([len(labels), 0])
-                if not curr_label in labels_map:
-                    labels_map[curr_label] = n_labels
-                    n_labels += 1
-                labels.append(labels_map[curr_label])
-                curr_label = ''
+                if curr_label != '':
+                    level = len(stack)-1
+                    if len(edges) == level:
+                        edges.append([])
+                    if stack:
+                        edges[level].append([stack[-1][0], len(labels)])
+                        pos.append(stack[-1][1])
+                        stack[-1][1] += 1
+                        
+                    stack.append([len(labels), 0])
+                    if not curr_label in labels_map:
+                        labels_map[curr_label] = n_labels
+                        n_labels += 1
+                    labels.append(labels_map[curr_label])
+                    curr_label = ''
 
             elif c == '$':
                 leaves.append(stack[-1][0])
