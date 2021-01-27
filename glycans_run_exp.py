@@ -18,10 +18,10 @@ from torch.utils.data import DataLoader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset')
-parser.add_argument(['--gpus', '-g'], type=int, nargs='*', default=[])
-parser.add_argument(['--workers', '-w'], type=int, default=36)
-parser.add_argument(['--design', '-d'], type=int, nargs='*', default=list(range(10)))
-parser.add_argument(['--test', '-t'], type=int, nargs='*', default=list(range(10)))
+parser.add_argument('--gpus', '-g', type=int, nargs='*', default=[])
+parser.add_argument('--workers', '-w', type=int, default=36)
+parser.add_argument('--design', '-d', type=int, nargs='*', default=list(range(10)))
+parser.add_argument('--test', '-t', type=int, nargs='*', default=list(range(10)))
 
 def get_config(name):
     if name == 'cystic':

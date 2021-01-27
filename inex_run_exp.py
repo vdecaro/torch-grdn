@@ -19,11 +19,11 @@ from htmn.htmn import HTMN
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset')
-parser.add_argument(['--gpus', '-g'], type=int, nargs='*', default=[])
-parser.add_argument(['--workers', '-w'], type=int, default=36)
-parser.add_argument(['--design', '-d'], action='store_true')
-parser.add_argument(['--retrain', '-r'], action='store_true')
-parser.add_argument(['--test', '-t'], default='design')
+parser.add_argument('--gpus', '-g', type=int, nargs='*', default=[])
+parser.add_argument('--workers', '-w', type=int, default=36)
+parser.add_argument('--design', '-d', action='store_true')
+parser.add_argument('--retrain', '-r', action='store_true')
+parser.add_argument('--test', '-t', default='design')
 
 def get_config(name):
     if name == 'inex2005':

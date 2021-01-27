@@ -19,10 +19,10 @@ from exp.run import run_exp, run_test
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset')
-parser.add_argument(['--gpus', '-g'], type=int, nargs='*', default=[])
-parser.add_argument(['--workers', '-w'], type=int, default=36)
-parser.add_argument(['--design', '-d'], type=int, nargs='*', default=list(range(10)))
-parser.add_argument(['--test', '-t'], type=int, nargs='*', default=list(range(10)))
+parser.add_argument('--gpus', '-g', type=int, nargs='*', default=[])
+parser.add_argument('--workers', '-w', type=int, default=36)
+parser.add_argument('--design', '-d', type=int, nargs='*', default=list(range(10)))
+parser.add_argument('--test', '-t', type=int, nargs='*', default=list(range(10)))
 
 def get_config(name):
     if name == 'NCI1':
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     ext_split = list(ext_kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
     for fold_idx, (ds_i, ts_i) in enumerate(ext_split):
         fold_dir = os.path.join(exp_dir, f'fold_{fold_idx}')
-        
+
         if fold_idx in args.design:
             if not os.path.exists(fold_dir):
                 os.makedirs(fold_dir)
