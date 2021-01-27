@@ -1,4 +1,4 @@
-import sys
+import argparse
 import os
 import math
 from random import randint, randrange, choice
@@ -16,6 +16,13 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch_geometric.datasets import TUDataset
 from exp.utils import get_seed, get_best_info, get_loss_fn, get_score_fn
 from exp.run import run_exp, run_test
+
+parser = argparse.ArgumentParser()
+parser.add_argument('dataset')
+parser.add_argument(['--gpus', '-g'], type=int, nargs='*', default=[])
+parser.add_argument(['--workers', '-w'], type=int, default=36)
+parser.add_argument(['--design', '-d'], type=int, nargs='*', default=list(range(10)))
+parser.add_argument(['--test', '-t'], type=int, nargs='*', default=list(range(10)))
 
 def get_config(name):
     if name == 'NCI1':
@@ -68,73 +75,76 @@ def get_config(name):
 
     
 if __name__ == '__main__':
-    dataset = sys.argv[1]
+    args = parser.parse_args()
+    dataset, gpus, workers = args.dataset, args.gpus, args.workers 
     exp_dir = f'GHTMN_exp/{dataset}'
-    ray.init(num_cpus=int(sys.argv[2])*2)
-    gpus = [int(i) for i in sys.argv[3].split(',')] if len(sys.argv) == 4 else []
+    ray.init(num_cpus=workers*2)
 
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
     
     config = get_config(dataset)
-    config['gpu_ids'] = [int(i) for i in sys.argv[3].split(',')]
+    config['gpu_ids'] = gpus
     
     dataset = TUDataset('.', dataset)
     ext_kfold = StratifiedKFold(10, shuffle=True, random_state=get_seed())
     ext_split = list(ext_kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
     for fold_idx, (ds_i, ts_i) in enumerate(ext_split):
         fold_dir = os.path.join(exp_dir, f'fold_{fold_idx}')
-        if not os.path.exists(fold_dir):
-            os.makedirs(fold_dir)
-        ds_data = dataset[ds_i.tolist()]
-        tr_i, vl_i = train_test_split(ds_i, 
-                                      test_size=0.175,  
-                                      stratify=np.array([g.y for g in ds_data]), 
-                                      shuffle=True, 
-                                      random_state=get_seed())
-        config['tr_idx'], config['vl_idx'] = tr_i.tolist(), vl_i.tolist()
-        run_exp(
-            'design',
-            config=config,
-            n_samples=500,
-            p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 50},
-            p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 400, 'grace': 50, 'reduction': 4},
-            exp_dir=fold_dir,
-            chk_score_attr='vl_score',
-            log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-            gpus=gpus
-        )
+        
+        if fold_idx in args.design:
+            if not os.path.exists(fold_dir):
+                os.makedirs(fold_dir)
+            ds_data = dataset[ds_i.tolist()]
+            tr_i, vl_i = train_test_split(ds_i, 
+                                        test_size=0.175,  
+                                        stratify=np.array([g.y for g in ds_data]), 
+                                        shuffle=True, 
+                                        random_state=get_seed())
+            config['tr_idx'], config['vl_idx'] = tr_i.tolist(), vl_i.tolist()
+            run_exp(
+                'design',
+                config=config,
+                n_samples=500,
+                p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 50},
+                p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 400, 'grace': 50, 'reduction': 4},
+                exp_dir=fold_dir,
+                chk_score_attr='vl_score',
+                log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
+                gpus=gpus
+            )
 
-        best_dict = get_best_info(fold_dir)
-        t_config = best_dict['config']
-        ts_data = ParallelTUDataset(os.path.join(config['dataset'], f'D{config["depth"]}'),
-                                    dataset, 
-                                    pre_transform=pre_transform(t_config['depth']),
-                                    transform=transform(t_config['dataset'])
-        )
-        dataset.data.x = dataset.data.x.argmax(1).detach()
-        ts_ld = DataLoader(ts_data, 
-                           collate_fn=TreeCollater(t_config['depth']), 
-                           batch_size=512, 
-                           shuffle=False)
+        if fold_idx in args.test:
+            best_dict = get_best_info(fold_dir)
+            t_config = best_dict['config']
+            ts_data = ParallelTUDataset(os.path.join(config['dataset'], f'D{config["depth"]}'),
+                                        dataset, 
+                                        pre_transform=pre_transform(t_config['depth']),
+                                        transform=transform(t_config['dataset'])
+            )
+            dataset.data.x = dataset.data.x.argmax(1).detach()
+            ts_ld = DataLoader(ts_data, 
+                            collate_fn=TreeCollater(t_config['depth']), 
+                            batch_size=512, 
+                            shuffle=False)
 
-        def _get_model(config):
-            if config['gen_mode'] == 'bu':
-                n_bu, n_td = t_config['n_gen'], 0
-            elif config['gen_mode'] == 'td':
-                n_bu, n_td = 0, t_config['n_gen']
-            elif config['gen_mode'] == 'both':
-                n_bu, n_td = math.ceil(t_config['n_gen']/2), math.floor(t_config['n_gen']/2)
+            def _get_model(config):
+                if config['gen_mode'] == 'bu':
+                    n_bu, n_td = t_config['n_gen'], 0
+                elif config['gen_mode'] == 'td':
+                    n_bu, n_td = 0, t_config['n_gen']
+                elif config['gen_mode'] == 'both':
+                    n_bu, n_td = math.ceil(t_config['n_gen']/2), math.floor(t_config['n_gen']/2)
 
-            return GraphHTMN(config['out'], n_bu, n_td, t_config['C'], t_config['symbols'])
+                return GraphHTMN(config['out'], n_bu, n_td, t_config['C'], t_config['symbols'])
 
-        best_dict['ts_loss'], best_dict['ts_score'] = run_test(
-            trial_dir=best_dict['trial_dir'],
-            ts_ld=ts_ld,
-            model_func=_get_model,
-            loss_fn=torch.nn.BCEWithLogitsLoss(),
-            score_fn=get_score_fn('accuracy'),
-            gpus=gpus
-        )
+            best_dict['ts_loss'], best_dict['ts_score'] = run_test(
+                trial_dir=best_dict['trial_dir'],
+                ts_ld=ts_ld,
+                model_func=_get_model,
+                loss_fn=torch.nn.BCEWithLogitsLoss(),
+                score_fn=get_score_fn('accuracy', t_config['out']),
+                gpus=gpus
+            )
 
-        torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))
+            torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))

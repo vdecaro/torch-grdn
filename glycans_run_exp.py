@@ -1,4 +1,4 @@
-import sys
+import argparse
 import os
 import math
 from random import randint, randrange, choice
@@ -15,6 +15,13 @@ from data.tree.utils import TreeDataset,trees_collate_fn
 from sklearn.model_selection import train_test_split
 from htmn.htmn import HTMN
 from torch.utils.data import DataLoader
+
+parser = argparse.ArgumentParser()
+parser.add_argument('dataset')
+parser.add_argument(['--gpus', '-g'], type=int, nargs='*', default=[])
+parser.add_argument(['--workers', '-w'], type=int, default=36)
+parser.add_argument(['--design', '-d'], type=int, nargs='*', default=list(range(10)))
+parser.add_argument(['--test', '-t'], type=int, nargs='*', default=list(range(10)))
 
 def get_config(name):
     if name == 'cystic':
@@ -49,10 +56,10 @@ def get_config(name):
 
     
 if __name__ == '__main__':
-    dataset = sys.argv[1]
+    args = parser.parse_args()
+    dataset, gpus, workers = args.dataset, args.gpus, args.workers 
     exp_dir = f'HTMN_exp/{dataset}'
-    ray.init(num_cpus=int(sys.argv[2])*2)
-    gpus = [int(i) for i in sys.argv[3].split(',')] if len(sys.argv) == 4 else []
+    ray.init(num_cpus=workers*2)
     
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -70,47 +77,49 @@ if __name__ == '__main__':
     dataset = TreeDataset('.', name=dataset)
     for fold_idx, (ds_idx, ts_idx) in enumerate(folds):
         fold_dir = os.path.join(exp_dir, f'fold_{fold_idx}')
-        if not os.path.exists(fold_dir):
-            os.makedirs(fold_dir)
-        ds_data = TreeDataset(data=[dataset[i] for i in ds_idx])
-        tr_idx, vl_idx = train_test_split(np.array(ds_idx), 
-                                          test_size=0.2,  
-                                          stratify=np.array([t.y for t in ds_data]), 
-                                          shuffle=True, 
-                                          random_state=get_seed())
-        config['tr_idx'], config['vl_idx'] = tr_idx.tolist(), vl_idx.tolist()
-        run_exp(
-            'design',
-            config=config,
-            n_samples=1,
-            p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 300},
-            p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 10000, 'grace': 1000, 'reduction': 2},
-            exp_dir=fold_dir,
-            chk_score_attr='vl_score',
-            log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-            gpus=gpus,
-            gpu_threshold=0.9
-        )
+        if fold_idx in args.design:
+            if not os.path.exists(fold_dir):
+                os.makedirs(fold_dir)
+            ds_data = TreeDataset(data=[dataset[i] for i in ds_idx])
+            tr_idx, vl_idx = train_test_split(np.array(ds_idx), 
+                                            test_size=0.2,  
+                                            stratify=np.array([t.y for t in ds_data]), 
+                                            shuffle=True, 
+                                            random_state=get_seed())
+            config['tr_idx'], config['vl_idx'] = tr_idx.tolist(), vl_idx.tolist()
+            run_exp(
+                'design',
+                config=config,
+                n_samples=1,
+                p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 300},
+                p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 10000, 'grace': 1000, 'reduction': 2},
+                exp_dir=fold_dir,
+                chk_score_attr='vl_score',
+                log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
+                gpus=gpus,
+                gpu_threshold=0.9
+            )
 
-        best_dict = get_best_info(fold_dir)
-        t_config = best_dict['config']
-        ts_data = TreeDataset('.', name=dataset)
-        ts_ld = DataLoader(ts_data, 
-                           collate_fn=trees_collate_fn, 
-                           batch_size=512, 
-                           shuffle=False)
-        best_dict['ts_loss'], best_dict['ts_score'] = run_test(
-            trial_dir=best_dict['trial_dir'],
-            ts_ld=ts_ld,
-            model_func=lambda config: HTMN(config['out'], 
+        if fold_idx in args.test:
+            best_dict = get_best_info(fold_dir)
+            t_config = best_dict['config']
+            ts_data = TreeDataset('.', name=dataset)
+            ts_ld = DataLoader(ts_data, 
+                            collate_fn=trees_collate_fn, 
+                            batch_size=512, 
+                            shuffle=False)
+            best_dict['ts_loss'], best_dict['ts_score'] = run_test(
+                trial_dir=best_dict['trial_dir'],
+                ts_ld=ts_ld,
+                model_func=lambda config: HTMN(config['out'], 
                                             math.ceil(config['n_gen']/2), 
                                             math.floor(config['n_gen']/2), 
                                             config['C'], 
                                             config['L'], 
                                             config['M']),
-            loss_fn=torch.nn.BCEWithLogitsLoss(),
-            score_fn=get_score_fn('roc-auc'),
-            gpus=gpus
-        )
+                loss_fn=torch.nn.BCEWithLogitsLoss(),
+                score_fn=get_score_fn('roc-auc', t_config['out']),
+                gpus=gpus
+            )
 
-        torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))
+            torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))
