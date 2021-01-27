@@ -48,9 +48,9 @@ def get_score_fn(score_type, outs):
     return _score_fn
 
 
-def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True], mode='auto'):
+def get_best_info(exp_dir, metrics=['vl_score', 'vl_loss'], ascending=[False, True], mode='auto'):
     if mode == 'auto':
-        analysis = Analysis(exp_dir, 'vl_acc', 'max')
+        analysis = Analysis(exp_dir, 'vl_score', 'max')
         df = analysis.dataframe()
         df = df.sort_values(metrics, ascending=ascending)
         trial_dir = df.iloc[0][-1]
@@ -72,9 +72,9 @@ def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True
             'chk_file': chk_file, 
             'config': config, 
             'tr_loss': best_res['tr_loss'], 
-            'tr_acc': best_res['tr_acc'], 
+            'tr_score': best_res['tr_score'], 
             'vl_loss': best_res['vl_loss'], 
-            'vl_acc': best_res['vl_acc']
+            'vl_score': best_res['vl_score']
         }
 
     elif mode == 'manual':
@@ -83,9 +83,9 @@ def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True
             'chk_file': None,
             'config': None,
             'tr_loss': float('inf'),
-            'tr_acc': 0,
+            'tr_score': 0,
             'vl_loss': float('inf'),
-            'vl_acc': 0
+            'vl_score': 0
         }
         dirs = [part_dir for part_dir in os.listdir(exp_dir) if os.path.isdir(os.path.join(exp_dir, part_dir))]
         for part_dir in dirs:
@@ -99,7 +99,7 @@ def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True
                 for i, d in enumerate(f):
                     if i+1 == min_:
                         curr = json.loads(d)
-                        if best_dict['vl_acc'] < curr['vl_acc'] or (best_dict['vl_acc'] == curr['vl_acc'] and best_dict['vl_loss'] > curr['vl_loss']):
+                        if best_dict['vl_score'] < curr['vl_score'] or (best_dict['vl_score'] == curr['vl_score'] and best_dict['vl_loss'] > curr['vl_loss']):
                             with open(os.path.join(trial_dir, 'params.json')) as f:
                                 config = json.load(f)
                             best_dict = {
@@ -107,8 +107,8 @@ def get_best_info(exp_dir, metrics=['vl_acc', 'vl_loss'], ascending=[False, True
                                 'chk_file': os.path.join(trial_dir, f'checkpoint_{min_}/model.pth'),
                                 'config': config,
                                 'tr_loss': curr['tr_loss'],
-                                'tr_acc': curr['tr_acc'],
+                                'tr_score': curr['tr_score'],
                                 'vl_loss': curr['vl_loss'],
-                                'vl_acc': curr['vl_acc']
+                                'vl_score': curr['vl_score']
                             }
         return best_dict
