@@ -47,6 +47,18 @@ def get_score_fn(score_type, outs):
 
     return _score_fn
 
+def get_rank_fn(rank_type):
+
+    if rank_type == 'raw':
+
+        def _rank_fn(tr_loss, vl_loss, vl_score):
+            return vl_score
+
+    if rank_type == 'weighted':
+
+        def _rank_fn(tr_loss, vl_loss, vl_score):
+            return min((tr_loss/vl_loss)**2, 1)*vl_score
+
 
 def get_best_info(exp_dir, metrics=['vl_score', 'vl_loss'], ascending=[False, True], mode='auto'):
     if mode == 'auto':

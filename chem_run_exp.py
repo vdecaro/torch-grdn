@@ -38,7 +38,8 @@ def get_config(name):
             'lr': tune.uniform(5e-4, 1e-3),
             'batch_size': 100,
             'loss': 'bce',
-            'score': 'accuracy'
+            'score': 'accuracy',
+            'rank': 'raw'
         }
 
     if name == 'PROTEINS':
@@ -54,7 +55,8 @@ def get_config(name):
             'lr': tune.uniform(5e-4, 1e-3),
             'batch_size': 100,
             'loss': 'bce',
-            'score': 'accuracy'
+            'score': 'accuracy',
+            'rank': 'raw'
         }
 
     if name == 'DD':
@@ -70,7 +72,8 @@ def get_config(name):
             'lr': tune.uniform(1e-5, 1e-3),
             'batch_size': 100,
             'loss': 'bce',
-            'score': 'accuracy'
+            'score': 'accuracy',
+            'rank': 'raw'
         }
 
     
@@ -78,7 +81,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     ds_name, gpus, workers = args.dataset, args.gpus, args.workers 
     exp_dir = f'GHTMN_exp/{ds_name}'
-    ray.init(num_cpus=workers*2)
 
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -102,6 +104,7 @@ if __name__ == '__main__':
                                         shuffle=True, 
                                         random_state=get_seed())
             config['tr_idx'], config['vl_idx'] = tr_i.tolist(), vl_i.tolist()
+            ray.init(num_cpus=workers*2)
             run_exp(
                 'design',
                 config=config,
@@ -114,6 +117,7 @@ if __name__ == '__main__':
                 gpus=gpus,
                 gpu_threshold=0.75
             )
+            ray.shutdown()
 
         if fold_idx in args.test:
             best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')

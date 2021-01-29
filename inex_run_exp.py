@@ -37,7 +37,8 @@ def get_config(name):
             'lr': tune.uniform(3e-4, 3e-3),
             'batch_size': tune.choice([32, 64, 128, 192, 256]),
             'loss': 'ce',
-            'score': 'accuracy'
+            'score': 'accuracy',
+            'rank': 'raw'
         }
 
     if name == 'inex2006':
@@ -51,7 +52,8 @@ def get_config(name):
             'lr': tune.uniform(3e-4, 3e-3),
             'batch_size': tune.choice([64, 128, 192, 256]),
             'loss': 'ce',
-            'score': 'accuracy'
+            'score': 'accuracy',
+            'rank': 'raw'
         }
 
 if __name__ == '__main__':

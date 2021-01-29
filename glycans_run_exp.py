@@ -37,7 +37,8 @@ def get_config(name):
             'lr': tune.grid_search([7.5e-4, 1e-3, 2.5e-3]),
             'batch_size': tune.grid_search([4, 8, 16, 32]),
             'loss': 'bce',
-            'score': 'roc-auc'
+            'score': 'roc-auc',
+            'rank': 'weighted'
         }
 
     if name == 'leukemia':
@@ -53,7 +54,8 @@ def get_config(name):
             'lr': tune.grid_search([7.5e-4, 1e-3, 2.5e-3]),
             'batch_size': tune.grid_search([8, 16, 32, 48, 64]),
             'loss': 'bce',
-            'score': 'roc-auc'
+            'score': 'roc-auc',
+            'rank': 'weighted'
         }
 
     
@@ -61,7 +63,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     ds_name, gpus, workers = args.dataset, args.gpus, args.workers 
     exp_dir = f'HTMN_exp/{ds_name}'
-    ray.init(num_cpus=workers*2)
     
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -90,6 +91,7 @@ if __name__ == '__main__':
                                               shuffle=True, 
                                               random_state=get_seed())
             config['tr_idx'], config['vl_idx'] = tr_idx.tolist(), vl_idx.tolist()
+            ray.init(num_cpus=workers*2)
             run_exp(
                 'design',
                 config=config,
@@ -102,6 +104,7 @@ if __name__ == '__main__':
                 gpus=gpus,
                 gpu_threshold=0.9
             )
+            ray.shutdown()
             
         if fold_idx in args.test:
             best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')

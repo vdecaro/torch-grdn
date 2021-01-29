@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from graph_htmn.graph_htmn import GraphHTMN
 from htmn.htmn import HTMN
 
-from exp.utils import get_loss_fn, get_score_fn
+from exp.utils import get_loss_fn, get_score_fn, get_rank_fn
 
 class TrainWrapper(object):
 
@@ -20,7 +20,8 @@ class TrainWrapper(object):
 
         self.loss_fn = get_loss_fn(config['loss'])
         self.score_fn = get_score_fn(config['score'], config['out'])
-        
+        self.rank_fn = get_rank_fn(config['rank'])
+
         self.best_score = 0
 
     def step(self, device):
@@ -51,13 +52,15 @@ class TrainWrapper(object):
 
             vl_y, vl_pred = torch.cat(vl_y, 0), torch.cat(vl_pred, 0)
             res_dict['vl_loss'], res_dict['vl_score'] = self.loss_fn(vl_pred, vl_y).item(), self.score_fn(vl_y, vl_pred)
-            if res_dict['vl_score'] > self.best_score:
-                self.best_score = res_dict['vl_score']
+            rank_score = self.rank_fn(res_dict['tr_loss'], res_dict['vl_loss'], res_dict['vl_score'])
+            if rank_score > self.best_score:
+                self.best_score = rank_score
         else:
             if res_dict['tr_score'] > self.best_score:
                 self.best_score = res_dict['tr_score']
         
         res_dict['best_score'] =  self.best_score
+
         return res_dict
 
 
