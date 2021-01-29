@@ -24,7 +24,7 @@ class GPUTrainable(tune.Trainable):
             torch.cuda.set_device(self.curr_gpu)
         
         self.t = time.time()
-        self.threshold = 0
+        self.threshold = random.uniform(10, 90)
 
         self.train_wrap = TrainWrapper(config)
 
@@ -35,6 +35,7 @@ class GPUTrainable(tune.Trainable):
                 res_dict = self.train_wrap.step('cpu' if self.device == CPU else 'cuda')
                 break
             except RuntimeError as e:
+                print(e)
                 str_e = str(e).lower()
                 if 'cuda' in str_e or 'cudnn' in str_e: 
                     forward_failed = True
@@ -42,7 +43,8 @@ class GPUTrainable(tune.Trainable):
                     raise
             
             if forward_failed:
-                self._switch(CPU)
+                print(f"Failed forward in GPU {self.curr_gpu}. Moved back to CPU.")
+                self.device = self._switch(CPU)
 
         if self.gpu_ids and self.device != GPU:
             self._attempt_switch()
@@ -57,7 +59,7 @@ class GPUTrainable(tune.Trainable):
             # Selecting the GPU with minimum memory usage
             if len(self.gpu_ids) > 1 and random.random() > 0.5:
                 min_memory = min([gpus_usage[i]['mem_used_percent'] for i in self.gpu_ids])
-                gpu_indices = list(filter(lambda el: gpus_usage[el] == min_memory, self.gpu_ids))
+                gpu_indices = list(filter(lambda el: gpus_usage[el]['mem_used_percent'] == min_memory, self.gpu_ids))
                 
                 if self.curr_gpu not in gpu_indices:
                     self.curr_gpu = random.choice(gpu_indices)
@@ -88,7 +90,7 @@ class GPUTrainable(tune.Trainable):
             if not gpu_failed:
                 return GPU
             else:
-                print(f"Failed operation in GPU {self.curr_gpu}. Moved back to CPU.")
+                print(f"Failed switch to GPU {self.curr_gpu}. Moved back to CPU.")
                 self.t = time.time()
                 self.t_threshold = random.uniform(30, 90)
                 return self._switch(CPU) 

@@ -21,11 +21,6 @@ class TrainWrapper(object):
         self.loss_fn = get_loss_fn(config['loss'])
         self.score_fn = get_score_fn(config['score'], config['out'])
         
-        self.decay = 'epochs_decay' in config
-        if self.decay:
-            e_min = config['epochs_decay']*(len(config['tr_idx']) //config['batch_size'])
-            lr_lambda = lambda e: (config['lr']*(e_min-e)/e_min + config['min_lr']*e/e_min)/config['lr'] if e <= e_min else config['min_lr']
-            self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.opt, lr_lambda=lr_lambda)
         self.best_score = 0
 
     def step(self, device):
@@ -39,8 +34,6 @@ class TrainWrapper(object):
             self.opt.zero_grad()
             loss_v.backward()
             self.opt.step()
-            if self.decay:
-                self.lr_scheduler.step()
             tr_y.append(b.y)
             tr_pred.append(out)
         
@@ -62,7 +55,7 @@ class TrainWrapper(object):
                 self.best_score = res_dict['vl_score']
         else:
             if res_dict['tr_score'] > self.best_score:
-                self.best_acc = res_dict['tr_score']
+                self.best_score = res_dict['tr_score']
         
         res_dict['best_score'] =  self.best_score
         return res_dict
@@ -114,7 +107,7 @@ def _wrapper_init_fn(config):
         elif config['gen_mode'] == 'both':
             n_bu, n_td = math.ceil(config['n_gen']/2), math.floor(config['n_gen']/2)
 
-        model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'], config['tree_dropout'])
+        model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
 
     return model, opt, tr_ld, vl_ld

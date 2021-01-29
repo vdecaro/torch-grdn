@@ -35,7 +35,7 @@ def get_config(name):
             'C': tune.randint(2, 8),
             'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(5e-4, 2e-3),
+            'lr': tune.uniform(5e-4, 1e-3),
             'batch_size': 100,
             'loss': 'bce',
             'score': 'accuracy'
@@ -51,7 +51,7 @@ def get_config(name):
             'C': tune.randint(2, 8),
             'gen_mode': tune.choice(['bu', 'td', 'both']),
             'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 8)),
-            'lr': tune.uniform(1e-5, 2e-4),
+            'lr': tune.uniform(5e-4, 1e-3),
             'batch_size': 100,
             'loss': 'bce',
             'score': 'accuracy'
@@ -76,17 +76,17 @@ def get_config(name):
     
 if __name__ == '__main__':
     args = parser.parse_args()
-    dataset, gpus, workers = args.dataset, args.gpus, args.workers 
-    exp_dir = f'GHTMN_exp/{dataset}'
+    ds_name, gpus, workers = args.dataset, args.gpus, args.workers 
+    exp_dir = f'GHTMN_exp/{ds_name}'
     ray.init(num_cpus=workers*2)
 
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
     
-    config = get_config(dataset)
+    config = get_config(ds_name)
     config['gpu_ids'] = gpus
     
-    dataset = TUDataset('.', dataset)
+    dataset = TUDataset('.', ds_name)
     ext_kfold = StratifiedKFold(10, shuffle=True, random_state=get_seed())
     ext_split = list(ext_kfold.split(X=np.zeros(len(dataset)), y=np.array([g.y for g in dataset])))
     for fold_idx, (ds_i, ts_i) in enumerate(ext_split):
@@ -105,28 +105,28 @@ if __name__ == '__main__':
             run_exp(
                 'design',
                 config=config,
-                n_samples=500,
+                n_samples=300,
                 p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 50},
                 p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 400, 'grace': 50, 'reduction': 4},
                 exp_dir=fold_dir,
                 chk_score_attr='vl_score',
-                log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
-                gpus=gpus
+                log_params={'n_gen': '#gen', 'C': 'C', 'depth': 'Depth', 'lr': 'LRate', 'batch_size': 'Batch'},
+                gpus=gpus,
+                gpu_threshold=0.75
             )
 
         if fold_idx in args.test:
-            best_dict = get_best_info(fold_dir)
+            best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')
             t_config = best_dict['config']
-            ts_data = ParallelTUDataset(os.path.join(config['dataset'], f'D{config["depth"]}'),
-                                        dataset, 
+            ts_data = ParallelTUDataset(os.path.join(ds_name, f'D{t_config["depth"]}'),
+                                        ds_name, 
                                         pre_transform=pre_transform(t_config['depth']),
-                                        transform=transform(t_config['dataset'])
-            )
-            dataset.data.x = dataset.data.x.argmax(1).detach()
-            ts_ld = DataLoader(ts_data, 
-                            collate_fn=TreeCollater(t_config['depth']), 
-                            batch_size=512, 
-                            shuffle=False)
+                                        transform=transform(ds_name))
+            ts_data.data.x = dataset.data.x.argmax(1).detach()
+            ts_ld = DataLoader(ts_data[ts_i.tolist()], 
+                               collate_fn=TreeCollater(t_config['depth']), 
+                               batch_size=512, 
+                               shuffle=False)
 
             def _get_model(config):
                 if config['gen_mode'] == 'bu':
@@ -142,9 +142,9 @@ if __name__ == '__main__':
                 trial_dir=best_dict['trial_dir'],
                 ts_ld=ts_ld,
                 model_func=_get_model,
-                loss_fn=torch.nn.BCEWithLogitsLoss(),
+                loss_fn=get_loss_fn('bce'),
                 score_fn=get_score_fn('accuracy', t_config['out']),
-                gpus=gpus
+                gpus=[]
             )
 
             torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))

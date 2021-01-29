@@ -21,13 +21,14 @@ class GraphHTMN(nn.Module):
         self.output = nn.Linear(2*self.contrastive.size(1), out_features)
         
     
-    def forward(self, x, trees, batch):
+    def forward(self, b):
+        x, trees, batch = b.x, b.trees, b.batch 
         to_contrastive = []
         if self.bu is not None:
-            to_contrastive += [self.bu(x, trees, batch)]
+            to_contrastive += [self.bu(x, trees)]
 
         if self.td is not None:
-            to_contrastive += [self.td(x, trees, batch)]
+            to_contrastive += [self.td(x, trees)]
 
         if len(to_contrastive) == 2:
             to_contrastive = torch.cat(to_contrastive, dim=1)

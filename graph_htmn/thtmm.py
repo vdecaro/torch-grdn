@@ -104,7 +104,7 @@ class UpwardDownward(torch.autograd.Function):
         eps[tree['roots']] = beta[tree['roots']]
 
         for l in tree['levels']:
-            # Computing eps_{u, pa(u)}(i, j) = (beta_u(i) / (prior_u(i)) * \sum_{j} (eps_{pa(u)}(j)*A_ij t_beta_{pa(u), u}(j)))
+            # Computing eps_{u, pa(u)}(i, j)
             eps_pa = eps[l[0]].unsqueeze(1)
             beta_ch = beta[l[1]].unsqueeze(2)
             eps_trans_pa = A.unsqueeze(0) * eps_pa
@@ -124,8 +124,9 @@ class UpwardDownward(torch.autograd.Function):
         Pi_grad = eps_roots.sum(0) - tree['roots'].size(0)*Pi
         
         eps_nodes = eps.permute(1, 0, 2)
-        B_grad = scatter(eps_nodes - eps_nodes * B[:, x[tree['inv_map']]],
-                         index=x,
+        x_trees = x[tree['inv_map']]
+        B_grad = scatter(eps_nodes - eps_nodes * B[:, x_trees],
+                         index=x_trees,
                          dim=1,
                          out=B_grad)
 

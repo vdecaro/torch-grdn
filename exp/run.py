@@ -100,6 +100,7 @@ def run_test(trial_dir,
             out = model(b.to(device))
             y.append(b.y)
             pred.append(out)
-
-    return loss_fn(y, pred), score_fn(y, pred)
+    y, pred = torch.cat(y, 0), torch.cat(pred, 0)
+    
+    return loss_fn(pred, y), score_fn(y, pred)
     

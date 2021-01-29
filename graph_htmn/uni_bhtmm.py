@@ -88,7 +88,7 @@ class ReversedUpwardDownward(torch.autograd.Function):
 
         # Downward recursion: init
         eps = torch.zeros((tree['dim'], C, n_gen), device=device)
-        out_deg = torch.zeros(tree['dim'])
+        out_deg = torch.zeros(tree['dim'], device=device)
 
         # Downward recursion: base case
         eps[tree['roots']] = beta[tree['roots']]
@@ -96,12 +96,12 @@ class ReversedUpwardDownward(torch.autograd.Function):
         # Downward recursion
         for l in tree['levels']:
             # Computing eps_{u, ch_i(u)}(i, j)
-            out_deg = scatter(torch.ones_like(l[1]), dim=0, index=l[0], out=out_deg)
+            out_deg = scatter(torch.ones_like(l[1], dtype=out_deg.dtype, device=device), dim=0, index=l[0], out=out_deg)
             t_beta_pa = t_beta[l[0]].unsqueeze(2)
             eps_pa = eps[l[0]].unsqueeze(2)
             beta_ch = beta[l[1]].unsqueeze(1)
 
-            eps_joint = (eps_pa * A.unsqueeze(0) * beta_ch) / (t_beta_pa * out_deg[l[0]])
+            eps_joint = (eps_pa * A.unsqueeze(0) * beta_ch) / (t_beta_pa * out_deg[l[0]].view(-1, 1, 1, 1))
             
             eps_ch = eps_joint.sum(1)
             eps[l[1]] = eps_joint.sum(1)
@@ -111,8 +111,9 @@ class ReversedUpwardDownward(torch.autograd.Function):
         Pi_grad = eps_leaves.sum(0) - tree['leaves'].size(0)*Pi
         
         eps_nodes = eps.permute(1, 0, 2)
-        B_grad = scatter(eps_nodes - eps_nodes * B[:, x[tree['inv_map']]],
-                         index=x,
+        x_trees = x[tree['inv_map']]
+        B_grad = scatter(eps_nodes - eps_nodes * B[:, x_trees],
+                         index=x_trees,
                          dim=1,
                          out=B_grad)
 
