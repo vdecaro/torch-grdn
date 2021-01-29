@@ -99,13 +99,13 @@ if __name__ == '__main__':
                 p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 30},
                 p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 1300, 'grace': 30, 'reduction': 2},
                 exp_dir=fold_dir,
-                chk_score_attr='vl_score',
+                chk_score_attr='rank_score',
                 log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
                 gpus=gpus,
                 gpu_threshold=0.9
             )
             ray.shutdown()
-            
+
         if fold_idx in args.test:
             best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')
             t_config = best_dict['config']

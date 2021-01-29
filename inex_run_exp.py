@@ -82,7 +82,7 @@ if __name__ == '__main__':
             p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 50},
             p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 400, 'grace': 50, 'reduction': 2},
             exp_dir=exp_dir,
-            chk_score_attr='vl_score',
+            chk_score_attr='rank_score',
             log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
             gpus=gpus,
             gpu_threshold=0.8

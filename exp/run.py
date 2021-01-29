@@ -48,11 +48,11 @@ def run_exp(design_or_test,
                                     'tr_score': 'TR-Score',
                                     'vl_loss': 'VL-Loss', 
                                     'vl_score': 'VL-Score', 
-                                    'best_score': 'Top Score',
+                                    'rank_score': 'Rank Score',
                                 },
                                 parameter_columns=log_params,
                                 infer_limit=3,
-                                metric='best_score',
+                                metric='rank_score',
                                 mode='max')
     return tune.run(
         GPUTrainable,
