@@ -16,11 +16,8 @@ class TrainWrapper(object):
 
     def __init__(self, config):
 
-        self.model, self.opt, self.tr_ld, self.vl_ld = _wrapper_init_fn(config)
-
-        self.loss_fn = get_loss_fn(config['loss'])
-        self.score_fn = get_score_fn(config['score'], config['out'])
-        self.rank_fn = get_rank_fn(config['rank'])
+        self.model, self.opt, self.tr_ld, self.vl_ld, self.loss_fn, self.score_fn, self.rank_fn = _wrapper_init_fn(config)
+        self.best_score = 0
 
     def step(self, device):
         res_dict = {}
@@ -50,9 +47,10 @@ class TrainWrapper(object):
 
             vl_y, vl_pred = torch.cat(vl_y, 0), torch.cat(vl_pred, 0)
             res_dict['vl_loss'], res_dict['vl_score'] = self.loss_fn(vl_pred, vl_y).item(), self.score_fn(vl_y, vl_pred)
-            res_dict['rank_score'] = self.rank_fn(res_dict['tr_loss'], res_dict['vl_loss'], res_dict['vl_score'])
+            res_dict['rank_score'] = max(self.rank_fn(res_dict['vl_score'], res_dict['tr_score'], res_dict['vl_score']), self.best_score)
         else:
-            res_dict['rank_score'] = res_dict['tr_score']
+            res_dict['rank_score'] = max(res_dict['tr_score'], self.best_score)
+        self.best_score = res_dict['rank_score']
         
         return res_dict
 
@@ -74,9 +72,9 @@ def _wrapper_init_fn(config):
         else:
             vl_ld = None
 
-        model = HTMN(config['out'], math.ceil(config['n_gen']/2), math.floor(config['n_gen']/2), config['C'], config['L'], config['M'])
+        model = HTMN(config['out'], math.floor(config['n_gen']/2), math.floor(config['n_gen']/2), config['C'], config['L'], config['M'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
-        
+            
     if config['model'] == 'ghtmn':
         tr_idx, vl_idx = config['tr_idx'], config['vl_idx']
         dataset = ParallelTUDataset(
@@ -105,5 +103,9 @@ def _wrapper_init_fn(config):
 
         model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
+        
+    loss_fn = get_loss_fn(config['loss'])
+    score_fn = get_score_fn(config['score'], config['out'])
+    rank_fn = get_rank_fn(config['rank'])
 
-    return model, opt, tr_ld, vl_ld
+    return model, opt, tr_ld, vl_ld, loss_fn, score_fn, rank_fn

@@ -2,6 +2,8 @@ import argparse
 import os
 import math
 from random import randint, randrange, choice
+from collections import defaultdict
+import json
 
 import numpy as np
 import torch
@@ -28,34 +30,34 @@ def get_config(name):
         return {
             'model': 'htmn',
             'dataset': 'cystic',
-            'holdout': 0.4,
             'out': 1,
             'M': 29,
             'L': 3,
             'C': tune.grid_search([2, 4, 8]),
-            'n_gen': tune.grid_search(list(range(10, 31, 5))),
-            'lr': tune.grid_search([7.5e-4, 1e-3, 2.5e-3]),
+            'n_gen': tune.grid_search(list(range(10, 31, 10))),
+            'lr': 1e-3,
+            #'l2': tune.grid_search([1e-2]),
             'batch_size': tune.grid_search([4, 8, 16, 32]),
             'loss': 'bce',
             'score': 'roc-auc',
-            'rank': 'weighted'
+            'rank': 'raw'
         }
 
     if name == 'leukemia':
         return {
             'model': 'htmn',
             'dataset': 'leukemia',
-            'holdout': 0.4,
             'out': 1,
             'M': 57,
             'L': 3,
             'C': tune.grid_search([2, 4, 8]),
-            'n_gen': tune.grid_search(list(range(10, 31, 5))),
-            'lr': tune.grid_search([7.5e-4, 1e-3, 2.5e-3]),
-            'batch_size': tune.grid_search([8, 16, 32, 48, 64]),
+            'n_gen': tune.grid_search(list(range(10, 31, 10))),
+            'lr': 1e-3,
+            #'l2': 0.01,
+            'batch_size': tune.grid_search([8, 16, 32, 48]),
             'loss': 'bce',
             'score': 'roc-auc',
-            'rank': 'weighted'
+            'rank': 'raw'
         }
 
     
@@ -63,6 +65,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     ds_name, gpus, workers = args.dataset, args.gpus, args.workers 
     exp_dir = f'HTMN_exp/{ds_name}'
+    ray.init(num_cpus=workers)
     
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -78,56 +81,58 @@ if __name__ == '__main__':
             folds.append((ds_idx, ts_idx))
 
     dataset = TreeDataset('.', name=ds_name)
-    for fold_idx, (ds_idx, ts_idx) in enumerate(folds):
-        fold_dir = os.path.join(exp_dir, f'fold_{fold_idx}')
+    zeros, ones = 0, 0
+    for d in dataset:
+        if d.y[0] == 0:
+            zeros += 1
+        else:
+            ones += 1
+    print(zeros, ones)
+    for fold_idx, (ds_i, ts_i) in enumerate(folds):
         if fold_idx in args.design:
-            print(f"Design {fold_idx}")
-            if not os.path.exists(fold_dir):
-                os.makedirs(fold_dir)
-            ds_data = TreeDataset(data=[dataset[i] for i in ds_idx])
-            tr_idx, vl_idx = train_test_split(np.array(ds_idx), 
-                                              test_size=config['holdout'],  
-                                              stratify=np.array([t.y for t in ds_data]), 
-                                              shuffle=True, 
-                                              random_state=get_seed())
-            config['tr_idx'], config['vl_idx'] = tr_idx.tolist(), vl_idx.tolist()
-            ray.init(num_cpus=workers*2)
+            ds_data = TreeDataset(data=[dataset[curr] for curr in ds_i])
+            tr_i, vl_i = train_test_split(np.array(ds_i), 
+                                          test_size=0.33,  
+                                          stratify=np.array([g.y for g in ds_data]), 
+                                          shuffle=True, 
+                                          random_state=get_seed())
+            config['tr_idx'], config['vl_idx'] = tr_i.tolist(), vl_i.tolist()
+            labs = [dataset[curr].y[0] for curr in vl_i.tolist()]
+            print(labs)
             run_exp(
-                'design',
+                f'fold_{fold_idx}',
                 config=config,
                 n_samples=1,
-                p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 30},
-                p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 1300, 'grace': 30, 'reduction': 2},
-                exp_dir=fold_dir,
-                chk_score_attr='rank_score',
-                log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'batch_size': 'Batch'},
+                p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 20},
+                p_scheduler=None,
+                exp_dir=exp_dir,
+                chk_score_attr='min-vl_loss',
+                log_params={'n_gen': '#gen', 'C': 'C', 'lr': 'LRate', 'l2': 'L2', 'batch_size': 'Batch'},
                 gpus=gpus,
                 gpu_threshold=0.9
             )
-            ray.shutdown()
-
+            
         if fold_idx in args.test:
-            best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')
+            best_dict = get_best_info(os.path.join(exp_dir, f'fold_{fold_idx}'), mode='manual')
             t_config = best_dict['config']
-            ts_data = TreeDataset(data=[dataset[i] for i in ts_idx])
-            ts_ld = DataLoader(ts_data, 
+            
+            ts_ld = DataLoader(TreeDataset(data=[dataset[curr] for curr in ts_i]), 
                                collate_fn=trees_collate_fn, 
                                batch_size=512, 
                                shuffle=False)
+
             best_dict['ts_loss'], best_dict['ts_score'] = run_test(
                 trial_dir=best_dict['trial_dir'],
                 ts_ld=ts_ld,
                 model_func=lambda config: HTMN(config['out'], 
-                                            math.ceil(config['n_gen']/2), 
-                                            math.floor(config['n_gen']/2), 
-                                            config['C'], 
-                                            config['L'], 
-                                            config['M']),
-                loss_fn=get_loss_fn('bce'),
+                                           math.ceil(config['n_gen']/2), 
+                                           math.floor(config['n_gen']/2), 
+                                           config['C'], 
+                                           config['L'], 
+                                           config['M']),
+                loss_fn=get_loss_fn('bce', None),
                 score_fn=get_score_fn('roc-auc', t_config['out']),
-                gpus=gpus
+                gpus=[]
             )
-            del t_config['tr_idx'], t_config['vl_idx']
             print(best_dict)
-
-            torch.save(best_dict, os.path.join(fold_dir, 'test_res.pkl'))
+            torch.save(best_dict, os.path.join(exp_dir, f'fold_{fold_idx}', 'test_res.pkl'))

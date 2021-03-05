@@ -12,20 +12,17 @@ class HTMN(nn.Module):
         self.bu = BottomUpHTMM(n_bu, C, L, M) if n_bu is not None and n_bu > 0 else None
         self.td = PositionalTopDownHTMM(n_td, C, L, M) if n_td is not None and n_td > 0 else None
         
-        self.contrastive = nn.Parameter(_contrastive_matrix(n_bu + n_td), requires_grad=False)
-        self.output = nn.Linear(self.contrastive.size(1), out)
+        self.contrastive = nn.Parameter(_contrastive_matrix(n_bu), requires_grad=False)
+        self.output = nn.Linear(self.contrastive.size(1)*2, out, bias=False)
     
     def forward(self, tree):
-        log_likelihood = []
+        c_neurons = []
         if self.bu is not None:
-            log_likelihood.append(self.bu(tree))
+            c_neurons.append(self.bu(tree) @ self.contrastive)
         if self.td is not None:
-            log_likelihood.append(self.td(tree))
+            c_neurons.append(self.td(tree) @ self.contrastive)
         
-        to_contrastive = torch.cat(log_likelihood, 1)
-        
-        c_neurons = (to_contrastive @ self.contrastive).tanh()
-        output = self.output(c_neurons)
+        output = self.output(torch.cat(c_neurons, 1).tanh())
 
         return output
 

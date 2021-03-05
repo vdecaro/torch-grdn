@@ -41,7 +41,7 @@ def run_exp(design_or_test,
     else:
         scheduler = None
     
-    resources = {'cpu': 2, 'gpu': 0.0001}
+    resources = {'cpu': 1, 'gpu': 0.0001}
     reporter = tune.CLIReporter(metric_columns={
                                     'training_iteration': '#Iter',
                                     'tr_loss': 'TR-Loss',
@@ -101,6 +101,5 @@ def run_test(trial_dir,
             y.append(b.y)
             pred.append(out)
     y, pred = torch.cat(y, 0), torch.cat(pred, 0)
-    
     return loss_fn(pred, y), score_fn(y, pred)
     

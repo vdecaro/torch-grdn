@@ -34,6 +34,6 @@ class TrialNoImprovementStopper(Stopper):
             self._trial_patience[trial_id] += 1
         
         return self._trial_patience[trial_id] >= self._patience_threshold
-
+    
     def stop_all(self):
         return False

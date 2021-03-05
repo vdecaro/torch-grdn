@@ -18,7 +18,7 @@ def get_loss_fn(loss_type):
     return Loss_fn(loss_type)
 
 class Loss_fn(object):
-    def __init__(self, loss_type):
+    def __init__(self, loss_type, pos_weights=None):
         self.loss_type = loss_type
         if loss_type == 'bce':
             self.loss = torch.nn.BCEWithLogitsLoss()
@@ -43,7 +43,7 @@ def get_score_fn(score_type, outs):
             
     if score_type == 'roc-auc':
         def _score_fn(y, pred):
-            return roc_auc_score(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
+            return roc_auc_score(y.cpu().detach().numpy(), pred.sigmoid().cpu().detach().numpy())
 
     return _score_fn
 
@@ -57,8 +57,9 @@ def get_rank_fn(rank_type):
     if rank_type == 'weighted':
 
         def _rank_fn(tr_loss, vl_loss, vl_score):
-            return min((tr_loss/vl_loss)**2, 1)*vl_score
-
+            return min(1, (vl_loss/tr_loss)**2)*vl_score
+    
+    return _rank_fn
 
 def get_best_info(exp_dir, metrics=['vl_score', 'vl_loss'], ascending=[False, True], mode='auto'):
     if mode == 'auto':
@@ -111,7 +112,7 @@ def get_best_info(exp_dir, metrics=['vl_score', 'vl_loss'], ascending=[False, Tr
                 for i, d in enumerate(f):
                     if i+1 == min_:
                         curr = json.loads(d)
-                        if best_dict['vl_score'] < curr['vl_score'] or (best_dict['vl_score'] == curr['vl_score'] and best_dict['vl_loss'] > curr['vl_loss']):
+                        if best_dict['vl_loss'] > curr['vl_loss']: #or (best_dict['vl_score'] == curr['vl_score'] and best_dict['vl_loss'] > curr['vl_loss']):
                             with open(os.path.join(trial_dir, 'params.json')) as f:
                                 config = json.load(f)
                             best_dict = {

@@ -117,7 +117,7 @@ if __name__ == '__main__':
                 gpus=gpus,
                 gpu_threshold=0.75
             )
-            ray.shutdown()
+            ray.shutdown(True)
 
         if fold_idx in args.test:
             best_dict = get_best_info(os.path.join(fold_dir, 'design'), mode='manual')

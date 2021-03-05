@@ -20,7 +20,7 @@ from htmn.htmn import HTMN
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset')
 parser.add_argument('--gpus', '-g', type=int, nargs='*', default=[])
-parser.add_argument('--workers', '-w', type=int, default=36)
+parser.add_argument('--workers', '-w', type=int, default=40)
 parser.add_argument('--design', '-d', action='store_true')
 parser.add_argument('--retrain', '-r', action='store_true')
 parser.add_argument('--test', '-t', default='design')
@@ -32,10 +32,10 @@ def get_config(name):
             'out': 11,
             'M': 366,
             'L': 32,
-            'C': tune.randint(7, 14),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(5, 9)),
-            'lr': tune.uniform(3e-4, 3e-3),
-            'batch_size': tune.choice([32, 64, 128, 192, 256]),
+            'C': tune.grid_search(list(range(6, 11))),
+            'n_gen': tune.grid_search(list(range(45, 91, 5))),
+            'lr': 1e-3,
+            'batch_size': tune.grid_search([64, 128, 192]),
             'loss': 'ce',
             'score': 'accuracy',
             'rank': 'raw'
@@ -47,9 +47,9 @@ def get_config(name):
             'out': 18,
             'M': 65,
             'L': 66,
-            'C': tune.randint(6, 14),
-            'n_gen': tune.sample_from(lambda spec: spec.config.C * randint(6, 9)),
-            'lr': tune.uniform(3e-4, 3e-3),
+            'C': tune.randint(6, 11),
+            'n_gen': tune.grid_search(list(range(20, 91, 5))),
+            'lr': 1e-3,
             'batch_size': tune.choice([64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy',
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     ds_name, gpus, workers = args.dataset, args.gpus, args.workers
     exp_dir = f'HTMN_exp/inex{ds_name}'
-    ray.init(num_cpus=workers*2)
+    ray.init(num_cpus=workers)
     
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         run_exp(
             'design',
             config=config,
-            n_samples=300,
+            n_samples=1,
             p_early={'metric': 'vl_loss', 'mode': 'min', 'patience': 50},
             p_scheduler={'metric': 'vl_loss', 'mode': 'min', 'max_t': 400, 'grace': 50, 'reduction': 2},
             exp_dir=exp_dir,
@@ -132,7 +132,7 @@ if __name__ == '__main__':
                     trial_dir=trial_dir,
                     ts_ld=ts_ld,
                     model_func=lambda config: HTMN(config['out'], 
-                                                math.ceil(config['n_gen']/2), 
+                                                math.floor(config['n_gen']/2), 
                                                 math.floor(config['n_gen']/2), 
                                                 config['C'], 
                                                 config['L'], 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
             trial_dir=best_dict['trial_dir'],
             ts_ld=ts_ld,
             model_func=lambda config: HTMN(config['out'], 
-                                           math.ceil(config['n_gen']/2), 
+                                           math.floor(config['n_gen']/2), 
                                            math.floor(config['n_gen']/2), 
                                            config['C'], 
                                            config['L'], 
