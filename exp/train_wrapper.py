@@ -3,13 +3,6 @@ import math
 from ray import tune
 import torch
 
-from data.tree.utils import TreeDataset, trees_collate_fn
-from data.graph.g2t import ParallelTUDataset, TreeCollater, pre_transform, transform
-from torch.utils.data import DataLoader
-
-from graph_htmn.graph_htmn import GraphHTMN
-from htmn.htmn import HTMN
-
 from exp.utils import get_loss_fn, get_score_fn, get_rank_fn
 
 class TrainWrapper(object):
@@ -57,6 +50,10 @@ class TrainWrapper(object):
 
 def _wrapper_init_fn(config):
     if config['model'] == 'htmn':
+        from data.tree.utils import TreeDataset, trees_collate_fn
+        from torch.utils.data import DataLoader   
+        from htmn.htmn import HTMN
+
         dataset = TreeDataset(config['wdir'], config['dataset'])
         tr_ld = DataLoader(TreeDataset(data=[dataset[i] for i in config['tr_idx']]), 
                                 batch_size=config['batch_size'], 
@@ -76,6 +73,10 @@ def _wrapper_init_fn(config):
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
             
     if config['model'] == 'ghtmn':
+        from data.graph.g2t import ParallelTUDataset, TreeCollater, pre_transform, transform
+        from torch.utils.data import DataLoader
+        from graph_htmn.graph_htmn import GraphHTMN
+
         tr_idx, vl_idx = config['tr_idx'], config['vl_idx']
         dataset = ParallelTUDataset(
             os.path.join(config['wdir'], config['dataset'], f'D{config["depth"]}'),
@@ -103,7 +104,29 @@ def _wrapper_init_fn(config):
 
         model = GraphHTMN(config['out'], n_bu, n_td, config['C'], config['symbols'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
-        
+    
+    if config['model'] == 'cgmn':
+        from torch_geometric.datasets import TUDataset
+        from torch_geometric.data import DataLoader
+        from cgmn.cgmn import CGMN
+
+        dataset = TUDataset(config['wdir'], config['dataset'])
+        tr_ld = DataLoader(dataset[config['tr_idx']],
+                           batch_size=config['batch_size'], 
+                           shuffle=True,
+                           drop_last=len(config['tr_idx']) % config['batch_size'] == 1)
+        if config['vl_idx'] is not None:
+            vl_ld = DataLoader(dataset[config['vl_idx']], 
+                               batch_size=config['batch_size'], 
+                               shuffle=False,
+                               drop_last=len(config['vl_idx']) % config['batch_size'] == 1)
+        else:
+            vl_ld = None
+
+        model = CGMN(config['out'], config['n_gen'], config['C'], config['M'], config['depth'])
+        opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
+
+
     loss_fn = get_loss_fn(config['loss'])
     score_fn = get_score_fn(config['score'], config['out'])
     rank_fn = get_rank_fn(config['rank'])
