@@ -18,7 +18,7 @@ class TrainWrapper(object):
         self.model.train()
         tr_y, tr_pred = [], []
         for _, b in enumerate(self.tr_ld):
-            out = self.model(b.cuda() if 'cuda' in device else b)
+            out = self.model(b.to(device))
             loss_v = self.loss_fn(out, b.y)
             self.opt.zero_grad()
             loss_v.backward()
@@ -34,7 +34,7 @@ class TrainWrapper(object):
             vl_y, vl_pred = [], []
             for _, b in enumerate(self.vl_ld):
                 with torch.no_grad():
-                    out = self.model(b.cuda() if 'cuda' in device else b)
+                    out = self.model(b.to(device))
                 vl_y.append(b.y)
                 vl_pred.append(out)
 
@@ -109,8 +109,13 @@ def _wrapper_init_fn(config):
         from torch_geometric.datasets import TUDataset
         from torch_geometric.data import DataLoader
         from cgmn.cgmn import CGMN
-
-        dataset = TUDataset(config['wdir'], config['dataset'])
+        
+        def tf_func(data):
+            data.y = data.y.unsqueeze(1)
+            return data
+        
+        dataset = TUDataset(config['wdir'], config['dataset'], transform=tf_func)
+        dataset.data.x = dataset.data.x.argmax(1).detach()
         tr_ld = DataLoader(dataset[config['tr_idx']],
                            batch_size=config['batch_size'], 
                            shuffle=True,
@@ -123,7 +128,7 @@ def _wrapper_init_fn(config):
         else:
             vl_ld = None
 
-        model = CGMN(config['out'], config['n_gen'], config['C'], config['M'], config['depth'])
+        model = CGMN(config['out'], config['n_gen'], config['C'], config['symbols'], config['depth'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
 
 

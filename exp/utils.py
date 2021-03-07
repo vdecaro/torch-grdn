@@ -112,7 +112,7 @@ def get_best_info(exp_dir, metrics=['vl_score', 'vl_loss'], ascending=[False, Tr
                 for i, d in enumerate(f):
                     if i+1 == min_:
                         curr = json.loads(d)
-                        if best_dict['vl_loss'] > curr['vl_loss']: #or (best_dict['vl_score'] == curr['vl_score'] and best_dict['vl_loss'] > curr['vl_loss']):
+                        if best_dict['vl_score'] < curr['vl_score']: #or (best_dict['vl_score'] == curr['vl_score'] and best_dict['vl_loss'] > curr['vl_loss']):
                             with open(os.path.join(trial_dir, 'params.json')) as f:
                                 config = json.load(f)
                             best_dict = {

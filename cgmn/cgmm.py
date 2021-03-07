@@ -13,10 +13,10 @@ class CGMM(nn.Module):
         self.C = C
         self.M = M
 
-        layers = [CGMMLayer_0(n_gen, C, M)] + [CGMMLayer(n_gen, C, M) for _ in n_layers-1]
+        layers = [CGMMLayer_0(n_gen, C, M)] + [CGMMLayer(n_gen, C, M) for _ in range(n_layers-1)]
         self.layers = nn.ModuleList(layers)
 
-    def forward(self, x, edge_index, pos=None):
+    def forward(self, x, edge_index):
         log_likelihood = []
         h_prev = None
 
@@ -24,10 +24,7 @@ class CGMM(nn.Module):
             if h_prev is None:
                 l_log_likelihood, h_prev = l(x)
             else:
-                if pos is None:
-                    l_log_likelihood, h_prev = l(x, h_prev, edge_index)
-                else:
-                    l_log_likelihood, h_prev = l(x, h_prev, edge_index, pos)
+                l_log_likelihood, h_prev = l(x, h_prev, edge_index)
 
             log_likelihood.append(l_log_likelihood)
 
@@ -44,8 +41,8 @@ class CGMMLayer_0(nn.Module):
         self.C = C
         self.M = M
 
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
-        self.Pi = nn.Parameter(nn.init.normal_(torch.empty((C, n_gen)), std=2.5))
+        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
+        self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
         self.frozen = False
     
     def forward(self, x):
@@ -63,8 +60,7 @@ class FirstLayerF(torch.autograd.Function):
             Pi.append(F.softmax(lambda_Pi[:, j], dim=0))
 
         B, Pi = torch.stack(B, dim=-1), torch.stack(Pi, dim=-1)
-
-        unnorm_posterior = B[:, x].permute(1, 0, 2) * Pi.unsqueeze(0)
+        unnorm_posterior = B[:, x].permute(1, 0, 2) * Pi.unsqueeze(0) + 1e-12
         posterior = (unnorm_posterior / (unnorm_posterior.sum(1, keepdim=True)))
 
         ctx.saved_input = x
@@ -97,8 +93,8 @@ class CGMMLayer(nn.Module):
         self.C = C
         self.M = M
         
-        self.Q_neigh = nn.Parameter(nn.init.normal_(torch.empty((C, C, n_gen)), std=2.5))
-        self.B = nn.Parameter(nn.init.normal_(torch.empty((C, M, n_gen)), std=2.5))
+        self.Q_neigh = nn.Parameter(nn.init.uniform_(torch.empty((C, C, n_gen))))
+        self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
     
     def forward(self, x, prev_h, edge_index):
         return InwardOutward.apply(x, prev_h, edge_index, self.Q_neigh, self.B)
@@ -121,7 +117,7 @@ class InwardOutward(torch.autograd.Function):
 
         B_nodes = B[:, x].permute(1, 0, 2).unsqueeze(2)   # nodes x C x 1 x n_gen
         prev_h_neigh_aggr = prev_h_neigh_aggr.unsqueeze(1) # nodes x 1 x C x n_gen
-        unnorm_posterior = B_nodes * (Q * prev_h_neigh_aggr)
+        unnorm_posterior = B_nodes * (Q * prev_h_neigh_aggr) + 1e-12
 
         posterior_il = (unnorm_posterior / unnorm_posterior.sum([1, 2], keepdim=True)) # nodes x C x C x n_gen
         posterior_i = posterior_il.sum(2)

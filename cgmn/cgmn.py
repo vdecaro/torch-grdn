@@ -12,16 +12,20 @@ class CGMN(nn.Module):
         self.cgmm = CGMM(n_gen, C, M, n_layers)
         self.contrastive = nn.Parameter(_contrastive_matrix(self.cgmm.n_gen), requires_grad=False)
         self.node_features = self.contrastive.size(1)
+        self.h0 = nn.Parameter(nn.init.uniform_(torch.empty((1, 1, self.contrastive.size(1)))))
+        self.gru = nn.GRU(self.contrastive.size(1), self.contrastive.size(1), batch_first=True)
         self.output = nn.Linear(self.contrastive.size(1)*n_layers, out_features, bias=False)
    
-    def forward(self, x, edge_index, batch, pos=None):
-        log_likelihood = self.cgmm(x, edge_index, pos)
+    def forward(self, data):
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+        log_likelihood = self.cgmm(x, edge_index)
         log_likelihood = scatter(log_likelihood, batch, dim=0)
 
-        c_neurons = (log_likelihood @ self.contrastive).tanh().flatten(start_dim=-2)
+        c_neurons = (log_likelihood @ self.contrastive).tanh()
+        to_out, _ = self.gru(c_neurons, self.h0.repeat(1, batch.max()+1, 1))
 
-        out = self.output[-1](c_neurons)
-
+        out = self.output(to_out.flatten(start_dim=-2))
+        
         return out
 
 def _contrastive_matrix(N_GEN):

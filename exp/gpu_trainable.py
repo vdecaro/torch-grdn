@@ -32,7 +32,7 @@ class GPUTrainable(tune.Trainable):
         while True:
             forward_failed = False
             try:
-                res_dict = self.train_wrap.step('cpu' if self.device == CPU else 'cuda')
+                res_dict = self.train_wrap.step('cpu' if self.device == CPU else f'cuda:{self.curr_gpu}')
                 break
             except RuntimeError as e:
                 print(e)
