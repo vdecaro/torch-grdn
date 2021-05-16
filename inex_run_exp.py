@@ -29,6 +29,7 @@ def get_config(name):
     if name == 'inex2005':
         return {
             'model': 'htmn',
+            'mode': 'hybrid',
             'out': 11,
             'M': 366,
             'L': 32,
@@ -44,6 +45,7 @@ def get_config(name):
     if name == 'inex2006':
         return {
             'model': 'htmn',
+            'mode': 'hybrid',
             'out': 18,
             'M': 65,
             'L': 66,
@@ -93,10 +95,10 @@ if __name__ == '__main__':
         best_dict = get_best_info(os.path.join(exp_dir, 'design'), mode='manual')
         t_config = best_dict['config']
         tr_idx, vl_idx = train_test_split(np.arange(len(dataset)), 
-                                      test_size=0.2,  
-                                      stratify=np.array([t.y for t in dataset]), 
-                                      shuffle=True, 
-                                      random_state=get_seed())
+                                          test_size=0.2,  
+                                          stratify=np.array([t.y for t in dataset]), 
+                                          shuffle=True, 
+                                          random_state=get_seed())
         config['tr_idx'], config['vl_idx'] = tr_idx.tolist(), vl_idx.tolist()
         t_config['out'] = tune.choice([t_config['out']])
         run_exp(
@@ -132,11 +134,11 @@ if __name__ == '__main__':
                     trial_dir=trial_dir,
                     ts_ld=ts_ld,
                     model_func=lambda config: HTMN(config['out'], 
-                                                math.floor(config['n_gen']/2), 
-                                                math.floor(config['n_gen']/2), 
-                                                config['C'], 
-                                                config['L'], 
-                                                config['M']),
+                                                   config['mode'], 
+                                                   config['n_gen'], 
+                                                   config['C'], 
+                                                   config['L'], 
+                                                   config['M']),
                     loss_fn=get_loss_fn('ce'),
                     score_fn=get_score_fn('accuracy', t_config['out']),
                     gpus=gpus
@@ -157,8 +159,8 @@ if __name__ == '__main__':
             trial_dir=best_dict['trial_dir'],
             ts_ld=ts_ld,
             model_func=lambda config: HTMN(config['out'], 
-                                           math.floor(config['n_gen']/2), 
-                                           math.floor(config['n_gen']/2), 
+                                           config['mode'], 
+                                           config['n_gen'], 
                                            config['C'], 
                                            config['L'], 
                                            config['M']),

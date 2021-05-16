@@ -69,7 +69,7 @@ def _wrapper_init_fn(config):
         else:
             vl_ld = None
 
-        model = HTMN(config['out'], math.floor(config['n_gen']/2), math.floor(config['n_gen']/2), config['C'], config['L'], config['M'])
+        model = HTMN(config['out'], config['mode'], config['n_gen'], config['C'], config['L'], config['M'])
         opt = torch.optim.Adam(model.parameters(), lr=config['lr'])
             
     if config['model'] == 'ghtmn':
