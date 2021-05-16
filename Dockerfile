@@ -1,8 +1,13 @@
 FROM nvidia/cuda:10.1-devel-ubuntu18.04
 
 # All users can use /home/user as their home directory.
+RUN mkdir /home/user
+
 ENV HOME=/home/user
 RUN chmod 777 /home/user
+
+RUN apt-get update
+RUN apt-get install -y curl
 
 # Install Miniconda.
 RUN curl -so ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
