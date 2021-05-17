@@ -16,7 +16,7 @@ class HiddenTreeMarkovModel(nn.Module):
         if self.mode == 'bu':
             self.A = nn.Parameter(nn.init.uniform_(torch.empty((C, C, L, n_gen))))
             self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
-            self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, L, n_gen))))
+            self.Pi = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
             self.SP = nn.Parameter(nn.init.uniform_(torch.empty((L, n_gen))))
 
         elif self.mode == 'td':
@@ -29,7 +29,7 @@ class HiddenTreeMarkovModel(nn.Module):
             self.B = nn.Parameter(nn.init.uniform_(torch.empty((C, M, n_gen))))
             self.SP = nn.Parameter(nn.init.uniform_(torch.empty((L, n_gen))))
             
-            self.Pi_bu = nn.Parameter(nn.init.uniform_(torch.empty((C, L, n_gen))))
+            self.Pi_bu = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
             self.Pi_td = nn.Parameter(nn.init.uniform_(torch.empty((C, n_gen))))
 
     def forward(self, tree):
@@ -67,10 +67,8 @@ class ReversedUpwardDownward(torch.autograd.Function):
         log_likelihood = torch.zeros((tree['dim'], n_gen), device=device)
 
         # Upward recursion: base case
-        pos_leaves = tree['pos'][tree['leaves']]
-        Pi_leaves = Pi[:, pos_leaves]
         B_leaves = B[:, tree['x'][tree['leaves']]]
-        beta_leaves = (Pi_leaves * B_leaves).permute(1, 0, 2)
+        beta_leaves = (Pi.unsqueeze(1) * B_leaves).permute(1, 0, 2)
         nu = beta_leaves.sum(dim=1)
         
         beta[tree['leaves']] = beta_leaves / nu.unsqueeze(1)
@@ -142,18 +140,16 @@ class ReversedUpwardDownward(torch.autograd.Function):
                              dim=2, 
                              out=A_grad)
         
-        pos_leaves = tree['pos'][tree['leaves']]
         eps_leaves = eps[tree['leaves']]
-        pi_leaves = Pi[:, pos_leaves]
-        Pi_grad = scatter(eps_leaves.permute(1, 0, 2) - pi_leaves,
-                          index=pos_leaves,
-                          dim=1,
-                          out=Pi_grad)
+        Pi_grad = (eps_leaves - Pi.unsqueeze(0)).sum(0)
         
-        B_grad = scatter(eps.permute(1, 0, 2) - eps.permute(1, 0, 2) * B[:, tree['x']],
+        eps_B = eps.permute(1, 0, 2)
+        B_grad = scatter(torch.ones_like(eps_B),
                          index=tree['x'],
                          dim=1,
                          out=B_grad)
+        B_grad -= B*tree['dim']
+        B_grad *= eps_B.sum(1, keepdim=True)
 
         return None, A_grad, B_grad, Pi_grad, SP_grad
 
@@ -267,10 +263,13 @@ class UpwardDownward(torch.autograd.Function):
                              dim=2, 
                              out=A_grad)
 
-        B_grad = scatter(eps.permute(1, 0, 2) - eps.permute(1, 0, 2) * B[:, tree['x']],
+        eps_B = eps.permute(1, 0, 2)
+        B_grad = scatter(torch.ones_like(eps_B),
                          index=tree['x'],
                          dim=1,
                          out=B_grad)
+        B_grad -= B*tree['dim']
+        B_grad *= eps_B.sum(1, keepdim=True)
         Pi_grad = eps_roots.sum(0) - roots.size(0) * Pi
 
         return None, A_grad, B_grad, Pi_grad
