@@ -8,6 +8,7 @@ RUN chmod 777 /home/user
 
 RUN apt-get update
 RUN apt-get install -y curl
+RUN apt-get install -y git
 
 # Install Miniconda.
 RUN curl -so ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
