@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.1-devel-ubuntu18.04
+FROM nvidia/cuda:11.3.0-devel-ubuntu18.04
 
 # All users can use /home/user as their home directory.
 RUN mkdir /home/user
@@ -28,13 +28,13 @@ ENV PATH=$CONDA_PREFIX/bin:$PATH
 # Install JupyterLab.
 RUN conda install -c conda-forge jupyterlab
 
-ENV TORCH=1.7.0
-ENV CUDA=cu101
+ENV TORCH=1.8.0
+ENV CUDA=cu111
 
-RUN pip install -U ray \
+RUN pip install -U "ray[default]" \
  && pip install -U "ray[tune]" \
  && pip install -U nvgpu \
- && pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html \
+ && pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html\
  && pip install -U scikit-learn
 
 RUN pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html \
@@ -45,3 +45,4 @@ RUN pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/to
 
 
 CMD ["jupyter", "lab", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
+

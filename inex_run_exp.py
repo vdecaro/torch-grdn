@@ -49,10 +49,10 @@ def get_config(name):
             'out': 18,
             'M': 65,
             'L': 66,
-            'C': tune.randint(6, 11),
-            'n_gen': tune.grid_search(list(range(20, 91, 5))),
+            'C': tune.grid_search(list(range(6, 11))),
+            'n_gen': tune.grid_search(list(range(45, 91, 5))),
             'lr': 1e-3,
-            'batch_size': tune.choice([64, 128, 192, 256]),
+            'batch_size': tune.grid_search([64, 128, 192, 256]),
             'loss': 'ce',
             'score': 'accuracy',
             'rank': 'raw'

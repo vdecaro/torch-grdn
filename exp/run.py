@@ -87,7 +87,7 @@ def run_test(trial_dir,
     with open(os.path.join(trial_dir, 'params.json')) as f:
         t_config = json.load(f)
 
-    chk_file = os.path.join(trial_dir, f'checkpoint_{min_}', 'model.pth')
+    chk_file = os.path.join(trial_dir, f'checkpoint_{str(min_).zfill(6)}', 'model.pth')
     model = model_func(t_config)
     m_state = torch.load(chk_file, map_location='cpu')
     model.load_state_dict(m_state)
